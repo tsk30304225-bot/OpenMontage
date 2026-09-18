@@ -11,6 +11,8 @@ This is where words become visuals. A great script with a bad scene plan produce
 | Layer | Resource | Purpose |
 |-------|----------|---------|
 | Schema | `schemas/artifacts/scene_plan.schema.json` | Artifact validation |
+| Schema | `schemas/artifacts/visual_direction.schema.json` | Meaning contract written next to the scene plan |
+| Layer 2 | `skills/core/visual-direction.md` | Viewer journey, roles, persistent visual models, beats |
 | Prior artifacts | `state.artifacts["script"]["script"]`, `state.artifacts["proposal"]["proposal_packet"]` | Script sections and proposal packet |
 | Playbook | Active style playbook | Visual language, transitions, motion rules |
 | Layer 3 | `.agents/skills/flux-best-practices/`, `.agents/skills/beautiful-mermaid/`, `.agents/skills/manim-composer/` | Image gen, diagram, animation knowledge |
@@ -24,6 +26,15 @@ Read every section. For each, note:
 - What enhancement cues did the script writer embed?
 - What's the emotional beat? (curiosity, revelation, emphasis, humor, conclusion)
 - How much time is available? (end_seconds - start_seconds)
+
+### Step 1b: Viewer Journey and Roles (before choosing visuals)
+
+Read `skills/core/visual-direction.md`. Then:
+
+1. Split the script into 4-6 stretches and write, for each, what the viewer must **feel, understand or believe** by its end (`visual_direction.viewer_journey`).
+2. Give every scene a `narrative_role`. Use `immersion` (real place), `explanation` (mechanism), `evidence` (real source), `comparison`, `breather` (no new information, the viewer rests in the world) and `closure` (the real-world ending that answers the opening).
+3. Decide where graphics are **not** needed. Walking into the exam room, a corridor or a door is a breather, not another card. Aim for `REALITY -> MODEL -> MODEL EVOLUTION -> EVIDENCE -> REALITY`; open and close in reality.
+4. Plan B-roll so separate stock clips read as one visit without a consistent actor: object, point-of-view, faceless and place continuity (`broll_intent`).
 
 ### Step 2: Research Visual Approaches
 
@@ -62,6 +73,28 @@ Transform each script section into 1-3 visual scenes. Each scene is a distinct v
   ]
 }
 ```
+
+#### Step 3b: Persistent Visual Model and Beats (`visual_direction`)
+
+Ask whether the video's core concepts are states of **one** picture. If they are, declare that model once in `visual_direction.visual_models` and mark each scene that shows it with `visual_mode: "model"` and `visual_model_id`. Do not draw a new graphic per concept.
+
+For every model scene write `beats[]`: one per change in narration meaning, each with an exact `narration_anchor` copied from the script, an `operation` (`ADD`, `REMOVE`, `EXPAND`, `SHIFT`, `PROPAGATE`, `MEASURE`), a `target` in the model, `state_before`, `state_after` and `takeaway`. Write no seconds — times come from forced alignment at the edit stage. A model scene with no beat is a static hold; a 10-20 s scene needs several beats.
+
+Supported model types are listed in `skills/core/visual-direction.md` (today: `timeline_rail`). If the concept does not fit a supported type, leave `visual_model_id` unset and plan a normal scene.
+
+Validate before submitting:
+
+```python
+from tools.video.visual_timeline_compiler import VisualTimelineCompiler
+VisualTimelineCompiler().execute({
+    'operation': 'validate',
+    'visual_direction': 'projects/<project>/artifacts/visual_direction.json',
+    'script': 'projects/<project>/artifacts/script.json',
+    'scene_plan': 'projects/<project>/artifacts/scene_plan.json',
+})  # errors: unknown targets/operations, anchors not in the script; warnings: rhythm, beatless model scenes
+```
+
+Every scene id in `visual_direction` must exist in `scene_plan`; mirror the same `narrative_role` into `scene_plan.scenes[].narrative_role`.
 
 #### Render Templates and Scene Types
 
@@ -214,6 +247,8 @@ The style playbook constrains your visual choices:
 - [ ] No more than 3 consecutive scenes of the same type
 - [ ] At least 3 different scene types used in the video
 - [ ] Visual pacing alternates between high-information scenes (diagrams, animations) and breathing room (text cards, generated images)
+- [ ] Real-world scenes (immersion, breather, closure) interrupt long graphic stretches; the video opens and closes in reality
+- [ ] Concepts that are states of one picture use one persistent visual model with beats, not a new graphic each
 
 **Feasibility check:**
 - [ ] Every `required_asset` with `source: "generate"` is achievable with available tools
@@ -233,13 +268,17 @@ Score (1-5):
 | **Playbook fidelity** | Would every scene look like it belongs to the same video? |
 | **Asset feasibility** | Can every required_asset actually be generated with available tools? |
 | **Pacing** | Does the visual rhythm feel natural? High-info scenes balanced with breathing room? |
+| **Direction handoff** | Could compose render every model scene from `visual_direction` beats alone, without reinterpreting prose? |
 
 If any dimension scores below 3, revise.
 
 ### Step 8: Submit
 
-Validate `scene_plan_json` against the canonical scene-plan schema, persist it
-through the checkpoint protocol, and attach the stage review. There is no
+Validate `scene_plan_json` against the canonical scene-plan schema and
+`visual_direction` against its schema (plus `visual_timeline_compiler`
+`operation=validate`), persist both through the checkpoint protocol
+(`visual_direction` travels as a supplementary artifact of this stage), and
+attach the stage review. There is no
 separate explainer submit function.
 
 ## Common Pitfalls

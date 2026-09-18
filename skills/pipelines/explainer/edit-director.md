@@ -11,6 +11,8 @@ This is where raw assets become a coherent video. Good editing makes average ass
 | Layer | Resource | Purpose |
 |-------|----------|---------|
 | Schema | `schemas/artifacts/edit_decisions.schema.json` | Artifact validation |
+| Schema | `schemas/artifacts/visual_timeline.schema.json` | Timed execution contract for visual models |
+| Layer 2 | `skills/core/visual-direction.md` | How beats become timed renderer events |
 | Prior artifacts | `state.artifacts["assets"]["asset_manifest"]`, `state.artifacts["scene_plan"]["scene_plan"]`, `state.artifacts["script"]["script"]` | Assets, visual plan, timing |
 | Playbook | Active style playbook | Transitions, pacing rules, overlay styles |
 
@@ -57,6 +59,36 @@ Each cut defines what visual is shown and when:
 - `primary` — main visual (one at a time)
 - `overlay` — text cards, stat cards, key terms (on top of primary)
 - `background` — solid color or texture behind everything
+
+### Step 2b: Compile the Visual Timeline (when `visual_direction` has models)
+
+Resolve every beat's narration anchor against the real forced-aligned narration. Never estimate times from `scene_plan`.
+
+```python
+from tools.video.visual_timeline_compiler import VisualTimelineCompiler
+r = VisualTimelineCompiler().execute({
+    'operation': 'compile',
+    'visual_direction': 'projects/<project>/artifacts/visual_direction.json',
+    'script': 'projects/<project>/artifacts/script.json',
+    'scene_plan': 'projects/<project>/artifacts/scene_plan.json',
+    'alignment': '<qwen3_tts timestamps_path, e.g. assets/narration/.qnttslocal/om_segments.json>',
+    'output_path': 'projects/<project>/artifacts/visual_timeline.json',
+})
+# r.success is False when an anchor is unmatched or an event changes nothing - fix the direction, do not hand-edit times.
+# r.data['warnings'] lists events that fire outside their scene window - extend that model cut.
+```
+
+Then, for every model scene, emit a cut that the renderer executes instead of reinterpreting:
+
+```json
+{
+  "id": "sc3-model", "source": "", "in_seconds": 8.42, "out_seconds": 18.9,
+  "type": "visual_model",
+  "visual_model": {"model_id": "release_plan", "region": "full", "caption": "One estimate moves the launch"}
+}
+```
+
+and set `edit_decisions.visual_timeline` to the compiled file. Model state is a function of the absolute video time, so consecutive cuts on the same `model_id` continue one evolving graphic; a caption per cut can change while the model persists. For a side-by-side comparison use two models, `region: left` and `region: right`, with the right cut on `layer: overlay`. Reality scenes stay ordinary video cuts; do not replace a planned breather with a card.
 
 ### Step 3: Configure Subtitles
 
@@ -158,6 +190,11 @@ Adjust cut timing if any violates these rules.
 - [ ] Narration segments are ordered and non-overlapping
 - [ ] Narration timing aligns with corresponding visual cuts
 - [ ] Music ducking is configured
+
+**Visual direction (when models exist):**
+- [ ] `visual_timeline` compiled from the real alignment with `unmatched == []`
+- [ ] Every event time lies inside a `visual_model` cut of its model
+- [ ] Planned immersion/breather/closure scenes are reality cuts
 
 **Subtitles:**
 - [ ] Subtitles enabled

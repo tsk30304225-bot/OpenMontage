@@ -174,6 +174,27 @@ Run at **every stage** when a VideoAnalysisBrief exists (reference-driven produc
 - User preference not honored: **SUGGESTION**
 - Cost drift >30%: **CRITICAL**
 
+## Direction Review (visual_direction / visual_timeline)
+
+Applies when the project has `visual_direction`. Contract: `skills/core/visual-direction.md`.
+
+### At scene_plan stage
+- `visual_timeline_compiler` `operation=validate` has no errors (anchors occur in the script, targets exist, operations supported).
+- `viewer_journey` covers the whole video and each goal is about the viewer, not the visual.
+- Concepts that are states of one picture share one persistent model; flag a new graphic per concept as **major**.
+- Model scenes have beats at each change of narration meaning; a 10-20 s model scene with one beat is **major**.
+- Reality scenes interrupt long graphic stretches and the video opens and closes in reality; missing breathers are **minor**, a video with no reality at all when footage exists is **major**.
+- B-roll plans rely on object/pov/faceless/place continuity unless a consistent source for one person exists.
+
+### At edit stage
+- `visual_timeline.unmatched` is empty and `ineffective_events` is empty (**critical** otherwise).
+- Every event fires inside a `visual_model` cut of its model (**critical** otherwise - the renderer would never execute it).
+
+### At compose stage
+- `direction_qa` hard failures block delivery (**critical**).
+- `direction_qa` warnings are judgement: open the anchor frames. Weak or early changes that lose the narrated moment are **major**; others **minor**.
+- The persistent model stays recognisably the same across its scenes (grammar, colors, axis) - a restyled model mid-video is **major**.
+
 ## Slideshow Risk Review
 
 Run at **scene_plan** and **edit** stages. Use `lib/slideshow_risk.py` to compute the score.

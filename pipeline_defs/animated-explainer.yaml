@@ -151,6 +151,7 @@ stages:
     review_focus:
       - Full script duration covered with no gaps
       - "Visual variety: no 3+ consecutive scenes of same type"
+      - "visual_direction: viewer journey, reality/breather/closure roles, persistent visual model with narration-anchored beats (skills/core/visual-direction.md); visual_timeline_compiler validate passes"
       - Asset feasibility - every required_asset uses a tool from the production plan
       - Playbook adherence - transitions, colors, pacing rules
     success_criteria:
@@ -211,6 +212,7 @@ stages:
       - All cuts reference valid assets from manifest
       - Subtitles enabled with playbook-compatible styling
       - Music configured with ducking parameters
+      - "When visual_direction has models: visual_timeline compiled from the real alignment (no unmatched anchors, no no-op events) and every event inside a visual_model cut"
       - No timeline gaps or overlaps
     success_criteria:
       - Schema-valid edit_decisions
@@ -244,6 +246,7 @@ stages:
       - Audio is clear with proper narration/music balance
       - "render_runtime in edit_decisions matches proposal_packet — silent swap to another runtime is a CRITICAL governance violation"
       - "If render_runtime='hyperframes': `hyperframes lint` and `hyperframes validate` must pass before render"
+      - "When edit_decisions.visual_timeline exists: direction_qa has no hard failures; warnings reviewed against anchor frames"
     success_criteria:
       - Schema-valid render_report with output paths
       - Output file exists and passes ffprobe validation

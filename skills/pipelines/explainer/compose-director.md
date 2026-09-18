@@ -314,6 +314,23 @@ Verify:
 **If audio stream is missing: the render did not embed audio. Do NOT proceed to present
 the video to the user. Fix the audio configuration and re-render.**
 
+**6a-2. Direction QA (MANDATORY when `edit_decisions.visual_timeline` exists):**
+```python
+from tools.analysis.direction_qa import DirectionQA
+qa = DirectionQA().execute({
+    'video_path': 'path/to/rendered_video.mp4',
+    'visual_timeline': 'projects/<project>/artifacts/visual_timeline.json',
+    'edit_decisions': 'projects/<project>/artifacts/edit_decisions.json',
+    'visual_direction': 'projects/<project>/artifacts/visual_direction.json',
+    'scene_plan': 'projects/<project>/artifacts/scene_plan.json',
+    'output_dir': 'path/to/review-frames/direction',
+})
+# qa.success False = hard failure (unmatched anchor, no-op event, event with no model on screen,
+# picture unchanged across the anchor). Fix and re-render; do not present.
+# qa.data['warnings'] are judgement calls - weak change, long static hold, early reveal, rhythm.
+```
+Open the `anchor_before` / `anchor_after` frames for each event and confirm the change the narration describes happens at that moment and not earlier. Record hard failures and warnings in `final_review`.
+
 **6b. Extract review frames:**
 ```python
 from tools.analysis.frame_sampler import FrameSampler
