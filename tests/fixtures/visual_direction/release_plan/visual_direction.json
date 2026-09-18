@@ -1,0 +1,179 @@
+{
+  "version": "1.0",
+  "viewer_journey": [
+    {
+      "id": "j1",
+      "scene_ids": [
+        "sc1",
+        "sc2"
+      ],
+      "viewer_goal": "the plan looks safe"
+    },
+    {
+      "id": "j2",
+      "scene_ids": [
+        "sc3"
+      ],
+      "viewer_goal": "one long task pushes everything after it past the deadline"
+    },
+    {
+      "id": "j3",
+      "scene_ids": [
+        "sc4"
+      ],
+      "viewer_goal": "estimates, not plans, decide the date"
+    }
+  ],
+  "rhythm": "TEXT -> MODEL -> MODEL EVOLUTION -> TEXT",
+  "visual_models": [
+    {
+      "id": "release_plan",
+      "type": "timeline_rail",
+      "title": "Release plan",
+      "grammar": {
+        "x_axis": "working days",
+        "block_width": "task duration",
+        "delay_color": "days waiting on the previous task"
+      },
+      "labels": {
+        "planned": "Plan",
+        "actual": "Reality",
+        "wait": "blocked",
+        "overrun": "late",
+        "deadline": "Launch",
+        "unit_suffix": "d"
+      },
+      "queue": {
+        "policy": "sequential"
+      },
+      "initial_state": {
+        "axis": {
+          "start": 0,
+          "end": 12,
+          "tick": 2,
+          "format": "number",
+          "unit_suffix": "d"
+        },
+        "slot_interval": 2,
+        "show_actual": false,
+        "items": [
+          {
+            "id": "design",
+            "label": "Design",
+            "slot": 0,
+            "duration": 2
+          },
+          {
+            "id": "testing",
+            "label": "Testing",
+            "slot": 1,
+            "duration": 2
+          },
+          {
+            "id": "docs",
+            "label": "Docs",
+            "slot": 2,
+            "duration": 2
+          },
+          {
+            "id": "ship",
+            "label": "Ship",
+            "slot": 3,
+            "duration": 2
+          }
+        ]
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "sc1",
+      "narrative_role": "establish_context",
+      "visual_mode": "text"
+    },
+    {
+      "scene_id": "sc2",
+      "narrative_role": "explanation",
+      "visual_mode": "model",
+      "visual_model_id": "release_plan",
+      "beats": [
+        {
+          "id": "b1",
+          "narration_anchor": "Four tasks, two days each",
+          "operation": "SHIFT",
+          "target": "view",
+          "params": {
+            "show_actual": true
+          },
+          "state_before": "plan only",
+          "state_after": "reality rail shown",
+          "takeaway": "reality follows the plan"
+        },
+        {
+          "id": "b2",
+          "narration_anchor": "sits on day eight",
+          "operation": "SHIFT",
+          "target": "view",
+          "params": {
+            "deadline": 8
+          },
+          "takeaway": "the launch date is fixed"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc3",
+      "narrative_role": "deliver_payload",
+      "visual_mode": "model",
+      "visual_model_id": "release_plan",
+      "beats": [
+        {
+          "id": "b3",
+          "narration_anchor": "testing takes five days",
+          "operation": "EXPAND",
+          "target": "testing",
+          "params": {
+            "to": 5,
+            "propagate": "deferred"
+          },
+          "state_before": "2d",
+          "state_after": "5d",
+          "takeaway": "one estimate was wrong"
+        },
+        {
+          "id": "b4",
+          "narration_anchor": "Nothing moves yet",
+          "operation": "MEASURE",
+          "target": "testing",
+          "params": {
+            "metric": "duration"
+          },
+          "takeaway": "the overrun is local for now"
+        },
+        {
+          "id": "b5",
+          "narration_anchor": "every task after it slides",
+          "operation": "PROPAGATE",
+          "target": "testing",
+          "takeaway": "the delay propagates"
+        },
+        {
+          "id": "b6",
+          "narration_anchor": "misses its date by three days",
+          "operation": "MEASURE",
+          "target": "all",
+          "params": {
+            "metric": "overrun",
+            "exclusive": true
+          },
+          "takeaway": "launch is three days late"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc4",
+      "narrative_role": "resolution",
+      "visual_mode": "text"
+    }
+  ]
+}

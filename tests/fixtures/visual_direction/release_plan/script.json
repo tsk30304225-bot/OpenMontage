@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "title": "Release plan slip",
+  "total_duration_seconds": 23.34,
+  "sections": [
+    {
+      "id": "s1",
+      "label": "s1",
+      "text": "Every release starts as a clean plan.",
+      "start_seconds": 0.3,
+      "end_seconds": 2.96
+    },
+    {
+      "id": "s2",
+      "label": "s2",
+      "text": "Four tasks, two days each, and the launch sits on day eight.",
+      "start_seconds": 3.56,
+      "end_seconds": 8.12
+    },
+    {
+      "id": "s3",
+      "label": "s3",
+      "text": "Then testing takes five days instead of two. Nothing moves yet. But every task after it slides, and the launch misses its date by three days.",
+      "start_seconds": 8.72,
+      "end_seconds": 18.6
+    },
+    {
+      "id": "s4",
+      "label": "s4",
+      "text": "The plan was fine. The estimate was not.",
+      "start_seconds": 19.2,
+      "end_seconds": 22.24
+    }
+  ]
+}
