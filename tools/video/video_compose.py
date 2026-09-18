@@ -923,6 +923,46 @@ class VideoCompose(BaseTool):
         return None
 
     @staticmethod
+    def _attach_visual_timeline(props: dict[str, Any], composition_id: str) -> str | None:
+        """Load visual_timeline for type: "visual_model" cuts.
+
+        The renderer executes the compiled events; it must not guess a model
+        from a scene description. Missing timelines, unknown model ids and
+        unresolved anchors are errors rather than a silent static card.
+        """
+        model_cuts = [c for c in props.get("cuts") or [] if isinstance(c, dict) and c.get("type") == "visual_model"]
+        timeline = props.pop("visual_timeline", None)
+        if not model_cuts:
+            if timeline is not None:
+                props["visualTimeline"] = timeline if isinstance(timeline, dict) else None
+            return None
+        if composition_id != "Explainer":
+            return (
+                f"visual_model cuts render in the Explainer composition; renderer_family maps to {composition_id}. "
+                "Use an explainer renderer_family for model scenes."
+            )
+        if isinstance(timeline, str):
+            path = Path(timeline)
+            if not path.is_file():
+                return f"edit_decisions.visual_timeline file not found: {path}"
+            try:
+                timeline = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                return f"Could not read visual_timeline {path}: {exc}"
+        if not isinstance(timeline, dict):
+            return "visual_model cuts need edit_decisions.visual_timeline (compiled by visual_timeline_compiler)."
+        if timeline.get("unmatched"):
+            ids = ", ".join(str(u.get("beat_id")) for u in timeline["unmatched"])
+            return f"visual_timeline has unresolved narration anchors ({ids}); recompile before rendering."
+        model_ids = {m.get("id") for m in timeline.get("models") or []}
+        for cut in model_cuts:
+            mid = (cut.get("visual_model") or {}).get("model_id")
+            if mid not in model_ids:
+                return f"cut {cut.get('id')}: visual_model.model_id {mid!r} is not in visual_timeline models {sorted(model_ids)}"
+        props["visualTimeline"] = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
+        return None
+
+    @staticmethod
     def _file_uri_to_raw_path(uri: str) -> str:
         """Convert a ``file:`` URI to a raw filesystem path string.
 
@@ -2095,6 +2135,10 @@ class VideoCompose(BaseTool):
         caption_error = self._attach_phrase_captions(props, composition_id)
         if caption_error:
             return ToolResult(success=False, error=caption_error)
+
+        timeline_error = self._attach_visual_timeline(props, composition_id)
+        if timeline_error:
+            return ToolResult(success=False, error=timeline_error)
 
         if composition_id == "CinematicRenderer":
             if not props.get("scenes") and props.get("cuts"):

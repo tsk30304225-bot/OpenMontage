@@ -36,6 +36,8 @@ import { ScreenshotScene } from "./components/ScreenshotScene";
 import type { ScreenshotStep } from "./components/ScreenshotScene";
 import { ProviderChip } from "./components/ProviderChip";
 import { resolveAsset } from "./lib/resolveAsset";
+import { VisualModelScene, type VisualModelCut } from "./components/visual-models/VisualModelScene";
+import type { VisualTimeline } from "./components/visual-models/timelineRail";
 import type { ParticleType } from "./components/ParticleOverlay";
 import { resolveTheme, type ThemeConfig, DEFAULT_THEME } from "./Root";
 
@@ -199,6 +201,8 @@ interface Cut {
   out_seconds: number;
   layer?: string;
   type?: string;
+  // type "visual_model": a persistent model driven by props.visualTimeline
+  visual_model?: VisualModelCut;
   // Component-specific props
   text?: string;
   stat?: string;
@@ -315,6 +319,8 @@ export interface ExplainerProps {
   // edit_decisions.subtitles — `style: "karaoke"` selects PhraseCaptions.
   subtitles?: Record<string, unknown>;
   audio?: AudioConfig;
+  // edit_decisions.visual_timeline, loaded by video_compose.
+  visualTimeline?: VisualTimeline;
 }
 
 // ---------------------------------------------------------------------------
@@ -562,7 +568,7 @@ const BackgroundVideoLayer: React.FC<{
   );
 };
 
-const SceneRenderer: React.FC<{ cut: Cut; theme: ThemeConfig }> = ({ cut, theme }) => {
+const SceneRenderer: React.FC<{ cut: Cut; theme: ThemeConfig; visualTimeline?: VisualTimeline }> = ({ cut, theme, visualTimeline }) => {
   // Wrap component with background video or image if specified
   const maybeWrapWithBg = (element: React.ReactElement) => {
     if (cut.backgroundVideo) {
@@ -596,6 +602,22 @@ const SceneRenderer: React.FC<{ cut: Cut; theme: ThemeConfig }> = ({ cut, theme 
   const bgColor = (rawBg === theme.backgroundColor || rawBg === "#0F172A" || rawBg === "#0f172a") ? "transparent" : rawBg;
   const textColor = cut.color || theme.textColor;
   const accent = cut.accentColor || theme.accentColor;
+
+  // Persistent visual model: state comes from the absolute time, so it carries across cuts.
+  if (cut.type === "visual_model") {
+    if (!visualTimeline || !cut.visual_model) {
+      throw new Error(`cut ${cut.id}: type "visual_model" needs cut.visual_model and props.visualTimeline`);
+    }
+    return (
+      <VisualModelScene
+        timeline={visualTimeline}
+        cut={cut.visual_model}
+        cutStartSeconds={cut.in_seconds}
+        fontFamily={theme.bodyFont || theme.headingFont}
+        drawBackground={cut.layer !== "overlay"}
+      />
+    );
+  }
 
   // Explicit component types — use theme-derived defaults for colors
   if (cut.type === "text_card" && cut.text) {
@@ -860,7 +882,7 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
 
         return (
           <Sequence key={cut.id} from={from} durationInFrames={duration}>
-            <SceneRenderer cut={cut} theme={theme} />
+            <SceneRenderer cut={cut} theme={theme} visualTimeline={props.visualTimeline} />
           </Sequence>
         );
       })}
