@@ -61,7 +61,19 @@
             "type": "string",
             "description": "Backing color used behind this cut by composition runtimes"
           },
-          "reason": { "type": "string" }
+          "reason": { "type": "string" },
+          "type": { "type": "string", "description": "Remotion render template for this cut (e.g. text_card, stat_card, visual_model). visual_model renders a persistent model from visual_timeline." },
+          "visual_model": {
+            "type": "object",
+            "description": "Required when type='visual_model'. The model keeps its state across cuts because state is computed from the absolute video time, so consecutive cuts on the same model_id read as one evolving graphic.",
+            "required": ["model_id"],
+            "additionalProperties": false,
+            "properties": {
+              "model_id": { "type": "string" },
+              "region": { "type": "string", "enum": ["full", "left", "right"], "default": "full" },
+              "caption": { "type": "string", "description": "Short heading shown above the model for this cut." }
+            }
+          }
         },
         "additionalProperties": false
       }
@@ -225,6 +237,10 @@
         "crf": { "type": "integer", "minimum": 0, "maximum": 51 },
         "concurrency": { "type": "integer", "minimum": 1 }
       }
+    },
+    "visual_timeline": {
+      "description": "visual_timeline artifact (object) or a path to its JSON. video_compose passes it to the renderer as visualTimeline; every visual_model cut must reference one of its models.",
+      "type": ["string", "object"]
     },
     "slideshow_risk_score": {
       "type": "object",

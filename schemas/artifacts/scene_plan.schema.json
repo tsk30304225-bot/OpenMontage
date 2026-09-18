@@ -56,8 +56,8 @@
           },
           "narrative_role": {
             "type": "string",
-            "enum": ["establish_context", "introduce_subject", "build_tension", "deliver_payload", "transition", "emotional_beat", "evidence", "comparison", "resolution", "call_to_action"],
-            "description": "What role this scene plays in the narrative structure"
+            "enum": ["establish_context", "introduce_subject", "build_tension", "deliver_payload", "transition", "emotional_beat", "evidence", "comparison", "resolution", "call_to_action", "immersion", "explanation", "breather", "closure"],
+            "description": "What role this scene plays in the narrative structure. immersion = real-world footage that puts the viewer in the situation; explanation = a model or diagram that shows the mechanism; breather = a short real-world beat with no new information (walking, a door, a corridor) that lets the viewer rest between explanations; closure = the real-world ending that visually answers the opening."
           },
           "information_role": {
             "type": "string",

@@ -1,0 +1,426 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openmontage/artifacts/visual_direction",
+  "title": "Visual Direction",
+  "description": "Meaning contract written alongside scene_plan: the viewer journey, which scenes show reality versus a persistent visual model, and the narration-anchored state changes (beats) the model must perform. Contains no seconds — visual_timeline resolves anchors to real narration timing after TTS and forced alignment.",
+  "type": "object",
+  "required": [
+    "version",
+    "viewer_journey",
+    "scenes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "viewer_journey": {
+      "type": "array",
+      "minItems": 1,
+      "description": "What the viewer should feel, understand or believe at each stretch of the video, decided before visuals are chosen.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "scene_ids",
+          "viewer_goal"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scene_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "viewer_goal": {
+            "type": "string",
+            "description": "e.g. 'I have been in this waiting room' or 'the delay is structural, not a guess'"
+          },
+          "feeling": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rhythm": {
+      "type": "string",
+      "description": "The intended alternation, e.g. 'REALITY -> MODEL -> MODEL EVOLUTION -> EVIDENCE -> REALITY'."
+    },
+    "visual_models": {
+      "type": "array",
+      "description": "Persistent visual models reused across scenes. Scenes change a model's state instead of drawing a new graphic.",
+      "items": {
+        "$ref": "#/$defs/visual_model"
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "scene_id",
+          "narrative_role",
+          "visual_mode"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "scene_id": {
+            "type": "string",
+            "description": "scene_plan.scenes[].id"
+          },
+          "narrative_role": {
+            "type": "string",
+            "enum": [
+              "establish_context",
+              "introduce_subject",
+              "build_tension",
+              "deliver_payload",
+              "transition",
+              "emotional_beat",
+              "evidence",
+              "comparison",
+              "resolution",
+              "call_to_action",
+              "immersion",
+              "explanation",
+              "breather",
+              "closure"
+            ]
+          },
+          "visual_mode": {
+            "type": "string",
+            "enum": [
+              "reality",
+              "model",
+              "evidence",
+              "text"
+            ],
+            "description": "reality = footage of the real world (B-roll); model = a persistent visual model changing state; evidence = a real document, dataset or chart; text = a typographic card."
+          },
+          "viewer_takeaway": {
+            "type": "string"
+          },
+          "visual_model_id": {
+            "type": "string",
+            "description": "Required when visual_mode is 'model'."
+          },
+          "broll_intent": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "subject"
+            ],
+            "properties": {
+              "subject": {
+                "type": "string"
+              },
+              "continuity": {
+                "type": "string",
+                "enum": [
+                  "object",
+                  "pov",
+                  "faceless",
+                  "place",
+                  "person"
+                ],
+                "description": "How shots stay one visit without a consistent actor. Prefer object/pov/faceless/place; 'person' needs a single consistent source."
+              },
+              "must_avoid": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence_intent": {
+            "type": "string"
+          },
+          "beats": {
+            "type": "array",
+            "description": "Ordered state changes, one per shift in narration meaning.",
+            "items": {
+              "$ref": "#/$defs/beat"
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "visual_mode": {
+                  "const": "model"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "visual_model_id"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "visual_model": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "initial_state"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "timeline_rail"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "grammar": {
+          "type": "object",
+          "description": "What each visual property means in this video, e.g. {x_axis: time, block_width: task duration, delay_color: waiting}. Project-specific meaning lives here, not in the renderer.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "palette": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "type": "string"
+            },
+            "ink": {
+              "type": "string"
+            },
+            "planned": {
+              "type": "string"
+            },
+            "delay": {
+              "type": "string"
+            },
+            "rule": {
+              "type": "string"
+            },
+            "idle": {
+              "type": "string"
+            }
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "UI words in the video's language: planned, actual, wait, idle, overrun, deadline, duration, unit_suffix."
+        },
+        "initial_state": {
+          "$ref": "#/$defs/timeline_rail_state"
+        },
+        "queue": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "How the actual rail is derived from the plan. A model configuration, chosen per video.",
+          "properties": {
+            "policy": {
+              "type": "string",
+              "enum": [
+                "independent",
+                "sequential",
+                "ready_first"
+              ],
+              "default": "sequential",
+              "description": "independent: each item at its own ready time, no shared resource. sequential: one shared resource, planned order. ready_first: one shared resource that, when free, takes the earliest-planned item among those already ready, idling until the next item is ready."
+            }
+          }
+        }
+      }
+    },
+    "timeline_rail_state": {
+      "type": "object",
+      "required": [
+        "axis",
+        "items"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "axis": {
+          "type": "object",
+          "required": [
+            "start",
+            "end"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": "number",
+              "description": "Left edge in axis units."
+            },
+            "end": {
+              "type": "number"
+            },
+            "tick": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "number",
+                "clock"
+              ],
+              "default": "number",
+              "description": "clock renders values as HH:MM (value = minutes after midnight)."
+            },
+            "unit_suffix": {
+              "type": "string",
+              "description": "Appended to plain numbers, e.g. 'd', 'h', '분'."
+            }
+          }
+        },
+        "slot_interval": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Spacing for items placed by slot index."
+        },
+        "deadline": {
+          "type": "number",
+          "description": "Optional end line; work past it is overrun."
+        },
+        "resource_available_at": {
+          "type": "number",
+          "description": "When the shared resource can start work. Defaults to axis.start."
+        },
+        "show_planned": {
+          "type": "boolean",
+          "description": "Planned rail visible (default true). Toggle with SHIFT target=view."
+        },
+        "show_actual": {
+          "type": "boolean",
+          "description": "Actual rail visible (default true). Start false to reveal it on a beat."
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "duration"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "slot": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "planned_start": {
+                "type": "number"
+              },
+              "duration": {
+                "type": "number",
+                "minimum": 0
+              },
+              "ready_offset": {
+                "type": "number",
+                "description": "How much later than planned the item becomes ready (negative = early)."
+              },
+              "present": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "beat": {
+      "type": "object",
+      "required": [
+        "id",
+        "narration_anchor",
+        "operation",
+        "target",
+        "takeaway"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "narration_anchor": {
+          "type": "string",
+          "description": "Exact words from the script at which the change starts."
+        },
+        "anchor_at": {
+          "type": "string",
+          "enum": [
+            "start",
+            "end"
+          ],
+          "default": "start"
+        },
+        "offset_seconds": {
+          "type": "number"
+        },
+        "duration_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "ADD",
+            "REMOVE",
+            "EXPAND",
+            "SHIFT",
+            "PROPAGATE",
+            "MEASURE"
+          ]
+        },
+        "target": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "description": "timeline_rail: ADD {item}; EXPAND {to|by, propagate: immediate|deferred}; SHIFT target=slot_interval {interval} | target=view {start,end,tick,deadline,show_planned,show_actual} | target=<item> {by|ready_by}; MEASURE {metric: wait|idle_before|duration|overrun, label?, exclusive?, clear?}"
+        },
+        "state_before": {
+          "type": "string"
+        },
+        "state_after": {
+          "type": "string"
+        },
+        "focus": {
+          "type": "string"
+        },
+        "takeaway": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

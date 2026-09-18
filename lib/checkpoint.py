@@ -45,6 +45,8 @@ SUPPLEMENTARY_ARTIFACTS = {
     "source_media_review",  # Required before first planning stage when user media exists
     "final_review",         # Required by compose stage before presenting to user
     "video_analysis_brief", # Reference-video grounding artifact carried alongside stages
+    "visual_direction",     # Scene-stage meaning contract: viewer journey, visual models, anchored beats
+    "visual_timeline",      # Edit-stage execution contract: beats resolved to aligned narration time
 }
 
 
