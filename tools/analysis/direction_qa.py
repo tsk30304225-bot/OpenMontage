@@ -24,6 +24,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from lib.atelier_direction import build_trace
 from lib.visual_direction import REALITY_ROLES, ineffective_events
 from tools.base_tool import (
     BaseTool,
@@ -113,6 +114,7 @@ class DirectionQA(BaseTool):
             "visual_direction": {"type": ["object", "string"], "description": "Enables rhythm warnings"},
             "scene_plan": {"type": ["object", "string"], "description": "Scene windows for rhythm/early-reveal warnings"},
             "output_dir": {"type": "string", "description": "Where anchor frames and direction_qa.json are written"},
+            "project_dir": {"type": "string", "description": "Atelier project source dir (defaults to the parent of edit_decisions.bespoke.entry)"},
             "min_changed_pixels": {"type": "integer", "default": 25,
                                    "description": f"Hard floor: sampled pixels ({SAMPLE_W}x{SAMPLE_H}) that must change across an event"},
             "weak_changed_pixels": {"type": "integer", "default": 150},
@@ -150,6 +152,30 @@ class DirectionQA(BaseTool):
             hard.append(f"beat {u.get('beat_id')}: anchor {u.get('narration_anchor')!r} not found in narration")
         for eid in ineffective_events(timeline):
             hard.append(f"{eid}: operation changes nothing in the model state")
+        if direction and (direction.get("visual_models") or []) and not events:
+            hard.append("visual_direction declares visual models but visual_timeline has no events (timeline not compiled)")
+
+        # Atelier: no cuts execute the events, the bespoke source does. The trace
+        # (lib/atelier_direction.py) maps every event to the code that reads it.
+        atelier = edit.get("composition_mode") == "atelier" or edit.get("renderer_family") == "bespoke"
+        trace = None
+        implemented: dict[str, bool] = {}
+        if atelier:
+            project_dir = inputs.get("project_dir")
+            if not project_dir:
+                entry = (edit.get("bespoke") or {}).get("entry")
+                if entry:
+                    ep = Path(entry)
+                    if not ep.is_absolute():
+                        ep = Path(__file__).resolve().parents[2] / ep
+                    project_dir = str(ep.parent)
+            if not project_dir or not Path(project_dir).is_dir():
+                hard.append("atelier edit without a readable project source (bespoke.entry / project_dir): implementation cannot be traced")
+            else:
+                trace = build_trace(timeline, project_dir)
+                hard.extend(trace["hard_failures"])
+                warnings.extend(trace["warnings"])
+                implemented = {e["event_id"]: e["implemented"] for e in trace["events"]}
 
         def cut_for(ev: dict[str, Any]) -> dict[str, Any] | None:
             t = ev["time_seconds"]
@@ -166,9 +192,15 @@ class DirectionQA(BaseTool):
         weak = int(inputs.get("weak_changed_pixels", 150))
 
         for i, ev in enumerate(events):
-            cut = cut_for(ev)
+            if atelier:
+                # Unimplemented events are already hard failures from the trace.
+                cut = {"id": "atelier", "in_seconds": 0.0, "out_seconds": float("inf"), "visual_model": {"region": "full"}}
+            else:
+                cut = cut_for(ev)
             row: dict[str, Any] = {"event": ev["id"], "operation": ev["operation"], "target": ev["target"],
                                    "time_seconds": ev["time_seconds"], "anchor": (ev.get("anchor") or {}).get("text")}
+            if atelier:
+                row["implemented"] = implemented.get(ev["id"], False)
             if cut is None:
                 hard.append(f"{ev['id']} ({ev['operation']} {ev['target']}) at {ev['time_seconds']}s: no visual_model cut for "
                             f"model {ev['model_id']!r} is on screen, so the renderer never executes it")
@@ -178,7 +210,7 @@ class DirectionQA(BaseTool):
             row["executed"] = True
             row["cut"] = cut["id"]
             end = ev["time_seconds"] + ev["duration_seconds"]
-            if end > cut["out_seconds"] + 1e-3:
+            if not atelier and end > cut["out_seconds"] + 1e-3:
                 warnings.append(f"{ev['id']}: animation ends at {end:.2f}s after cut {cut['id']} ends ({cut['out_seconds']}s)")
             if video is not None:
                 before_t = max(cut["in_seconds"] + 0.04, ev["time_seconds"] - 0.12)
@@ -251,11 +283,13 @@ class DirectionQA(BaseTool):
                     run_start = w[1]
 
         report = {
+            "mode": "atelier" if atelier else "templated",
             "passed": not hard,
             "hard_failures": hard,
             "warnings": warnings,
             "events_checked": len(events),
             "checks": checks,
+            "implementation_trace": trace,
         }
         artifacts = []
         if video is not None or inputs.get("output_dir"):
