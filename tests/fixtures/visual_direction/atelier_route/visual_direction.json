@@ -1,0 +1,176 @@
+{
+  "version": "1.0",
+  "viewer_journey": [
+    {
+      "id": "j1",
+      "scene_ids": [
+        "sc1"
+      ],
+      "viewer_goal": "a normal delivery starts"
+    },
+    {
+      "id": "j2",
+      "scene_ids": [
+        "sc2",
+        "sc3"
+      ],
+      "viewer_goal": "one delay on one leg reaches everyone after it"
+    },
+    {
+      "id": "j3",
+      "scene_ids": [
+        "sc4"
+      ],
+      "viewer_goal": "a promise is only as strong as its weakest leg"
+    }
+  ],
+  "rhythm": "TEXT -> MODEL -> MODEL EVOLUTION -> TEXT",
+  "visual_models": [
+    {
+      "id": "route",
+      "type": "flow_network",
+      "renderer": "bespoke",
+      "title": "Parcel route",
+      "grammar": {
+        "node": "a stop",
+        "edge": "a leg of the trip",
+        "edge.delay": "minutes lost on that leg",
+        "active": "delay has arrived here"
+      },
+      "initial_state": {
+        "elements": [
+          {
+            "id": "warehouse",
+            "kind": "node",
+            "label": "Warehouse",
+            "visible": true
+          },
+          {
+            "id": "hub",
+            "kind": "node",
+            "label": "Hub"
+          },
+          {
+            "id": "locker",
+            "kind": "node",
+            "label": "Locker"
+          },
+          {
+            "id": "customer",
+            "kind": "node",
+            "label": "Customer"
+          }
+        ]
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "sc1",
+      "narrative_role": "establish_context",
+      "visual_mode": "text"
+    },
+    {
+      "scene_id": "sc2",
+      "narrative_role": "explanation",
+      "visual_mode": "model",
+      "visual_model_id": "route",
+      "beats": [
+        {
+          "id": "b1",
+          "narration_anchor": "The parcel reaches the regional hub",
+          "operation": "REVEAL",
+          "target": "hub",
+          "takeaway": "the first stop",
+          "state_before": "hidden",
+          "state_after": "shown"
+        },
+        {
+          "id": "b2",
+          "narration_anchor": "regional hub",
+          "operation": "CONNECT",
+          "target": "leg1",
+          "takeaway": "the first leg exists",
+          "params": {
+            "from": "warehouse",
+            "to": "hub"
+          }
+        },
+        {
+          "id": "b3",
+          "narration_anchor": "The pickup locker",
+          "operation": "REVEAL",
+          "target": "locker",
+          "takeaway": "the destination is far"
+        },
+        {
+          "id": "b4",
+          "narration_anchor": "drives the city route",
+          "operation": "CONNECT",
+          "target": "leg2",
+          "takeaway": "the city leg",
+          "params": {
+            "from": "hub",
+            "to": "locker"
+          }
+        }
+      ]
+    },
+    {
+      "scene_id": "sc3",
+      "narrative_role": "deliver_payload",
+      "visual_mode": "model",
+      "visual_model_id": "route",
+      "beats": [
+        {
+          "id": "b5",
+          "narration_anchor": "forces a detour",
+          "operation": "EXPAND",
+          "target": "leg2",
+          "takeaway": "the city leg gets longer",
+          "params": {
+            "attr": "delay",
+            "to": 40
+          },
+          "state_before": "delay 0",
+          "state_after": "delay 40"
+        },
+        {
+          "id": "b6",
+          "narration_anchor": "arrives forty minutes late",
+          "operation": "MEASURE",
+          "target": "leg2",
+          "takeaway": "forty minutes",
+          "params": {
+            "metric": "delay",
+            "label": "+40 min"
+          }
+        },
+        {
+          "id": "b7",
+          "narration_anchor": "The delay travels",
+          "operation": "PROPAGATE",
+          "target": "locker",
+          "takeaway": "the delay moves downstream",
+          "params": {
+            "path": [
+              "customer"
+            ]
+          }
+        },
+        {
+          "id": "b8",
+          "narration_anchor": "on to the customer",
+          "operation": "REVEAL",
+          "target": "customer",
+          "takeaway": "the customer inherits it"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc4",
+      "narrative_role": "closure",
+      "visual_mode": "text"
+    }
+  ]
+}

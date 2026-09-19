@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "scenes": [
+    {
+      "id": "sc1",
+      "type": "text_card",
+      "description": "scene for s1",
+      "start_seconds": 0.0,
+      "end_seconds": 3.17,
+      "script_section_id": "s1"
+    },
+    {
+      "id": "sc2",
+      "type": "animation",
+      "description": "scene for s2",
+      "start_seconds": 3.17,
+      "end_seconds": 11.07,
+      "script_section_id": "s2"
+    },
+    {
+      "id": "sc3",
+      "type": "animation",
+      "description": "scene for s3",
+      "start_seconds": 11.07,
+      "end_seconds": 18.61,
+      "script_section_id": "s3"
+    },
+    {
+      "id": "sc4",
+      "type": "text_card",
+      "description": "scene for s4",
+      "start_seconds": 18.61,
+      "end_seconds": 22.78,
+      "script_section_id": "s4"
+    }
+  ]
+}

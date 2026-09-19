@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "title": "Parcel route",
+  "total_duration_seconds": 22.78,
+  "sections": [
+    {
+      "id": "s1",
+      "label": "s1",
+      "text": "A parcel leaves the warehouse at dawn.",
+      "start_seconds": 0.3,
+      "end_seconds": 2.82
+    },
+    {
+      "id": "s2",
+      "label": "s2",
+      "text": "The parcel reaches the regional hub. The pickup locker is across the city, and a van drives the city route.",
+      "start_seconds": 3.52,
+      "end_seconds": 10.72
+    },
+    {
+      "id": "s3",
+      "label": "s3",
+      "text": "A closed road forces a detour. The van arrives forty minutes late. The delay travels on to the customer.",
+      "start_seconds": 11.42,
+      "end_seconds": 18.26
+    },
+    {
+      "id": "s4",
+      "label": "s4",
+      "text": "One closed road moved the whole promise.",
+      "start_seconds": 18.96,
+      "end_seconds": 21.48
+    }
+  ]
+}
