@@ -188,9 +188,8 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "timeline_rail"
-          ]
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "What the picture means, chosen from the mechanism, not from renderer support: timeline_rail, flow_network, quantity_stack, comparison_split, ... timeline_rail has a dedicated reducer; any other type is an element model."
         },
         "title": {
           "type": "string"
@@ -234,7 +233,8 @@
           "description": "UI words in the video's language: planned, actual, wait, idle, overrun, deadline, duration, unit_suffix."
         },
         "initial_state": {
-          "$ref": "#/$defs/timeline_rail_state"
+          "type": "object",
+          "description": "timeline_rail: timeline_rail_state. Any other type: element_state."
         },
         "queue": {
           "type": "object",
@@ -252,8 +252,41 @@
               "description": "independent: each item at its own ready time, no shared resource. sequential: one shared resource, planned order. ready_first: one shared resource that, when free, takes the earliest-planned item among those already ready, idling until the next item is ready."
             }
           }
+        },
+        "renderer": {
+          "type": "string",
+          "enum": [
+            "generic",
+            "bespoke"
+          ],
+          "description": "Who draws the model. 'generic' = a shared renderer (timeline_rail only today). 'bespoke' = atelier implements it against this contract. Defaults to generic for types with a generic renderer, bespoke otherwise. A missing generic renderer is never a reason to drop the model."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "timeline_rail"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "initial_state": {
+                "$ref": "#/$defs/timeline_rail_state"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "initial_state": {
+                "$ref": "#/$defs/element_state"
+              }
+            }
+          }
+        }
+      ]
     },
     "timeline_rail_state": {
       "type": "object",
@@ -395,6 +428,8 @@
           "enum": [
             "ADD",
             "REMOVE",
+            "REVEAL",
+            "CONNECT",
             "EXPAND",
             "SHIFT",
             "PROPAGATE",
@@ -406,7 +441,7 @@
         },
         "params": {
           "type": "object",
-          "description": "timeline_rail: ADD {item}; EXPAND {to|by, propagate: immediate|deferred}; SHIFT target=slot_interval {interval} | target=view {start,end,tick,deadline,show_planned,show_actual} | target=<item> {by|ready_by}; MEASURE {metric: wait|idle_before|duration|overrun, label?, exclusive?, clear?}"
+          "description": "timeline_rail: ADD {item}; EXPAND {to|by, propagate: immediate|deferred}; SHIFT target=slot_interval {interval} | target=view {start,end,tick,deadline,show_planned,show_actual} | target=<item> {by|ready_by}; MEASURE {metric: wait|idle_before|duration|overrun, label?, exclusive?, clear?}. Element models: ADD {element}; REVEAL {attrs?}; CONNECT {from, to, label?}; REMOVE; EXPAND {attr, to|by}; SHIFT target=<element> {attrs} | target=view {...}; PROPAGATE {path?: [ids]}; MEASURE {metric, label?, value?, exclusive?, clear?}."
         },
         "state_before": {
           "type": "string"
@@ -419,6 +454,58 @@
         },
         "takeaway": {
           "type": "string"
+        }
+      }
+    },
+    "element_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "elements"
+      ],
+      "description": "Named elements of a model without a dedicated reducer. Elements start hidden unless visible is true; REVEAL/ADD/CONNECT make them appear, so a final state is never on screen before its beat.",
+      "properties": {
+        "elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "description": "node, edge, value, label, group, region, ... (renderer vocabulary, free)"
+              },
+              "label": {
+                "type": "string"
+              },
+              "visible": {
+                "type": "boolean",
+                "default": false
+              },
+              "from": {
+                "type": "string",
+                "description": "edges: source element id"
+              },
+              "to": {
+                "type": "string",
+                "description": "edges: target element id"
+              },
+              "attrs": {
+                "type": "object",
+                "description": "Free attributes a beat can EXPAND/SHIFT (value, size, emphasis, position, ...)"
+              }
+            }
+          }
+        },
+        "view": {
+          "type": "object",
+          "description": "Model-level view attributes (SHIFT target=view)."
         }
       }
     }

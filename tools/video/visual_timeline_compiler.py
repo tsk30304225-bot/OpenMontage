@@ -15,6 +15,7 @@ from typing import Any
 from lib.visual_direction import (
     compile_timeline,
     ineffective_events,
+    is_rail,
     rail_schedule,
     replay_model_states,
     validate_direction,
@@ -134,7 +135,7 @@ class VisualTimelineCompiler(BaseTool):
                     )
 
         # Items pushed past the visible axis leave the frame; the direction should widen the view first.
-        for model in timeline["models"]:
+        for model in (m for m in timeline["models"] if is_rail(m)):
             for ev, state in replay_model_states(timeline, model["id"]):
                 sched = rail_schedule(state)
                 axis_end = float(state["axis"].get("end", 0))

@@ -10,11 +10,15 @@ operations, anchors and timing — never what the items mean in a particular
 video. Meaning lives in the project's ``visual_direction`` (ids, labels,
 grammar, palette, and model configuration such as the queue policy).
 
-The first model type is ``timeline_rail``: items planned on a time (or any
-numeric) axis above the rail where they actually happen. The Remotion
-implementation in
-``remotion-composer/src/components/visual-models/timelineRail.ts`` mirrors
-:func:`rail_schedule` and :func:`apply_rail_event`; keep them in step.
+A model's ``type`` names what the picture means; ``renderer`` says who draws
+it. ``timeline_rail`` has a dedicated reducer and a generic Remotion renderer.
+Every other type is an element model (named elements whose visibility and
+attributes change) that atelier implements bespoke — renderer support never
+decides whether a model exists.
+
+The TypeScript runtime in ``remotion-composer/src/direction/`` and
+``remotion-composer/src/components/visual-models/timelineRail.ts`` mirrors the
+reducers here; keep them in step (a parity test runs both).
 """
 
 from __future__ import annotations
@@ -25,10 +29,9 @@ import re
 import unicodedata
 from typing import Any
 
-MODEL_TYPES = ("timeline_rail",)
-
 # Operations each model type understands. Operations outside this set are a
-# contract error, not something a renderer should improvise.
+# contract error, not something a renderer should improvise. Types without an
+# entry here are element models (see ELEMENT_OPERATIONS).
 MODEL_OPERATIONS = {
     "timeline_rail": ("ADD", "REMOVE", "EXPAND", "SHIFT", "PROPAGATE", "MEASURE"),
 }
@@ -36,6 +39,8 @@ MODEL_OPERATIONS = {
 DEFAULT_EVENT_SECONDS = {
     "ADD": 0.6,
     "REMOVE": 0.6,
+    "REVEAL": 0.8,
+    "CONNECT": 1.0,
     "EXPAND": 1.2,
     "SHIFT": 1.0,
     "PROPAGATE": 1.4,
@@ -343,13 +348,157 @@ def rail_state_signature(state: dict[str, Any]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Element models (any model type without a dedicated reducer)
+# ---------------------------------------------------------------------------
+#
+# A model type names what the picture *means* (flow_network, quantity_stack,
+# comparison_split, ...). Only a few types have a dedicated reducer and a
+# generic renderer; every other type is an element model: a set of named
+# elements (nodes, edges, values, labels, groups) whose visibility and
+# attributes change by operation. That is enough to validate a direction, to
+# resolve it in time, and to check a bespoke implementation against it — so a
+# missing generic renderer never forces the plan to be dropped.
+
+ELEMENT_OPERATIONS = ("ADD", "REMOVE", "REVEAL", "CONNECT", "EXPAND", "SHIFT", "PROPAGATE", "MEASURE")
+ELEMENT_RESERVED_TARGETS = {"view", "all"}
+
+
+def element_initial_state(model: dict[str, Any]) -> dict[str, Any]:
+    initial = copy.deepcopy(model.get("initial_state") or {})
+    elements: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for el in initial.get("elements") or []:
+        e = {"kind": "node", "visible": False, "attrs": {}, **el}
+        e["id"] = str(e["id"])
+        elements[e["id"]] = e
+        order.append(e["id"])
+    return {
+        "elements": elements,
+        "order": order,
+        "measures": [],
+        "active": [],
+        "view": dict(initial.get("view") or {}),
+    }
+
+
+def _element(state: dict[str, Any], eid: str) -> dict[str, Any]:
+    if eid not in state["elements"]:
+        raise KeyError(f"model has no element {eid!r}")
+    return state["elements"][eid]
+
+
+def apply_element_event(state: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
+    """Return the element-model state after one operation (input is not mutated)."""
+    s = copy.deepcopy(state)
+    op = event["operation"]
+    target = str(event.get("target", ""))
+    params = event.get("params") or {}
+
+    if op in ("ADD", "CONNECT"):
+        spec = dict(params.get("element") or {})
+        if op == "CONNECT":
+            spec.setdefault("kind", "edge")
+            for key in ("from", "to", "label"):
+                if key in params:
+                    spec[key] = params[key]
+        spec["id"] = target
+        spec.setdefault("kind", "node")
+        spec.setdefault("attrs", {})
+        spec["visible"] = spec.get("visible", True)
+        if target in s["elements"]:
+            s["elements"][target].update(spec)
+        else:
+            s["elements"][target] = spec
+            s["order"].append(target)
+    elif op == "REVEAL":
+        el = _element(s, target)
+        el["visible"] = True
+        el["attrs"].update(params.get("attrs") or {})
+    elif op == "REMOVE":
+        _element(s, target)["visible"] = False
+    elif op == "EXPAND":
+        el = _element(s, target)
+        attr = params.get("attr", "value")
+        current = float(el["attrs"].get(attr, 0))
+        el["attrs"][attr] = float(params["to"]) if "to" in params else current + float(params.get("by", 0))
+    elif op == "SHIFT":
+        if target == "view":
+            s["view"].update({k: v for k, v in params.items()})
+        else:
+            _element(s, target)["attrs"].update(params.get("attrs") or {k: v for k, v in params.items()})
+    elif op == "PROPAGATE":
+        path = [target] + [str(p) for p in params.get("path") or []]
+        for eid in path:
+            if eid in s["elements"]:
+                s["elements"][eid]["attrs"]["active"] = True
+                if eid not in s["active"]:
+                    s["active"].append(eid)
+    elif op == "MEASURE":
+        if params.get("clear"):
+            s["measures"] = []
+        else:
+            metric = params.get("metric", "value")
+            if params.get("exclusive"):
+                s["measures"] = []
+            s["measures"] = [m for m in s["measures"] if not (m["target"] == target and m["metric"] == metric)]
+            s["measures"].append({"target": target, "metric": metric, "label": params.get("label"), "value": params.get("value")})
+    else:
+        raise ValueError(f"element model does not support operation {op!r}")
+    return s
+
+
+def element_state_signature(state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "elements": {eid: {k: el.get(k) for k in ("kind", "visible", "attrs", "from", "to", "label")} for eid, el in state["elements"].items()},
+        "measures": state["measures"],
+        "active": state["active"],
+        "view": state["view"],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Model dispatch
+# ---------------------------------------------------------------------------
+
+# Model types with a dedicated reducer and a generic (templated) renderer.
+GENERIC_RENDERERS = {"timeline_rail"}
+
+
+def model_renderer(model: dict[str, Any]) -> str:
+    """'generic' (a shared renderer draws it) or 'bespoke' (atelier implements it)."""
+    return model.get("renderer") or ("generic" if model.get("type") in GENERIC_RENDERERS else "bespoke")
+
+
+def is_rail(model: dict[str, Any]) -> bool:
+    return model.get("type") == "timeline_rail"
+
+
+def model_initial_state(model: dict[str, Any]) -> dict[str, Any]:
+    return rail_initial_state(model) if is_rail(model) else element_initial_state(model)
+
+
+def apply_model_event(model: dict[str, Any], state: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
+    return apply_rail_event(state, event) if is_rail(model) else apply_element_event(state, event)
+
+
+def model_state_signature(model: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+    return rail_state_signature(state) if is_rail(model) else element_state_signature(state)
+
+
+def model_operations(model: dict[str, Any]) -> tuple[str, ...]:
+    return MODEL_OPERATIONS["timeline_rail"] if is_rail(model) else ELEMENT_OPERATIONS
+
+
+# ---------------------------------------------------------------------------
 # Validation and compilation
 # ---------------------------------------------------------------------------
 
 
 def _model_targets(model: dict[str, Any]) -> set[str]:
-    state = rail_initial_state(model)
-    return {str(i["id"]) for i in state["items"]} | RAIL_RESERVED_TARGETS
+    if is_rail(model):
+        state = rail_initial_state(model)
+        return {str(i["id"]) for i in state["items"]} | RAIL_RESERVED_TARGETS
+    return set(element_initial_state(model)["elements"]) | ELEMENT_RESERVED_TARGETS
 
 
 def script_text(script: dict[str, Any] | None) -> str:
@@ -358,30 +507,54 @@ def script_text(script: dict[str, Any] | None) -> str:
     return " ".join(section.get("text") or "" for section in script.get("sections") or [])
 
 
+# Scenes whose job is to show a mechanism. When a direction has several of them
+# and no visual model at all, the plan was dropped rather than decided.
+EXPLANATION_ROLES = {"explanation", "deliver_payload", "comparison"}
+
+
 def validate_direction(direction: dict[str, Any], script: dict[str, Any] | None = None) -> dict[str, list[str]]:
     """Contract checks that must pass before assets are produced.
 
-    Errors: unknown model type/policy/operation/target, beat on a scene without
-    a model, anchor that does not occur in the script (it could never be
-    aligned). Warnings: long stretches with no reality scene, model scenes
-    without beats.
+    Errors: malformed model type/renderer/policy, operation or target the model
+    does not have, beat on a scene without a model, anchor that does not occur
+    in the script (it could never be aligned), and a direction whose
+    explanation scenes carry no visual model at all (the plan was dropped).
+    Warnings: long stretches with no reality scene, model scenes without beats,
+    explanation scenes that only describe a graphic.
+
+    Renderer support is not a planning constraint: a model type without a
+    generic renderer is valid with ``renderer: "bespoke"`` and is implemented
+    in atelier.
     """
     errors: list[str] = []
     warnings: list[str] = []
     models = {m["id"]: m for m in direction.get("visual_models") or []}
     for mid, model in models.items():
-        if model.get("type") not in MODEL_TYPES:
-            errors.append(f"visual model {mid!r}: unsupported type {model.get('type')!r} (supported: {', '.join(MODEL_TYPES)})")
-        policy = (model.get("queue") or {}).get("policy", "sequential")
-        if policy not in RAIL_POLICIES:
-            errors.append(f"visual model {mid!r}: queue.policy {policy!r} not in {RAIL_POLICIES}")
+        mtype = str(model.get("type") or "")
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", mtype):
+            errors.append(f"visual model {mid!r}: type {mtype!r} must be a lowercase identifier naming what the picture means")
+        renderer = model_renderer(model)
+        if renderer not in ("generic", "bespoke"):
+            errors.append(f"visual model {mid!r}: renderer {renderer!r} must be 'generic' or 'bespoke'")
+        elif renderer == "generic" and mtype not in GENERIC_RENDERERS:
+            errors.append(
+                f"visual model {mid!r}: no generic renderer for type {mtype!r} (generic: {', '.join(sorted(GENERIC_RENDERERS))}). "
+                "Keep the model and set renderer: 'bespoke' so atelier implements it; never drop the model."
+            )
+        if is_rail(model):
+            policy = (model.get("queue") or {}).get("policy", "sequential")
+            if policy not in RAIL_POLICIES:
+                errors.append(f"visual model {mid!r}: queue.policy {policy!r} not in {RAIL_POLICIES}")
     norm_script = normalize_text(script_text(script)) if script else ""
 
     added: dict[str, set[str]] = {mid: set() for mid in models}
+    explanation_without_model = []
     for scene in direction.get("scenes") or []:
         sid = scene.get("scene_id")
         mid = scene.get("visual_model_id")
         beats = scene.get("beats") or []
+        if scene.get("narrative_role") in EXPLANATION_ROLES and not mid:
+            explanation_without_model.append(sid)
         if beats and not mid:
             errors.append(f"scene {sid}: has beats but no visual_model_id")
             continue
@@ -393,7 +566,7 @@ def validate_direction(direction: dict[str, Any], script: dict[str, Any] | None 
         if not mid:
             continue
         model = models[mid]
-        allowed = MODEL_OPERATIONS.get(model.get("type"), ())
+        allowed = model_operations(model)
         for beat in beats:
             bid = beat.get("id")
             op = beat.get("operation")
@@ -402,19 +575,43 @@ def validate_direction(direction: dict[str, Any], script: dict[str, Any] | None 
                 continue
             target = str(beat.get("target", ""))
             params = beat.get("params") or {}
-            if op == "ADD":
-                added[mid].add(str((params.get("item") or {}).get("id") or target))
-            elif target not in _model_targets(model) | added[mid]:
-                errors.append(f"beat {bid}: target {target!r} does not exist in model {mid!r}")
-            if op == "MEASURE" and not params.get("clear"):
-                metric = params.get("metric", "wait")
-                if metric not in RAIL_METRICS:
-                    errors.append(f"beat {bid}: MEASURE metric {metric!r} not in {RAIL_METRICS}")
+            known = _model_targets(model) | added[mid]
+            if is_rail(model):
+                if op == "ADD":
+                    added[mid].add(str((params.get("item") or {}).get("id") or target))
+                elif target not in known:
+                    errors.append(f"beat {bid}: target {target!r} does not exist in model {mid!r}")
+                if op == "MEASURE" and not params.get("clear"):
+                    metric = params.get("metric", "wait")
+                    if metric not in RAIL_METRICS:
+                        errors.append(f"beat {bid}: MEASURE metric {metric!r} not in {RAIL_METRICS}")
+            else:
+                if op in ("ADD", "CONNECT"):
+                    if op == "CONNECT":
+                        for end in ("from", "to"):
+                            if str(params.get(end, "")) not in known:
+                                errors.append(f"beat {bid}: CONNECT {end} {params.get(end)!r} does not exist in model {mid!r}")
+                    added[mid].add(target)
+                elif target not in known:
+                    errors.append(f"beat {bid}: target {target!r} does not exist in model {mid!r}")
             anchor = beat.get("narration_anchor") or ""
             if not normalize_text(anchor):
                 errors.append(f"beat {bid}: narration_anchor is empty")
             elif norm_script and normalize_text(anchor) not in norm_script:
                 errors.append(f"beat {bid}: narration_anchor {anchor!r} does not occur in the script text")
+
+    if not models and len(explanation_without_model) >= 2:
+        errors.append(
+            f"{len(explanation_without_model)} explanation scenes ({', '.join(explanation_without_model[:5])}"
+            f"{'…' if len(explanation_without_model) > 5 else ''}) but no visual model: decide the model the mechanism needs "
+            "(any type; renderer 'bespoke' when no generic renderer exists) and write its beats. "
+            "Renderer support must not remove the plan."
+        )
+    elif explanation_without_model:
+        warnings.append(
+            f"explanation scenes without a visual model: {', '.join(explanation_without_model[:8])}"
+            f"{'…' if len(explanation_without_model) > 8 else ''} — confirm they need no state change"
+        )
 
     run = []
     for scene in direction.get("scenes") or []:
@@ -495,13 +692,23 @@ def compile_timeline(
 def replay_model_states(timeline: dict[str, Any], model_id: str) -> list[tuple[dict[str, Any] | None, dict[str, Any]]]:
     """[(event, state_after)] for one model, starting with (None, initial_state)."""
     model = next(m for m in timeline["models"] if m["id"] == model_id)
-    state = rail_initial_state(model)
+    state = model_initial_state(model)
     out: list[tuple[dict[str, Any] | None, dict[str, Any]]] = [(None, state)]
     for ev in timeline["events"]:
         if ev["model_id"] == model_id:
-            state = apply_rail_event(state, ev)
+            state = apply_model_event(model, state, ev)
             out.append((ev, state))
     return out
+
+
+def state_at(timeline: dict[str, Any], model_id: str, time_seconds: float) -> dict[str, Any]:
+    """Contract state of one model once every event up to ``time_seconds`` has fired."""
+    state = None
+    for ev, st in replay_model_states(timeline, model_id):
+        if ev is not None and ev["time_seconds"] > time_seconds:
+            break
+        state = st
+    return state
 
 
 def ineffective_events(timeline: dict[str, Any]) -> list[str]:
@@ -510,7 +717,7 @@ def ineffective_events(timeline: dict[str, Any]) -> list[str]:
     for model in timeline.get("models") or []:
         prev = None
         for ev, state in replay_model_states(timeline, model["id"]):
-            sig = rail_state_signature(state)
+            sig = model_state_signature(model, state)
             if ev is not None and sig == prev:
                 bad.append(ev["id"])
             prev = sig

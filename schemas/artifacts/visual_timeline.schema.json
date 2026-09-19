@@ -4,13 +4,23 @@
   "title": "Visual Timeline",
   "description": "Execution contract compiled from visual_direction and the forced-aligned narration: each beat becomes an event at a real time. Renderers execute these events; they do not reinterpret scene descriptions.",
   "type": "object",
-  "required": ["version", "models", "events", "unmatched"],
+  "required": [
+    "version",
+    "models",
+    "events",
+    "unmatched"
+  ],
   "additionalProperties": false,
   "properties": {
-    "version": { "type": "string", "const": "1.0" },
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
     "source": {
       "type": "object",
-      "additionalProperties": { "type": "string" },
+      "additionalProperties": {
+        "type": "string"
+      },
       "description": "Paths of the visual_direction and alignment files this timeline was compiled from."
     },
     "models": {
@@ -18,10 +28,26 @@
       "description": "Model definitions copied verbatim from visual_direction.visual_models (validated there) so the renderer needs no other file.",
       "items": {
         "type": "object",
-        "required": ["id", "type", "initial_state"],
+        "required": [
+          "id",
+          "type",
+          "initial_state"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "type": { "type": "string", "enum": ["timeline_rail"] }
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "renderer": {
+            "type": "string",
+            "enum": [
+              "generic",
+              "bespoke"
+            ]
+          }
         }
       }
     },
@@ -29,29 +55,91 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "beat_id", "scene_id", "model_id", "operation", "target", "time_seconds", "duration_seconds", "anchor"],
+        "required": [
+          "id",
+          "beat_id",
+          "scene_id",
+          "model_id",
+          "operation",
+          "target",
+          "time_seconds",
+          "duration_seconds",
+          "anchor"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string" },
-          "beat_id": { "type": "string" },
-          "scene_id": { "type": "string" },
-          "model_id": { "type": "string" },
-          "operation": { "type": "string", "enum": ["ADD", "REMOVE", "EXPAND", "SHIFT", "PROPAGATE", "MEASURE"] },
-          "target": { "type": "string" },
-          "params": { "type": "object" },
-          "time_seconds": { "type": "number", "minimum": 0 },
-          "duration_seconds": { "type": "number", "exclusiveMinimum": 0 },
-          "takeaway": { "type": ["string", "null"] },
+          "id": {
+            "type": "string"
+          },
+          "beat_id": {
+            "type": "string"
+          },
+          "scene_id": {
+            "type": "string"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "ADD",
+              "REMOVE",
+              "REVEAL",
+              "CONNECT",
+              "EXPAND",
+              "SHIFT",
+              "PROPAGATE",
+              "MEASURE"
+            ]
+          },
+          "target": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object"
+          },
+          "time_seconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "duration_seconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "takeaway": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "anchor": {
             "type": "object",
-            "required": ["text", "start_seconds", "end_seconds", "score"],
+            "required": [
+              "text",
+              "start_seconds",
+              "end_seconds",
+              "score"
+            ],
             "additionalProperties": false,
             "properties": {
-              "text": { "type": "string" },
-              "matched_text": { "type": "string" },
-              "start_seconds": { "type": "number" },
-              "end_seconds": { "type": "number" },
-              "score": { "type": "number", "minimum": 0, "maximum": 1 }
+              "text": {
+                "type": "string"
+              },
+              "matched_text": {
+                "type": "string"
+              },
+              "start_seconds": {
+                "type": "number"
+              },
+              "end_seconds": {
+                "type": "number"
+              },
+              "score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
             }
           }
         }
@@ -62,15 +150,29 @@
       "description": "Beats whose anchor was not found in the aligned narration. Must be empty before compose.",
       "items": {
         "type": "object",
-        "required": ["beat_id", "narration_anchor", "reason"],
+        "required": [
+          "beat_id",
+          "narration_anchor",
+          "reason"
+        ],
         "properties": {
-          "beat_id": { "type": "string" },
-          "scene_id": { "type": "string" },
-          "narration_anchor": { "type": "string" },
-          "reason": { "type": "string" }
+          "beat_id": {
+            "type": "string"
+          },
+          "scene_id": {
+            "type": "string"
+          },
+          "narration_anchor": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
         }
       }
     },
-    "metadata": { "type": "object" }
+    "metadata": {
+      "type": "object"
+    }
   }
 }
