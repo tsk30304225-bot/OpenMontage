@@ -254,3 +254,19 @@ def test_atelier_fixture_renders_and_direction_qa_judges_it(tmp_path, mode) -> N
         # imports, but no anchor changes the picture, so every event fails.
         assert not qa.success
         assert sum("did not change" in f for f in qa.data["hard_failures"]) == len(timeline["events"])
+
+
+def test_role_consistency_is_warned_not_rewritten() -> None:
+    direction = _load("visual_direction.json")
+    direction["scenes"][1]["narrative_role"] = "breather"      # sc2 has 4 beats
+    direction["scenes"][2]["narrative_role"] = "immersion"     # sc3 develops the model
+    warnings = validate_direction(direction)["warnings"]
+    assert any(w.startswith("scene sc2: breather carries 4") for w in warnings)
+    assert any(w.startswith("scene sc3: immersion scene develops model") for w in warnings)
+
+    plan = _load("scene_plan.json")
+    plan["scenes"][1]["narrative_role"] = "evidence"
+    result = VisualTimelineCompiler().execute({"operation": "validate", "visual_direction": _load("visual_direction.json"),
+                                               "scene_plan": plan})
+    assert result.success
+    assert any("scene_plan narrative_role differs from visual_direction in 1 scene(s) (sc2)" in w for w in result.data["warnings"])

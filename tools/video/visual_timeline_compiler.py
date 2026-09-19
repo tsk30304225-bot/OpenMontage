@@ -97,6 +97,14 @@ class VisualTimelineCompiler(BaseTool):
             for scene in direction.get("scenes") or []:
                 if scene["scene_id"] not in plan_ids:
                     report["errors"].append(f"scene {scene['scene_id']}: not present in scene_plan")
+            plan_roles = {s["id"]: s.get("narrative_role") for s in scene_plan.get("scenes") or []}
+            stale = [s["scene_id"] for s in direction.get("scenes") or []
+                     if plan_roles.get(s["scene_id"]) and plan_roles[s["scene_id"]] != s.get("narrative_role")]
+            if stale:
+                report["warnings"].append(
+                    f"scene_plan narrative_role differs from visual_direction in {len(stale)} scene(s) "
+                    f"({', '.join(stale[:6])}{'…' if len(stale) > 6 else ''}); mirror the direction's roles into scene_plan"
+                )
 
         if inputs["operation"] == "validate":
             return ToolResult(success=not report["errors"], data=report,

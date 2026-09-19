@@ -563,6 +563,11 @@ def validate_direction(direction: dict[str, Any], script: dict[str, Any] | None 
             continue
         if mid and not beats:
             warnings.append(f"scene {sid}: shows model {mid!r} without beats; the model will hold still for the whole scene")
+        role = scene.get("narrative_role")
+        if role == "breather" and len(beats) >= 2:
+            warnings.append(f"scene {sid}: breather carries {len(beats)} model changes; a breather adds no new information — is it an explanation?")
+        if role == "immersion" and mid:
+            warnings.append(f"scene {sid}: immersion scene develops model {mid!r}; immersion is the real place, explanations belong in explanation scenes")
         if not mid:
             continue
         model = models[mid]
