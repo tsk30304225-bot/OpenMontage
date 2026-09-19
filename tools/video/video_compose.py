@@ -954,11 +954,17 @@ class VideoCompose(BaseTool):
         if timeline.get("unmatched"):
             ids = ", ".join(str(u.get("beat_id")) for u in timeline["unmatched"])
             return f"visual_timeline has unresolved narration anchors ({ids}); recompile before rendering."
-        model_ids = {m.get("id") for m in timeline.get("models") or []}
+        models = {m.get("id"): m for m in timeline.get("models") or []}
         for cut in model_cuts:
             mid = (cut.get("visual_model") or {}).get("model_id")
-            if mid not in model_ids:
-                return f"cut {cut.get('id')}: visual_model.model_id {mid!r} is not in visual_timeline models {sorted(model_ids)}"
+            if mid not in models:
+                return f"cut {cut.get('id')}: visual_model.model_id {mid!r} is not in visual_timeline models {sorted(models)}"
+            if models[mid].get("type") != "timeline_rail" or models[mid].get("renderer") == "bespoke":
+                return (
+                    f"cut {cut.get('id')}: model {mid!r} (type {models[mid].get('type')!r}) has no generic renderer. "
+                    "Render it in atelier (composition_mode='atelier') where the bespoke composition implements the "
+                    "same visual_timeline; do not drop the model."
+                )
         props["visualTimeline"] = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
         return None
 
@@ -1164,8 +1170,19 @@ class VideoCompose(BaseTool):
             pp = Path(props_path).resolve()
             if not pp.exists():
                 return ToolResult(success=False, error=f"atelier props_path not found: {pp}")
+            props_path = str(pp)
+
+        # Direction contract: the bespoke composition implements visual_timeline
+        # events; it does not re-decide them. Refuse to render when the contract
+        # is missing or unimplemented, and hand the resolved timeline to the
+        # composition as props.visualTimeline.
+        direction = self._prepare_atelier_direction(entry_path, edit_decisions, props_path, output_path)
+        if direction.get("error"):
+            return ToolResult(success=False, error=direction["error"], data={"direction_trace": direction.get("trace")})
+        props_path = direction.get("props_path") or props_path
+        if props_path:
             # Equals form is required for cross-platform path parsing (see _remotion_render).
-            cmd.append(f"--props={pp}")
+            cmd.append(f"--props={props_path}")
 
         public_dir = bespoke.get("public_dir")
         if public_dir:
@@ -1216,6 +1233,9 @@ class VideoCompose(BaseTool):
 
         atelier_checks = self._run_atelier_checks(entry_path, bespoke)
         final_review.setdefault("checks", {})["atelier"] = atelier_checks
+        if direction.get("trace") is not None:
+            final_review["checks"]["direction_trace"] = direction["trace"]
+            final_review["issues_found"] = list(final_review.get("issues_found", [])) + list(direction["trace"].get("warnings", []))
         final_review["issues_found"] = list(final_review.get("issues_found", [])) + atelier_checks.get("issues", [])
 
         # Escalate atelier-critical issues (stock reuse) to the overall status.
@@ -1247,6 +1267,62 @@ class VideoCompose(BaseTool):
             )
 
         return ToolResult(success=True, data=data, artifacts=[str(output_path)])
+
+    @staticmethod
+    def _prepare_atelier_direction(
+        entry_path: Path,
+        edit_decisions: dict[str, Any],
+        props_path: str | None,
+        output_path: Path,
+    ) -> dict[str, Any]:
+        """Bind an atelier render to the visual_direction / visual_timeline contract.
+
+        Returns {"props_path": merged props with visualTimeline, "trace": …} or
+        {"error": …}. A project whose visual_direction declares models must ship
+        a compiled visual_timeline; every event must be implemented through the
+        direction runtime (see lib/atelier_direction.py).
+        """
+        from lib.atelier_direction import build_trace
+
+        project_dir = entry_path.parent
+        timeline = edit_decisions.get("visual_timeline")
+        if isinstance(timeline, str):
+            tp = Path(timeline)
+            if not tp.is_file():
+                return {"error": f"edit_decisions.visual_timeline file not found: {tp}"}
+            timeline = json.loads(tp.read_text(encoding="utf-8"))
+        if timeline is None:
+            direction_path = project_dir / "artifacts" / "visual_direction.json"
+            if direction_path.is_file():
+                try:
+                    declared = json.loads(direction_path.read_text(encoding="utf-8")).get("visual_models") or []
+                except (OSError, ValueError):
+                    declared = []
+                if declared:
+                    return {"error": (
+                        f"{direction_path} declares visual models {[m.get('id') for m in declared]} but "
+                        "edit_decisions.visual_timeline is missing. Compile it with visual_timeline_compiler from the real "
+                        "alignment; atelier implements the contract, it does not replace it."
+                    )}
+            return {}
+        if not isinstance(timeline, dict):
+            return {"error": "edit_decisions.visual_timeline must be the compiled visual_timeline (object or path)"}
+        if timeline.get("unmatched"):
+            ids = ", ".join(str(u.get("beat_id")) for u in timeline["unmatched"])
+            return {"error": f"visual_timeline has unresolved narration anchors ({ids}); recompile before rendering."}
+
+        trace = build_trace(timeline, project_dir)
+        if trace["hard_failures"]:
+            return {"error": "atelier composition does not implement the direction contract:\n"
+                             + "\n".join(f"  • {f}" for f in trace["hard_failures"]), "trace": trace}
+
+        props: dict[str, Any] = {}
+        if props_path:
+            props = json.loads(Path(props_path).read_text(encoding="utf-8"))
+        props["visualTimeline"] = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
+        merged = output_path.parent / f".{output_path.stem}.atelier_props.json"
+        merged.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
+        return {"props_path": str(merged), "trace": trace}
 
     # Source-file extensions that get staged into the composer tree at render time.
     # Anything not in this set lives only under the real project dir (assets, renders,

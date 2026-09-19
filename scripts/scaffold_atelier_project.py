@@ -84,6 +84,10 @@ export const Root: React.FC = () => (
     write(proj / "Composition.tsx", """\
 import React from "react";
 import { AbsoluteFill, CalculateMetadataFunction } from "remotion";
+// Contract runtime (no look): visual_direction state at the narration-resolved
+// time. The one src/ import atelier allows. Path resolves from the staged copy
+// under remotion-composer/projects/<slug>/.
+import { DirectionProvider, DirectionTimeline } from "../../src/direction";
 
 // ----------------------------------------------------------------------------
 // ATELIER (BESPOKE) — hand-authored from scratch.
@@ -93,8 +97,14 @@ import { AbsoluteFill, CalculateMetadataFunction } from "remotion";
 //   1. Do NOT import from remotion-composer/src/components, src/Explainer,
 //      src/CinematicRenderer, src/{TitledVideo,TalkingHead,CollageBurst,...}.
 //      The stock registry is a mechanics codex, not a parts bin.
-//   2. Read skills/meta/bespoke-composition.md FIRST.
+//   2. Read skills/meta/bespoke-composition.md FIRST — step 0: read scene_plan,
+//      visual_direction and the compiled visual_timeline before anything else.
 //   3. Fill in art-direction.md BEFORE writing the scene.
+//   4. Atelier decides HOW things look, never WHAT changes or WHEN: implement
+//      every visual_timeline event through the direction runtime
+//      (useElement / <DirectionElement>, useEventProgress, useModelState,
+//      useMeasures, useView — string-literal ids). video_compose refuses to
+//      render unimplemented events; direction_qa traces them.
 //
 // Engine knowledge you MAY reuse freely (from `remotion`, `@remotion/*`):
 //   useCurrentFrame, useVideoConfig, spring, interpolate, Sequence,
@@ -102,15 +112,19 @@ import { AbsoluteFill, CalculateMetadataFunction } from "remotion";
 // ----------------------------------------------------------------------------
 
 export interface SceneProps {
-  // TODO: define the props your composition consumes (timing, narration path,
-  // captions, etc.). Keep this minimal — props are data, not configuration.
+  // Injected by video_compose from edit_decisions.visual_timeline (atelier).
+  visualTimeline?: DirectionTimeline;
+  // TODO: define the other props your composition consumes (scene windows,
+  // narration path, captions, etc.). Keep this minimal — props are data.
 }
 
-export const Scene: React.FC<SceneProps> = () => {
-  // TODO: hand-stitch your scene here. The placeholder below renders solid
+export const Scene: React.FC<SceneProps> = ({ visualTimeline }) => {
+  // TODO: hand-stitch your scenes here. The placeholder below renders solid
   // black so the render pipeline can be validated end-to-end before authoring.
   // Remove it before committing.
-  return <AbsoluteFill style={{ background: "#000" }} />;
+  const body = <AbsoluteFill style={{ background: "#000" }} />;
+  // Keep the provider at the root, outside every <Sequence>: it owns absolute time.
+  return visualTimeline ? <DirectionProvider timeline={visualTimeline}>{body}</DirectionProvider> : body;
 };
 
 export const calculateMetadata: CalculateMetadataFunction<SceneProps> = async ({ props }) => ({
@@ -179,7 +193,9 @@ Hand-authored Remotion composition. Source of truth lives here under
 ## Doctrine
 - Read `skills/meta/bespoke-composition.md` first.
 - Fill in `art-direction.md` BEFORE authoring scenes.
-- No imports from `remotion-composer/src/*` (the tool will fail the render).
+- No imports from the stock registry in `remotion-composer/src/*` (the tool will fail the render);
+  `src/direction` (the contract runtime) is the one allowed import.
+- Read `visual_direction` + the compiled `visual_timeline` first: atelier decides HOW, never WHAT/WHEN.
 - Reuse engine knowledge only; hand-stitch every creative component.
 
 ## Render
@@ -193,6 +209,8 @@ VideoCompose().execute({{
   "edit_decisions": {{
     "render_runtime": "remotion",
     "composition_mode": "atelier",
+    # Required when artifacts/visual_direction.json declares visual models:
+    "visual_timeline": P + r"\\artifacts\\visual_timeline.json",
     "bespoke": {{
       "entry": P + r"\\index.tsx",
       "composition_id": "{comp_id}",
