@@ -9,6 +9,8 @@ import {
   ElementView,
   useMeasures,
 } from "../../src/direction";
+// Shared caption infrastructure (no look of its own): allowed in atelier by exact module path.
+import { PhraseCaptions } from "../../src/components/PhraseCaptions";
 
 // Synthetic atelier fixture: the visual_direction contract says WHAT changes and
 // visual_timeline says WHEN; this file only decides HOW it looks.
@@ -21,6 +23,8 @@ export interface SceneProps {
   durationSeconds: number;
   /** Negative control only: draw the final route from the first frame. */
   negativeControl?: "static_final";
+  /** Narration word timings for karaoke captions ({word, startMs, endMs}). */
+  captions?: { word: string; startMs: number; endMs: number; pageBreakAfter?: boolean }[];
 }
 
 const INK = "#1B1F3B";
@@ -112,7 +116,7 @@ const Card: React.FC<{ text: string }> = ({ text }) => (
   </AbsoluteFill>
 );
 
-export const Scene: React.FC<SceneProps> = ({ visualTimeline, scenes, negativeControl }) => {
+export const Scene: React.FC<SceneProps> = ({ visualTimeline, scenes, negativeControl, captions }) => {
   const { fps } = useVideoConfig();
   const win = (id: string) => scenes.find((s) => s.id === id)!;
   const seq = (id: string, node: React.ReactNode) => {
@@ -131,6 +135,8 @@ export const Scene: React.FC<SceneProps> = ({ visualTimeline, scenes, negativeCo
         {seq("sc2", <Map caption="Every leg of the trip" />)}
         {seq("sc3", <Map caption="One detour, everyone downstream" />)}
         {seq("sc4", <Card text="One closed road moved the whole promise." />)}
+        {/* Captions at the root, outside every Sequence: they run on absolute time. */}
+        {captions && captions.length > 0 && <PhraseCaptions words={captions} />}
       </AbsoluteFill>
     </DirectionProvider>
   );

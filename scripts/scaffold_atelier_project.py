@@ -85,7 +85,8 @@ export const Root: React.FC = () => (
 import React from "react";
 import { AbsoluteFill, CalculateMetadataFunction } from "remotion";
 // Contract runtime (no look): visual_direction state at the narration-resolved
-// time. The one src/ import atelier allows. Path resolves from the staged copy
+// time. Allowed src/ import (with the exact module src/components/PhraseCaptions
+// for shared captions). Paths resolve from the staged copy
 // under remotion-composer/projects/<slug>/.
 import { DirectionProvider, DirectionTimeline } from "../../src/direction";
 
@@ -96,7 +97,8 @@ import { DirectionProvider, DirectionTimeline } from "../../src/direction";
 //             and skills/meta/reviewer.md → Composition Authoring Mode Review):
 //   1. Do NOT import from remotion-composer/src/components, src/Explainer,
 //      src/CinematicRenderer, src/{TitledVideo,TalkingHead,CollageBurst,...}.
-//      The stock registry is a mechanics codex, not a parts bin.
+//      The stock registry is a mechanics codex, not a parts bin. Exceptions:
+//      src/direction and the exact module src/components/PhraseCaptions.
 //   2. Read skills/meta/bespoke-composition.md FIRST — step 0: read scene_plan,
 //      visual_direction and the compiled visual_timeline before anything else.
 //   3. Fill in art-direction.md BEFORE writing the scene.
@@ -194,7 +196,7 @@ Hand-authored Remotion composition. Source of truth lives here under
 - Read `skills/meta/bespoke-composition.md` first.
 - Fill in `art-direction.md` BEFORE authoring scenes.
 - No imports from the stock registry in `remotion-composer/src/*` (the tool will fail the render);
-  `src/direction` (the contract runtime) is the one allowed import.
+  allowed: `src/direction` (the contract runtime) and the exact module `src/components/PhraseCaptions` (shared captions).
 - Read `visual_direction` + the compiled `visual_timeline` first: atelier decides HOW, never WHAT/WHEN.
 - Reuse engine knowledge only; hand-stitch every creative component.
 

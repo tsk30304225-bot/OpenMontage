@@ -216,7 +216,9 @@ anchors are unresolved, or when any event is unimplemented. Then run `direction_
 every anchor on the whole frame).
 The tool's `_run_atelier_checks` fails the render if any source file imports from the stock
 registry (`src/components`, `src/Explainer`, etc.), and warns if `art_direction` is missing. `src/direction` is not stock:
-it is the contract runtime.
+it is the contract runtime. Shared infrastructure is allowed by exact module path only — today
+`src/components/PhraseCaptions` (narration captions); importing the `src/components` barrel or any other stock component
+still fails the render.
 
 #### HyperFrames path
 - Scaffold with `npx hyperframes init <slug>` (run from `projects/`). HF init generates

@@ -1399,20 +1399,38 @@ class VideoCompose(BaseTool):
 
         return staging_dir / entry_path.name
 
-    # Stock-registry import patterns that violate the atelier doctrine.
-    # Any of these inside a bespoke project tree means a creative component
-    # was reused instead of hand-stitched. Engine knowledge (the `remotion`
-    # package, `@remotion/*`, project-local files) is fine.
-    _ATELIER_STOCK_IMPORT_RE = (
-        r"""from\s+["']("""
-        # parent-traversed paths into the stock src/
-        r"""(?:\.\./)+src/(?:components|Explainer|CinematicRenderer|"""
-        r"""TitledVideo|TalkingHead|CollageBurst|LyricOverlay|cinematic|crucix|phantom)"""
-        # or absolute-ish paths into the same
-        r"""|remotion-composer/src/(?:components|Explainer|CinematicRenderer|"""
-        r"""TitledVideo|TalkingHead|CollageBurst|LyricOverlay|cinematic|crucix|phantom)"""
-        r""")"""
+    # Stock-registry modules that violate the atelier doctrine. Any import of
+    # these from a bespoke project means a creative component was reused
+    # instead of hand-stitched. Engine knowledge (the `remotion` package,
+    # `@remotion/*`, project-local files, the src/direction contract runtime)
+    # is fine.
+    _ATELIER_STOCK_MODULE_RE = (
+        r"^src/(?:components|Explainer|CinematicRenderer|TitledVideo|TalkingHead|"
+        r"CollageBurst|LyricOverlay|cinematic|crucix|phantom)(?:/|$|\.)"
     )
+    # Shared infrastructure that lives among the stock components but carries
+    # no look of its own. Exact module paths only (no barrels, no wildcards):
+    # importing `src/components` as a whole still counts as stock reuse.
+    _ATELIER_SHARED_INFRA_MODULES = frozenset({
+        "src/components/PhraseCaptions",  # shared narration caption renderer (subtitles.style="karaoke")
+    })
+    _IMPORT_SPEC_RE = r"""(?:\bfrom\s+|\bimport\s*\(\s*|\brequire\s*\(\s*|^\s*import\s+)["']([^"']+)["']"""
+
+    @classmethod
+    def _classify_atelier_import(cls, spec: str) -> str | None:
+        """'stock', 'shared_infra' or None (not a stock-registry path)."""
+        import re as _re
+
+        path = spec.replace("\\", "/")
+        path = _re.sub(r"^(?:\./|\.\./)+", "", path)
+        idx = path.find("remotion-composer/")
+        if idx >= 0:
+            path = path[idx + len("remotion-composer/"):]
+        if not _re.match(cls._ATELIER_STOCK_MODULE_RE, path):
+            return None
+        module = _re.sub(r"\.(?:tsx|ts|jsx|js)$", "", path)
+        module = _re.sub(r"/index$", "", module)
+        return "shared_infra" if module in cls._ATELIER_SHARED_INFRA_MODULES else "stock"
 
     def _run_atelier_checks(self, entry_path: Path, bespoke: dict[str, Any]) -> dict[str, Any]:
         """Doctrine-enforcement checks specific to atelier mode.
@@ -1429,19 +1447,27 @@ class VideoCompose(BaseTool):
 
         issues: list[str] = []
         offending: list[dict[str, str]] = []
+        shared_infra: list[dict[str, str]] = []
         project_dir = entry_path.parent
-        pat = _re.compile(self._ATELIER_STOCK_IMPORT_RE)
+        pat = _re.compile(self._IMPORT_SPEC_RE, _re.M)
 
         try:
             for f in project_dir.rglob("*"):
                 if not f.is_file() or f.suffix.lower() not in {".tsx", ".ts", ".jsx", ".js"}:
+                    continue
+                if "node_modules" in f.parts:
                     continue
                 try:
                     txt = f.read_text(encoding="utf-8", errors="replace")
                 except Exception:
                     continue
                 for m in pat.finditer(txt):
-                    offending.append({"file": str(f.relative_to(project_dir)), "import": m.group(1)})
+                    kind = self._classify_atelier_import(m.group(1))
+                    entry = {"file": str(f.relative_to(project_dir)), "import": m.group(1)}
+                    if kind == "stock":
+                        offending.append(entry)
+                    elif kind == "shared_infra":
+                        shared_infra.append(entry)
         except Exception as e:  # pragma: no cover — never let the check itself break a render
             issues.append(f"atelier stock-reuse scan errored: {e}")
 
@@ -1469,6 +1495,7 @@ class VideoCompose(BaseTool):
         return {
             "stock_reuse_detected": stock_reuse_detected,
             "offending_imports": offending,
+            "shared_infrastructure_imports": shared_infra,
             "art_direction_declared": art_direction_declared,
             "art_direction": str(art_direction) if art_direction else None,
             "issues": issues,

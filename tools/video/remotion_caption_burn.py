@@ -174,10 +174,15 @@ class RemotionCaptionBurn(BaseTool):
     # ------------------------------------------------------------------ #
 
     def _find_remotion_root(self) -> Path | None:
-        """Find the remotion-composer directory relative to the repo."""
+        """Find the remotion-composer directory of the checkout this tool belongs to.
+
+        The tool's own checkout comes first: in a git/Orca worktree the current
+        directory can be a different checkout, and rendering with another
+        checkout's composer would use stale components.
+        """
         candidates = [
-            Path.cwd() / "remotion-composer",
             Path(__file__).resolve().parent.parent.parent / "remotion-composer",
+            Path.cwd() / "remotion-composer",
         ]
         for p in candidates:
             if (
@@ -336,7 +341,8 @@ class RemotionCaptionBurn(BaseTool):
         height = int(dim_parts[1])
 
         # Copy video to Remotion public folder
-        pub_dir = root / "public" / "talking-head"
+        public_root = root / "public"
+        pub_dir = public_root / "talking-head"
         pub_dir.mkdir(parents=True, exist_ok=True)
         video_filename = Path(input_path).name
         dest_video = pub_dir / video_filename
@@ -344,7 +350,9 @@ class RemotionCaptionBurn(BaseTool):
 
         # Build props JSON
         props = {
-            "videoSrc": f"public/talking-head/{video_filename}",
+            # TalkingHead resolves videoSrc with staticFile(), whose paths are
+            # relative to public/ and must not carry a "public/" prefix.
+            "videoSrc": self._static_file_path(dest_video, public_root),
             "captions": captions,
             "overlays": overlays or [],
             "wordsPerPage": words_per_page,
@@ -392,6 +400,11 @@ class RemotionCaptionBurn(BaseTool):
             },
             artifacts=[output_path],
         )
+
+    @staticmethod
+    def _static_file_path(path: Path, public_root: Path) -> str:
+        """POSIX path of ``path`` relative to Remotion's public dir, for staticFile()."""
+        return path.resolve().relative_to(public_root.resolve()).as_posix()
 
     # ------------------------------------------------------------------ #
     #  FFmpeg fallback
