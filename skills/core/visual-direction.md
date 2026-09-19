@@ -82,13 +82,34 @@ target:  one model -> state A -> state B -> state C
 
 The model's `grammar` states what each visual property means in this video (`x_axis: working days`, `block_width: task duration`, `delay_color: waiting`). Keep the grammar, palette and labels fixed for the whole video.
 
-### Supported model types
+### Model type vs renderer — two separate questions
 
-| type | Picture | Status |
+1. **Which model does this video need?** (planning) — decided from the mechanism in the script. Name it in `type`: `timeline_rail`, `flow_network`, `quantity_stack`, `comparison_split`, `map_route`, … any lowercase identifier.
+2. **Who draws it?** (implementation) — `renderer: "generic"` when a shared renderer exists, `"bespoke"` when atelier implements it.
+
+The answer to 2 never changes the answer to 1. **A missing generic renderer is not a reason to drop the model, its beats or its anchors.** Keep the model, set `renderer: "bespoke"`, and implement it in atelier against the same `visual_timeline`. `visual_timeline_compiler validate` rejects a direction that has several explanation scenes and no model at all.
+
+| type | State | Generic renderer |
 |---|---|---|
-| `timeline_rail` | items planned on an axis above the rail where they actually happen; wait lanes, idle gaps, deadline | implemented (Remotion) |
+| `timeline_rail` | rail state (below) | yes — Remotion `Explainer` `visual_model` cuts |
+| any other type | element state (below) | no — `renderer: "bespoke"`, implemented in atelier |
 
-Planned next, in order: quantity/bar, flow/network, split-comparison, map. Do not approximate a missing type with prose — plan a templated/atelier scene instead and leave `visual_model_id` unset.
+### Element models (every type without a dedicated reducer)
+
+`initial_state.elements[] {id, kind, label, visible, from, to, attrs}` plus optional `view`. `kind` is free vocabulary (node, edge, value, label, group, region). Elements start **hidden** unless `visible: true`, so the final picture cannot be on screen before the beat that builds it.
+
+| Operation | target | params | Meaning |
+|---|---|---|---|
+| `ADD` | new element id | `element {kind, label, attrs, …}` | a new element appears |
+| `REVEAL` | declared element | `attrs?` | a declared (hidden) element appears |
+| `CONNECT` | new edge id | `from`, `to`, `label?` | a link between two existing elements appears |
+| `REMOVE` | element | — | the element leaves |
+| `EXPAND` | element | `attr` (default `value`), `to` or `by` | a numeric attribute grows or shrinks |
+| `SHIFT` | element / `view` | attrs to set | an element (or the whole view) changes state |
+| `PROPAGATE` | element | `path?: [ids]` | an effect travels along elements (`attrs.active`) |
+| `MEASURE` | element / `all` | `metric`, `label?`, `value?`, `exclusive?`, `clear?` | a measurement is called out |
+
+Example — a capital or supply chain that grows across the whole video: `REVEAL source` → `CONNECT a→b` → `REVEAL market` → `EXPAND spread {attr: rate}` → `PROPAGATE market {path: [local, borrower]}` → `MEASURE borrower`.
 
 ### timeline_rail
 
@@ -153,17 +174,39 @@ script
   -> assets: narration WAV + forced alignment (e.g. qwen3_tts timestamps_path), footage, evidence
   -> edit: visual_timeline                  (visual_timeline_compiler operation=compile, alignment=<timestamps JSON>)
            edit_decisions.visual_timeline + cuts type=visual_model {model_id, region, caption}
-  -> compose: video_compose renders Explainer; state = f(absolute time), so cuts on one model read as one graphic
+  -> compose (templated): video_compose renders Explainer; state = f(absolute time), so cuts on one model read as one graphic
+  -> compose (atelier):   the bespoke composition implements the same timeline through the direction runtime (section 5b)
   -> direction_qa                            (hard gate + soft warnings + anchor frames)
 ```
 
-Scene timing in `scene_plan` stays approximate; exact times come only from the alignment.
+Scene timing in `scene_plan` stays approximate; exact times come only from the alignment. Atelier is no exception: it never goes back to estimated timing from the art direction.
+
+## 5b. Atelier implements the contract
+
+| Decided by | What | Artifact |
+|---|---|---|
+| scene director | **WHAT** changes, why, at which words | `visual_direction` |
+| edit (from the real alignment) | **WHEN** it changes | `visual_timeline` |
+| atelier composition | **HOW** it looks — palette, type, layout, camera, motion character, illustration | `Composition.tsx` + `art-direction.md` |
+
+Atelier may redesign every pixel; it may not drop, re-time or re-decide a model, beat, anchor, operation, state change, takeaway or the model's continuity across scenes.
+
+**Runtime** (`remotion-composer/src/direction`, contract plumbing with no look — importing it is allowed in atelier):
+- `<DirectionProvider timeline={props.visualTimeline}>` once at the composition root, outside every `<Sequence>` — it owns absolute time.
+- `useElement(model, id)` / `<DirectionElement model=… id=…>` — presence (0→1 on reveal), eased attributes, active flag.
+- `useEventProgress(eventId)` — 0 before the anchor, eased 0..1 while it plays, 1 after.
+- `useModelState(model)`, `useMeasures(model)`, `useView(model)` — whole state, measurements, view.
+- State is a function of absolute time, so a model continues across scene boundaries; never drive a contract change from a Sequence-local `useCurrentFrame()`.
+
+`video_compose` injects `props.visualTimeline` for atelier renders and **refuses to render** when the project declares models but no compiled `visual_timeline` exists, when anchors are unresolved, or when any event is not implemented.
+
+**Implementation trace** (`lib/atelier_direction.py`): the project source is scanned for those calls (string-literal ids); every event maps to `file:line Component (hook)` references, with the contract `state_before` / `state_after`. The trace is derived from code, not declared. HyperFrames workspaces are not traced yet (unsupported / unverified).
 
 ## 6. Direction QA
 
-`direction_qa` inputs: `video_path`, `visual_timeline`, `edit_decisions`, optionally `visual_direction`, `scene_plan`.
+`direction_qa` inputs: `video_path`, `visual_timeline`, `edit_decisions`, optionally `visual_direction`, `scene_plan`, `project_dir` (atelier; defaults to the parent of `bespoke.entry`). Atelier edits are detected from `composition_mode`.
 
-**Hard failures (block delivery):** unmatched anchor; event that changes nothing; event with no `visual_model` cut for its model on screen; rendered picture unchanged across the anchor (luma change below floor, caption band excluded).
+**Hard failures (block delivery):** unmatched anchor; event that changes nothing; visual models declared but no timeline events; templated: event with no `visual_model` cut for its model on screen; atelier: event not implemented in the source trace, no `DirectionProvider`, or code reading an event/model/element the timeline does not have; rendered picture unchanged across the anchor (changed-pixel count, caption band excluded) — which also catches a final state drawn before its REVEAL.
 
 **Warnings (reviewer judgement, never blocking):** weak visible change; a model holding still longer than 12 s; consecutive cuts switching models; all changes of a scene in its first 15 % (information revealed before it is narrated); long stretches without reality.
 
@@ -177,3 +220,5 @@ It writes `anchor_before` / `anchor_after` frames per event. Look at them: *did 
 - Using graphics for a moment of movement through the world — that is a breather.
 - A side-by-side comparison authored as one model with two meanings — use two models in `left` and `right` regions (the right cut uses `layer: overlay`).
 - Choosing `queue.policy` by habit: pick the one that matches how the subject really behaves, and state it in `grammar`.
+- **Dropping the model because no generic renderer exists** (`visual_models: []`, `unsupported_model_type` notes, custom graphics without beats). Keep the model with `renderer: "bespoke"`.
+- Atelier diagrams that are complete from their first frame. Build them through `useElement` / `useEventProgress` so each part arrives on its beat.

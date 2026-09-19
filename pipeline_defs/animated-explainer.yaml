@@ -247,6 +247,7 @@ stages:
       - "render_runtime in edit_decisions matches proposal_packet — silent swap to another runtime is a CRITICAL governance violation"
       - "If render_runtime='hyperframes': `hyperframes lint` and `hyperframes validate` must pass before render"
       - "When edit_decisions.visual_timeline exists: direction_qa has no hard failures; warnings reviewed against anchor frames"
+      - "Atelier: visual_direction models/beats kept (renderer bespoke when no generic renderer), visual_timeline compiled, every event implemented in the direction_qa implementation_trace"
     success_criteria:
       - Schema-valid render_report with output paths
       - Output file exists and passes ffprobe validation

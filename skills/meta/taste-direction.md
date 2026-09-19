@@ -4,7 +4,7 @@
 
 Use this before committing to visual identity, mood boards, proposal packets, custom playbooks, atelier composition, image reference batches, or brand-heavy videos.
 
-This skill defines OpenMontage's video taste profile contract. Do not treat it as a frontend style recipe. The output is a compact video taste profile that travels through proposal, scene planning, asset prompts, edit, compose, and review.
+This skill defines OpenMontage's video taste profile contract. Do not treat it as a frontend style recipe. Taste governs how a video looks; it never overrides the visual_direction contract (which models change, on which narration words, when) — see `skills/core/visual-direction.md`. The output is a compact video taste profile that travels through proposal, scene planning, asset prompts, edit, compose, and review.
 
 ## Output Contract
 

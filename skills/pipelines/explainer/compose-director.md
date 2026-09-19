@@ -328,6 +328,8 @@ qa = DirectionQA().execute({
 # qa.success False = hard failure (unmatched anchor, no-op event, event with no model on screen,
 # picture unchanged across the anchor). Fix and re-render; do not present.
 # qa.data['warnings'] are judgement calls - weak change, long static hold, early reveal, rhythm.
+# Atelier: same call; the tool detects composition_mode='atelier', traces the bespoke source
+# (qa.data['implementation_trace']) and checks the whole frame at every anchor.
 ```
 Open the `anchor_before` / `anchor_after` frames for each event and confirm the change the narration describes happens at that moment and not earlier. Record hard failures and warnings in `final_review`.
 

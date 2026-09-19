@@ -195,6 +195,12 @@ Applies when the project has `visual_direction`. Contract: `skills/core/visual-d
 - `direction_qa` warnings are judgement: open the anchor frames. Weak or early changes that lose the narrated moment are **major**; others **minor**.
 - The persistent model stays recognisably the same across its scenes (grammar, colors, axis) - a restyled model mid-video is **major**.
 
+### Atelier
+- `visual_direction` keeps its models and beats in atelier; `visual_models: []` with explanation scenes, or an `unsupported_model_type`-style note, is **critical** (the plan was dropped because of renderer support).
+- `edit_decisions.visual_timeline` is compiled from the real alignment; timing estimated from art direction is **critical**.
+- `direction_qa.implementation_trace`: every event implemented with a `file:line Component` reference; any gap is **critical**.
+- Diagrams complete from their first frame (all parts present before the narration builds them) are **major** even when pixels change somewhere; open the anchor frames.
+
 ## Slideshow Risk Review
 
 Run at **scene_plan** and **edit** stages. Use `lib/slideshow_risk.py` to compute the score.

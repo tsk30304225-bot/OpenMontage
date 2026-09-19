@@ -80,7 +80,7 @@ Ask whether the video's core concepts are states of **one** picture. If they are
 
 For every model scene write `beats[]`: one per change in narration meaning, each with an exact `narration_anchor` copied from the script, an `operation` (`ADD`, `REMOVE`, `EXPAND`, `SHIFT`, `PROPAGATE`, `MEASURE`), a `target` in the model, `state_before`, `state_after` and `takeaway`. Write no seconds — times come from forced alignment at the edit stage. A model scene with no beat is a static hold; a 10-20 s scene needs several beats.
 
-Supported model types are listed in `skills/core/visual-direction.md` (today: `timeline_rail`). If the concept does not fit a supported type, leave `visual_model_id` unset and plan a normal scene.
+Choose the model type from the mechanism, not from what a renderer supports: `timeline_rail` for plan-vs-actual on an axis, otherwise name what the picture is (`flow_network`, `quantity_stack`, `comparison_split`, …) and declare its elements. Set `renderer: "bespoke"` for types without a generic renderer — atelier implements them against the same contract. **Never leave `visual_models` empty or strip beats because a generic renderer is missing**; the validator rejects a direction with several explanation scenes and no model. Scenes that genuinely need no state change (immersion, breather, closure, pure evidence) stay model-free.
 
 Validate before submitting:
 

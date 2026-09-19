@@ -62,7 +62,7 @@ Each cut defines what visual is shown and when:
 
 ### Step 2b: Compile the Visual Timeline (when `visual_direction` has models)
 
-Resolve every beat's narration anchor against the real forced-aligned narration. Never estimate times from `scene_plan`.
+Resolve every beat's narration anchor against the real forced-aligned narration. Never estimate times from `scene_plan`. **This applies to atelier too**: set `edit_decisions.visual_timeline` to the compiled file in both composition modes.
 
 ```python
 from tools.video.visual_timeline_compiler import VisualTimelineCompiler
@@ -88,7 +88,7 @@ Then, for every model scene, emit a cut that the renderer executes instead of re
 }
 ```
 
-and set `edit_decisions.visual_timeline` to the compiled file. Model state is a function of the absolute video time, so consecutive cuts on the same `model_id` continue one evolving graphic; a caption per cut can change while the model persists. For a side-by-side comparison use two models, `region: left` and `region: right`, with the right cut on `layer: overlay`. Reality scenes stay ordinary video cuts; do not replace a planned breather with a card.
+and set `edit_decisions.visual_timeline` to the compiled file. In **atelier** mode there are no `visual_model` cuts: the bespoke composition implements the timeline (see `skills/meta/bespoke-composition.md` step 0), and `video_compose` injects `props.visualTimeline` and refuses to render unimplemented events. A `visual_model` cut on a model without a generic renderer is refused in templated mode — render that piece in atelier instead of dropping the model. Model state is a function of the absolute video time, so consecutive cuts on the same `model_id` continue one evolving graphic; a caption per cut can change while the model persists. For a side-by-side comparison use two models, `region: left` and `region: right`, with the right cut on `layer: overlay`. Reality scenes stay ordinary video cuts; do not replace a planned breather with a card.
 
 ### Step 3: Configure Subtitles
 

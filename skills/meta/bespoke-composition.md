@@ -39,7 +39,23 @@ If atelier is in play (either runtime), the stock Remotion `cut.type` catalog, `
 
 ## The construction route
 
-Author in this order. Each step routes you to existing knowledge — do not skip the first one.
+Author in this order. Each step routes you to existing knowledge — do not skip step 0 or step 1.
+
+```
+visual direction contract (WHAT)  +  resolved visual_timeline (WHEN)  +  art direction (HOW it looks)
+                                  ↓
+                     bespoke implementation
+```
+
+### 0. Read the direction contract — atelier implements it, never re-decides it
+Before any art direction or code, read, in this order: `scene_plan`, `visual_direction`, the compiled `visual_timeline` (resolved from the real narration alignment), the alignment itself, then approved asset decisions. Read `skills/core/visual-direction.md` sections 3 and 5b.
+
+- **You decide HOW** — palette, typography, layout, composition, camera, motion character, transitions, illustration style, SVG/GSAP/Remotion technique, scene-specific treatment.
+- **You do not decide WHAT or WHEN** — the visual models and their meaning, beats, narration anchors, operations, `state_before`/`state_after`, takeaways, a model's continuity across scenes, and the resolved event times are fixed inputs.
+- A model with `renderer: "bespoke"` is yours to draw: it exists precisely because no generic renderer does. Implement it; never drop it or replace its beats with a pre-built diagram.
+- Wire the direction runtime (`remotion-composer/src/direction`, contract plumbing with no look — the one `src/` import atelier allows): mount `<DirectionProvider timeline={props.visualTimeline}>` at the composition root, then read state with `useElement` / `<DirectionElement>`, `useEventProgress`, `useModelState`, `useMeasures`, `useView`, using string-literal ids. Draw every element that a beat creates or changes through these hooks — a diagram drawn complete from its first frame fails Direction QA.
+- A persistent model spans scenes: its state comes from absolute time via the provider, so render it in every scene that shows it and let the caption, framing or camera change around it. Do not drive contract changes from a Sequence-local `useCurrentFrame()`.
+- When no timeline exists yet (a video with no models), atelier works as before — but an explainer with mechanism scenes should have come from the scene director with a model; send it back rather than inventing the timing here.
 
 ### 1. Commit to an art direction *for this subject* — the divergence engine
 Before writing any component, decide a visual language that fits **this** topic and no other.
@@ -193,8 +209,14 @@ edit_decisions = {
 ```
 
 No `asset_manifest` or `cuts` are required in atelier mode — the composition owns its own assets.
+Add `"visual_timeline": "<abs path to artifacts/visual_timeline.json>"` whenever the project has visual models: the tool
+injects it as `props.visualTimeline`, traces every event to the code that implements it (`final_review.checks.direction_trace`),
+and refuses to render when the timeline is missing for a project whose `artifacts/visual_direction.json` declares models, when
+anchors are unresolved, or when any event is unimplemented. Then run `direction_qa` on the render (it detects atelier and checks
+every anchor on the whole frame).
 The tool's `_run_atelier_checks` fails the render if any source file imports from the stock
-registry (`src/components`, `src/Explainer`, etc.), and warns if `art_direction` is missing.
+registry (`src/components`, `src/Explainer`, etc.), and warns if `art_direction` is missing. `src/direction` is not stock:
+it is the contract runtime.
 
 #### HyperFrames path
 - Scaffold with `npx hyperframes init <slug>` (run from `projects/`). HF init generates
