@@ -207,3 +207,22 @@ def without_scene_events(timeline: Optional[dict[str, Any]], cuts: list[dict[str
         return timeline
     owned = {e["id"] for c in cuts for e in scene_events(timeline, c)}
     return {**timeline, "events": [e for e in timeline.get("events") or [] if e["id"] not in owned]}
+
+
+def planned_runtime_gaps(scenes: Iterable[dict[str, Any]], cuts: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Soft warning: scenes planned as HyperFrames whose cuts render without it."""
+    cuts = list(cuts)
+    out: list[dict[str, Any]] = []
+    for scene in scenes:
+        if (scene.get("runtime") or "").lower() != "hyperframes":
+            continue
+        sid = scene.get("id") or scene.get("scene_id")
+        mine = [c for c in cuts if c.get("scene_id") == sid]
+        if not mine and scene.get("start_seconds") is not None and scene.get("end_seconds") is not None:
+            lo, hi = float(scene["start_seconds"]), float(scene["end_seconds"])
+            mine = [c for c in cuts if lo - 1e-3 <= float(c.get("in_seconds", -1)) < hi]
+        if not any((c.get("runtime") or "").lower() == "hyperframes" for c in mine):
+            out.append({"code": "PLANNED_RUNTIME_DROPPED", "scene_id": sid, "runtime": "hyperframes",
+                        "message": f"scene {sid} was planned with runtime 'hyperframes' but its cuts render without it; "
+                                   f"record the decision in decision_log or restore the HyperFrames scene"})
+    return out

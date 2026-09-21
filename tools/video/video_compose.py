@@ -1008,7 +1008,8 @@ class VideoCompose(BaseTool):
                 return (
                     f"cut {cut.get('id')}: model {mid!r} (type {models[mid].get('type')!r}) has no generic renderer. "
                     "Render it in atelier (composition_mode='atelier') where the bespoke composition implements the "
-                    "same visual_timeline; do not drop the model."
+                    "same visual_timeline, or give those scenes runtime 'hyperframes' (HyperFrames scene clips place the "
+                    "events with OM.at); do not drop the model."
                 )
         props["visualTimeline"] = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
         return None
@@ -1948,6 +1949,15 @@ class VideoCompose(BaseTool):
                 resolved_cut["source"] = asset_lookup[source_id]["path"]
             resolved_cuts.append(resolved_cut)
 
+        # --- Planned-vs-executed runtime (soft): a planned HyperFrames scene that
+        # the edit renders without it is reported, never blocked.
+        from lib.scene_runtime import planned_runtime_gaps
+        plan_input = inputs.get("scene_plan")
+        plan_scenes = plan_input.get("scenes", []) if isinstance(plan_input, dict) else (plan_input or [])
+        runtime_gaps = planned_runtime_gaps(plan_scenes, cuts)
+        for gap in runtime_gaps:
+            logging.getLogger("video_compose").warning(gap["message"])
+
         # --- Scene runtime overrides (v1): render HyperFrames scenes to clips ---
         scene_runtimes = None
         if any(c.get("runtime") for c in resolved_cuts):
@@ -2069,6 +2079,8 @@ class VideoCompose(BaseTool):
             render_result.data["final_review_status"] = final_review["status"]
             if scene_runtimes is not None:
                 render_result.data["scene_runtimes"] = scene_runtimes["report"]
+            if runtime_gaps:
+                render_result.data["scene_runtime_warnings"] = runtime_gaps
 
             # If the self-review says fail, downgrade the ToolResult
             if final_review["status"] == "fail":

@@ -33,6 +33,7 @@ Read `skills/core/visual-direction.md`. Then:
 
 1. Split the script into 4-6 stretches and write, for each, what the viewer must **feel, understand or believe** by its end (`visual_direction.viewer_journey`).
 2. Give every scene a `narrative_role`. Use `immersion` (real place), `explanation` (mechanism), `evidence` (real source), `comparison`, `breather` (no new information, the viewer rests in the world) and `closure` (the real-world ending that answers the opening).
+   Classify honestly: a scene that shows a relationship, a flow, a change over time, cause and effect, a step-by-step comparison, an accumulating state or a process is `explanation` and needs a visual model (Step 3b), whatever card or runtime you imagine for it. A title, a single stat, a quote or a label can stay a card or footage.
 3. Decide where graphics are **not** needed. Walking into the exam room, a corridor or a door is a breather, not another card. Aim for `REALITY -> MODEL -> MODEL EVOLUTION -> EVIDENCE -> REALITY`; open and close in reality.
 4. Plan B-roll so separate stock clips read as one visit without a consistent actor: object, point-of-view, faceless and place continuity (`broll_intent`).
 
@@ -95,6 +96,8 @@ VisualTimelineCompiler().execute({
 ```
 
 Every scene id in `visual_direction` must exist in `scene_plan`; mirror the same `narrative_role` into `scene_plan.scenes[].narrative_role`.
+
+The `scene_plan` checkpoint runs `validate_direction` and will not complete while it reports errors (for example several explanation scenes and no model). In a templated project render a non-rail model in atelier or give those scenes `runtime: "hyperframes"`; do not replace it with cards.
 
 #### Step 3c: Main Runtime per Scene
 

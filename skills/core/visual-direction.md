@@ -87,7 +87,9 @@ The model's `grammar` states what each visual property means in this video (`x_a
 1. **Which model does this video need?** (planning) — decided from the mechanism in the script. Name it in `type`: `timeline_rail`, `flow_network`, `quantity_stack`, `comparison_split`, `map_route`, … any lowercase identifier.
 2. **Who draws it?** (implementation) — `renderer: "generic"` when a shared renderer exists, `"bespoke"` when atelier implements it.
 
-The answer to 2 never changes the answer to 1. **A missing generic renderer is not a reason to drop the model, its beats or its anchors.** Keep the model, set `renderer: "bespoke"`, and implement it in atelier against the same `visual_timeline`. `visual_timeline_compiler validate` rejects a direction that has several explanation scenes and no model at all.
+The answer to 2 never changes the answer to 1. **A missing generic renderer is not a reason to drop the model, its beats or its anchors.** Keep the model, set `renderer: "bespoke"`, and implement it against the same `visual_timeline`. `visual_timeline_compiler validate` rejects a direction that has several explanation scenes and no model at all, and the animated-explainer `scene_plan` checkpoint now refuses to complete with that error.
+
+**Templated projects are not limited to cards.** A templated project can still render any model: a `timeline_rail` through the generic renderer (`visual_model` cuts), or a bespoke model either in atelier or as the scenes' `runtime: "hyperframes"` (HyperFrames scene clips place the scene's events with `OM.at`, see `skills/core/tool-routing.md`). Choosing templated is never a reason to leave `visual_models` empty.
 
 | type | State | Generic renderer |
 |---|---|---|
@@ -221,4 +223,5 @@ It writes `anchor_before` / `anchor_after` frames per event. Look at them: *did 
 - A side-by-side comparison authored as one model with two meanings — use two models in `left` and `right` regions (the right cut uses `layer: overlay`).
 - Choosing `queue.policy` by habit: pick the one that matches how the subject really behaves, and state it in `grammar`.
 - **Dropping the model because no generic renderer exists** (`visual_models: []`, `unsupported_model_type` notes, custom graphics without beats). Keep the model with `renderer: "bespoke"`.
+- **Splitting one mechanism into discrete cards** ("StatCard punch, diagram reveal, two recap cards, so no persistent model") and labelling its scenes `transition` / `deliver_payload` so no explanation scene is left. A process told across scenes is one model.
 - Atelier diagrams that are complete from their first frame. Build them through `useElement` / `useEventProgress` so each part arrives on its beat.

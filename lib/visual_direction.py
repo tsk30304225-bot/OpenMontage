@@ -610,7 +610,8 @@ def validate_direction(direction: dict[str, Any], script: dict[str, Any] | None 
             f"{len(explanation_without_model)} explanation scenes ({', '.join(explanation_without_model[:5])}"
             f"{'…' if len(explanation_without_model) > 5 else ''}) but no visual model: decide the model the mechanism needs "
             "(any type; renderer 'bespoke' when no generic renderer exists) and write its beats. "
-            "Renderer support must not remove the plan."
+            "Renderer support must not remove the plan: in a templated project render a bespoke model in atelier "
+            "or as a scene with runtime 'hyperframes' (skills/core/tool-routing.md)."
         )
     elif explanation_without_model:
         warnings.append(

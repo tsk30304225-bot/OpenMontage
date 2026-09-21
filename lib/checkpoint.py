@@ -160,6 +160,43 @@ def _validate_artifacts_for_stage(
             ) from exc
 
 
+# Pipelines whose scene_plan stage must carry a visual_direction that passes
+# lib.visual_direction.validate_direction (errors block; warnings pass).
+DIRECTION_CONTRACT_PIPELINES = {"animated-explainer"}
+
+
+def _validate_direction_contract(
+    stage: str,
+    status: str,
+    artifacts: dict[str, Any],
+    pipeline_type: str | None,
+) -> None:
+    """Run the existing visual-direction validator at the scene_plan checkpoint.
+
+    The validator already refuses a direction whose explanation scenes carry no
+    visual model; it only ran when an agent called visual_timeline_compiler, so
+    a plan could drop every model and still complete the stage.
+    """
+    if pipeline_type not in DIRECTION_CONTRACT_PIPELINES or stage != "scene_plan":
+        return
+    if status not in {"completed", "awaiting_human"}:
+        return
+    direction = artifacts.get("visual_direction")
+    if not isinstance(direction, dict):
+        raise CheckpointValidationError(
+            f"{pipeline_type} scene_plan must include the visual_direction artifact "
+            "(skills/core/visual-direction.md)"
+        )
+    from lib.visual_direction import validate_direction
+
+    errors = validate_direction(direction).get("errors") or []
+    if errors:
+        raise CheckpointValidationError(
+            "visual_direction contract errors (fix the plan; renderer support never removes it):\n"
+            + "\n".join(f"  - {e}" for e in errors)
+        )
+
+
 def validate_checkpoint(checkpoint: dict[str, Any]) -> None:
     """Validate checkpoint structure and canonical artifact payloads.
 
@@ -187,6 +224,7 @@ def validate_checkpoint(checkpoint: dict[str, Any]) -> None:
         raise CheckpointValidationError("Checkpoint artifacts must be a dictionary")
 
     _validate_artifacts_for_stage(stage, status, artifacts)
+    _validate_direction_contract(stage, status, artifacts, pipeline_type)
 
     try:
         jsonschema.validate(instance=checkpoint, schema=_load_checkpoint_schema())
