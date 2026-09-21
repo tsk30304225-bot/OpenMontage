@@ -220,6 +220,8 @@ it is the contract runtime. Shared infrastructure is allowed by exact module pat
 `src/components/PhraseCaptions` (narration captions); importing the `src/components` barrel or any other stock component
 still fails the render.
 
+**HyperFrames scenes inside atelier:** when edit_decisions has `runtime: "hyperframes"` scene cuts, `video_compose` renders them to clips and injects `props.sceneClips` (`[{scene_id, src, start, end}]`); place each with `<Sequence from={start*fps}><OffthreadVideo src={staticFile(clip.src)} /></Sequence>` and do not re-draw that scene. Their direction events live in the HyperFrames workspace (`skills/core/tool-routing.md`).
+
 #### HyperFrames path
 - Scaffold with `npx hyperframes init <slug>` (run from `projects/`). HF init generates
   `index.html`, `meta.json`, `package.json`, and a per-project `CLAUDE.md` that auto-routes

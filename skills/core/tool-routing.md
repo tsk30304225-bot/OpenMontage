@@ -48,7 +48,7 @@ only need these rows.
 ## 4. Execute (edit_decisions)
 
 The project `render_runtime` is still the master assembly, and in v1 it must
-be `remotion` (templated). List every approved runtime in
+be `remotion` (templated or atelier). List every approved runtime in
 `edit_decisions.approved_runtimes`. Then, per cut:
 
 - `footage`: an ordinary video or image cut with `"runtime": "footage"`.
@@ -70,6 +70,14 @@ scene's `visual_timeline` events in scene-local seconds. The authored
 A missing script, an unplaced event, a stale event id or a wrong duration
 refuses the render. `direction_qa` traces the workspace and checks that the
 picture changes at each event in the final MP4.
+
+**Atelier assembly:** keep the HyperFrames scene cuts in `edit_decisions.cuts`.
+`video_compose` renders them, copies the clips into the public dir and passes
+`props.sceneClips` (`[{scene_id, src, start, end}]`). The bespoke composition
+must place each clip, e.g.
+`<Sequence from={start*fps}><OffthreadVideo src={staticFile(clip.src)} /></Sequence>`.
+Their events are traced in the HyperFrames workspace, not in the bespoke
+source. A composition that never reads `sceneClips` is refused.
 
 This is not a layer compositor. A scene has one main runtime.
 

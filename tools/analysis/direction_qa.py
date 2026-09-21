@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.atelier_direction import build_trace
-from lib.scene_runtime import scene_events, trace_workspace
+from lib.scene_runtime import hyperframes_cuts, scene_events, trace_workspace, without_scene_events
 from lib.tool_routing import tool_usage_report
 from lib.visual_direction import REALITY_ROLES, ineffective_events
 from tools.base_tool import (
@@ -178,7 +178,8 @@ class DirectionQA(BaseTool):
             if not project_dir or not Path(project_dir).is_dir():
                 hard.append("atelier edit without a readable project source (bespoke.entry / project_dir): implementation cannot be traced")
             else:
-                trace = build_trace(timeline, project_dir)
+                # HyperFrames scene cuts implement their own events (traced below).
+                trace = build_trace(without_scene_events(timeline, hyperframes_cuts(edit)), project_dir)
                 hard.extend(trace["hard_failures"])
                 warnings.extend(trace["warnings"])
                 implemented = {e["event_id"]: e["implemented"] for e in trace["events"]}

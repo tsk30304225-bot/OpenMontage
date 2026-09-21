@@ -195,3 +195,15 @@ def trace_workspace(workspace: Path, events: list[dict[str, Any]], expected_dura
         elif abs(dur - expected_duration) > 0.05:
             hard.append(f"root data-duration {dur}s does not match the scene cut ({expected_duration:.3f}s)")
     return {"hard_failures": hard, "events": rows, "implemented": sum(r["implemented"] for r in rows)}
+
+
+def hyperframes_cuts(edit_decisions: dict[str, Any]) -> list[dict[str, Any]]:
+    return [c for c in edit_decisions.get("cuts") or [] if (c.get("runtime") or "").lower() == "hyperframes"]
+
+
+def without_scene_events(timeline: Optional[dict[str, Any]], cuts: list[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    """The timeline minus the events that HyperFrames scene cuts execute."""
+    if not timeline or not cuts:
+        return timeline
+    owned = {e["id"] for c in cuts for e in scene_events(timeline, c)}
+    return {**timeline, "events": [e for e in timeline.get("events") or [] if e["id"] not in owned]}

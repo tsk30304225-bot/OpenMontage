@@ -1221,7 +1221,34 @@ class VideoCompose(BaseTool):
         # events; it does not re-decide them. Refuse to render when the contract
         # is missing or unimplemented, and hand the resolved timeline to the
         # composition as props.visualTimeline.
-        direction = self._prepare_atelier_direction(entry_path, edit_decisions, props_path, output_path)
+        # Scene runtime overrides: HyperFrames scene cuts render to clips the
+        # bespoke composition places from props.sceneClips.
+        scene_clips = None
+        from lib.scene_runtime import hyperframes_cuts
+        hf_cuts = hyperframes_cuts(edit_decisions)
+        if hf_cuts:
+            if not any("sceneClips" in f.read_text(encoding="utf-8", errors="ignore")
+                       for f in entry_path.parent.rglob("*") if f.suffix in (".tsx", ".ts", ".jsx", ".js")
+                       and "node_modules" not in f.parts):
+                return ToolResult(success=False, error=(
+                    "edit_decisions has HyperFrames scene cuts but the atelier composition never reads "
+                    "props.sceneClips; place each clip (<Sequence from={start*fps}><OffthreadVideo "
+                    "src={staticFile(clip.src)} /></Sequence>) at its scene window."))
+            rendered = self._render_scene_runtimes(edit_decisions, hf_cuts, output_path, inputs)
+            if isinstance(rendered, ToolResult):
+                return rendered
+            pd = bespoke.get("public_dir")
+            public_root = Path(pd).resolve() if pd else composer_dir / "public"
+            (public_root / "scene_clips").mkdir(parents=True, exist_ok=True)
+            scene_clips = []
+            for cut, placed in zip(hf_cuts, rendered["cuts"]):
+                dest = public_root / "scene_clips" / Path(placed["source"]).name
+                shutil.copy2(placed["source"], dest)
+                scene_clips.append({"scene_id": cut.get("scene_id"), "cut_id": cut.get("id"),
+                                    "src": dest.relative_to(public_root).as_posix(),
+                                    "start": float(cut["in_seconds"]), "end": float(cut["out_seconds"])})
+        direction = self._prepare_atelier_direction(entry_path, edit_decisions, props_path, output_path,
+                                                    scene_clips=scene_clips)
         if direction.get("error"):
             return ToolResult(success=False, error=direction["error"], data={"direction_trace": direction.get("trace")})
         props_path = direction.get("props_path") or props_path
@@ -1319,6 +1346,7 @@ class VideoCompose(BaseTool):
         edit_decisions: dict[str, Any],
         props_path: str | None,
         output_path: Path,
+        scene_clips: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Bind an atelier render to the visual_direction / visual_timeline contract.
 
@@ -1328,8 +1356,19 @@ class VideoCompose(BaseTool):
         direction runtime (see lib/atelier_direction.py).
         """
         from lib.atelier_direction import build_trace
+        from lib.scene_runtime import hyperframes_cuts, without_scene_events
 
         project_dir = entry_path.parent
+
+        def merged_props(extra: dict[str, Any]) -> str:
+            props: dict[str, Any] = json.loads(Path(props_path).read_text(encoding="utf-8")) if props_path else {}
+            props.update(extra)
+            if scene_clips:
+                props["sceneClips"] = scene_clips
+            merged = output_path.parent / f".{output_path.stem}.atelier_props.json"
+            merged.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
+            return str(merged)
+
         timeline = edit_decisions.get("visual_timeline")
         if isinstance(timeline, str):
             tp = Path(timeline)
@@ -1349,25 +1388,21 @@ class VideoCompose(BaseTool):
                         "edit_decisions.visual_timeline is missing. Compile it with visual_timeline_compiler from the real "
                         "alignment; atelier implements the contract, it does not replace it."
                     )}
-            return {}
+            return {"props_path": merged_props({})} if scene_clips else {}
         if not isinstance(timeline, dict):
             return {"error": "edit_decisions.visual_timeline must be the compiled visual_timeline (object or path)"}
         if timeline.get("unmatched"):
             ids = ", ".join(str(u.get("beat_id")) for u in timeline["unmatched"])
             return {"error": f"visual_timeline has unresolved narration anchors ({ids}); recompile before rendering."}
 
-        trace = build_trace(timeline, project_dir)
+        # Events of HyperFrames scene cuts are implemented (and traced) in their workspaces.
+        trace = build_trace(without_scene_events(timeline, hyperframes_cuts(edit_decisions)), project_dir)
         if trace["hard_failures"]:
             return {"error": "atelier composition does not implement the direction contract:\n"
                              + "\n".join(f"  • {f}" for f in trace["hard_failures"]), "trace": trace}
 
-        props: dict[str, Any] = {}
-        if props_path:
-            props = json.loads(Path(props_path).read_text(encoding="utf-8"))
-        props["visualTimeline"] = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
-        merged = output_path.parent / f".{output_path.stem}.atelier_props.json"
-        merged.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
-        return {"props_path": str(merged), "trace": trace}
+        visual = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
+        return {"props_path": merged_props({"visualTimeline": visual}), "trace": trace}
 
     # Source-file extensions that get staged into the composer tree at render time.
     # Anything not in this set lives only under the real project dir (assets, renders,

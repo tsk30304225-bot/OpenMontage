@@ -298,3 +298,44 @@ def test_mixed_runtime_project_renders_one_mp4_and_keeps_direction(tmp_path) -> 
     rows = {r["event"]: r for r in qa.data["checks"]}
     assert rows["ev-b1"]["executed"] and rows["ev-b1"]["implemented"] and rows["ev-b1"]["changed_pixels"] >= 150
     assert rows["ev-b2"]["executed"] and rows["ev-b2"]["implemented"] and rows["ev-b2"]["changed_pixels"] >= 150
+
+
+# ---------------------------------------------------------------- atelier assembly
+
+ROUTE = REPO / "tests" / "fixtures" / "visual_direction" / "atelier_route"
+
+
+def _route_timeline():
+    load = lambda n: json.loads((ROUTE / n).read_text(encoding="utf-8"))
+    plan = load("scene_plan.json")
+    return compile_timeline(load("visual_direction.json"), load("alignment.json"),
+                            scene_windows={s["id"]: (s["start_seconds"], s["end_seconds"]) for s in plan["scenes"]})
+
+
+def test_atelier_needs_the_composition_to_read_scene_clips(tmp_path) -> None:
+    ws = _workspace(tmp_path, "hf_sc3")
+    edit = {"version": "1.0", "render_runtime": "remotion", "composition_mode": "atelier",
+            "approved_runtimes": ["remotion", "hyperframes"],
+            "cuts": [{"id": "c4", "scene_id": "sc4", "source": "", "in_seconds": 18.61, "out_seconds": 22.78,
+                      "runtime": "hyperframes", "hyperframes": {"workspace": str(ws)}}],
+            "bespoke": {"entry": str(ROUTE / "atelier_route_fixture" / "index.tsx"),
+                        "composition_id": "AtelierRouteFixture", "art_direction": "fixture"}}
+    result = VideoCompose().execute({"operation": "render", "edit_decisions": edit, "output_path": str(tmp_path / "o.mp4")})
+    assert not result.success and "props.sceneClips" in result.error
+
+
+def test_atelier_props_carry_scene_clips_and_trace_skips_their_events(tmp_path) -> None:
+    timeline = _route_timeline()
+    sc3_events = {e["id"] for e in timeline["events"] if e["scene_id"] == "sc3"}
+    assert sc3_events
+    edit = {"visual_timeline": timeline, "cuts": [
+        {"id": "c3", "scene_id": "sc3", "in_seconds": 11.07, "out_seconds": 18.61, "runtime": "hyperframes",
+         "hyperframes": {"workspace": "unused"}}]}
+    clips = [{"scene_id": "sc3", "cut_id": "c3", "src": "scene_clips/c3.mp4", "start": 11.07, "end": 18.61}]
+    out = VideoCompose._prepare_atelier_direction(ROUTE / "atelier_route_fixture" / "index.tsx", edit, None,
+                                                  tmp_path / "o.mp4", scene_clips=clips)
+    assert "error" not in out, out.get("error")
+    props = json.loads(Path(out["props_path"]).read_text(encoding="utf-8"))
+    assert props["sceneClips"] == clips and props["visualTimeline"]["events"]
+    traced = {e["event_id"] for e in out["trace"]["events"]}
+    assert traced and not traced & sc3_events
