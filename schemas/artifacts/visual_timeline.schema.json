@@ -145,6 +145,36 @@
         }
       }
     },
+    "tool_layers": {
+      "type": "object",
+      "description": "Per-scene tool selection copied from tool_plan so the execution contract keeps which tools fill each scene.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "role",
+            "need",
+            "offer",
+            "tool"
+          ],
+          "properties": {
+            "role": {
+              "type": "string"
+            },
+            "need": {
+              "type": "string"
+            },
+            "offer": {
+              "type": "string"
+            },
+            "tool": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "unmatched": {
       "type": "array",
       "description": "Beats whose anchor was not found in the aligned narration. Must be empty before compose.",

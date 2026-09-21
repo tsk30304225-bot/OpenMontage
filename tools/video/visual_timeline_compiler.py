@@ -20,6 +20,7 @@ from lib.visual_direction import (
     replay_model_states,
     validate_direction,
 )
+from lib.tool_routing import tool_layers_by_scene
 from schemas.artifacts import validate_artifact
 from tools.base_tool import (
     BaseTool,
@@ -69,6 +70,7 @@ class VisualTimelineCompiler(BaseTool):
             "script": {"type": ["object", "string"], "description": "script artifact or path; anchors must occur in it"},
             "scene_plan": {"type": ["object", "string"], "description": "scene_plan artifact or path; scene windows guide anchor search"},
             "alignment": {"type": ["object", "array", "string"], "description": "qwen3_tts timestamps_path / word_timestamps_path JSON or path (compile)"},
+            "tool_plan": {"type": ["object", "string"], "description": "tool_plan artifact or path; its per-scene layers are kept as timeline.tool_layers (compile)"},
             "output_path": {"type": "string", "description": "Where to write visual_timeline.json (compile)"},
             "min_score": {"type": "number", "default": 0.8, "description": "Fuzzy anchor acceptance threshold"},
         },
@@ -125,6 +127,13 @@ class VisualTimelineCompiler(BaseTool):
         source = {k: str(inputs[k]) for k in ("visual_direction", "alignment") if isinstance(inputs.get(k), str)}
         timeline = compile_timeline(direction, alignment, scene_windows=windows,
                                     min_score=float(inputs.get("min_score", 0.8)), source=source)
+        try:
+            tool_plan = _load(inputs.get("tool_plan"), "tool_plan")
+        except Exception as exc:
+            return ToolResult(success=False, error=str(exc))
+        if tool_plan:
+            # Keep WHICH tools fill each scene on the execution contract (from tool_plan).
+            timeline["tool_layers"] = tool_layers_by_scene(tool_plan)
         validate_artifact("visual_timeline", timeline)
 
         problems = []

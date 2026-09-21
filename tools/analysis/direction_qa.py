@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.atelier_direction import build_trace
+from lib.tool_routing import tool_usage_report
 from lib.visual_direction import REALITY_ROLES, ineffective_events
 from tools.base_tool import (
     BaseTool,
@@ -113,6 +114,8 @@ class DirectionQA(BaseTool):
             "edit_decisions": {"type": ["object", "string"]},
             "visual_direction": {"type": ["object", "string"], "description": "Enables rhythm warnings"},
             "scene_plan": {"type": ["object", "string"], "description": "Scene windows for rhythm/early-reveal warnings"},
+            "tool_plan": {"type": ["object", "string"], "description": "Enables tool-usage warnings (routed tools ignored or underused)"},
+            "asset_manifest": {"type": ["object", "string"], "description": "Produced assets, checked against tool_plan"},
             "output_dir": {"type": "string", "description": "Where anchor frames and direction_qa.json are written"},
             "project_dir": {"type": "string", "description": "Atelier project source dir (defaults to the parent of edit_decisions.bespoke.entry)"},
             "min_changed_pixels": {"type": "integer", "default": 25,
@@ -138,6 +141,8 @@ class DirectionQA(BaseTool):
             edit = _load(inputs["edit_decisions"], "edit_decisions")
             direction = _load(inputs.get("visual_direction"), "visual_direction")
             scene_plan = _load(inputs.get("scene_plan"), "scene_plan")
+            tool_plan = _load(inputs.get("tool_plan"), "tool_plan")
+            asset_manifest = _load(inputs.get("asset_manifest"), "asset_manifest")
         except Exception as exc:
             return ToolResult(success=False, error=str(exc))
 
@@ -282,6 +287,12 @@ class DirectionQA(BaseTool):
                     warnings.append(f"scene {sc['scene_id']}: {w[1] - run_start:.0f}s of graphics without a reality/breather scene")
                     run_start = w[1]
 
+        # Tool usage (soft): did production use the tools the router picked?
+        tool_usage = None
+        if tool_plan:
+            tool_usage = tool_usage_report(tool_plan, asset_manifest, edit)
+            warnings.extend(f"{w['code']}: {w['message']}" for w in tool_usage["warnings"])
+
         report = {
             "mode": "atelier" if atelier else "templated",
             "passed": not hard,
@@ -290,6 +301,7 @@ class DirectionQA(BaseTool):
             "events_checked": len(events),
             "checks": checks,
             "implementation_trace": trace,
+            "tool_usage": tool_usage,
         }
         artifacts = []
         if video is not None or inputs.get("output_dir"):
