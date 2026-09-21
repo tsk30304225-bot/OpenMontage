@@ -93,7 +93,7 @@ class ComfyUIImage(BaseTool):
             triggers=("not_filmable", "abstract_concept", "metaphor"),
             strengths={"impossible_visual": 3},
             fallback=("flux_still",),
-            notes="Local GPU generation through a running ComfyUI server.",
+            notes="images of things real footage cannot show",
         ),
     ]
 

@@ -59,7 +59,7 @@ class LTXVideoLocal(BaseTool):
             strengths={"impossible_visual": 3},
             fallback=("comfyui_still",),
             authoring="medium",
-            notes="Local GPU text-to-video; slow, short clips.",
+            notes="short clips of things real footage cannot show",
         ),
     ]
 

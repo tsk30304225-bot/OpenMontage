@@ -67,6 +67,7 @@ class PixabayVideo(BaseTool):
             triggers=("location", "human_activity", "physical_object", "infrastructure", "nature"),
             strengths={"reality": 3},
             fallback=("pexels_footage", "pixabay_still"),
+            notes="real places, people, actions, industry sites",
         ),
     ]
 

@@ -95,7 +95,7 @@ class MusicLibrary(BaseTool):
             scopes=("project", "section", "track"),
             triggers=("emotional_shift", "chapter_transition"),
             strengths={"mood": 3},
-            notes="User-curated local tracks; free, no generation.",
+            notes="music bed from the local library",
         ),
     ]
 

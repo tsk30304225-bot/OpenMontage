@@ -22,7 +22,8 @@ from typing import Any
 
 import jsonschema
 
-from lib.tool_routing import audit_dir, audit_tools, route_scenes, tool_usage_report
+from lib.scene_runtime import resolve_scene_runtimes
+from lib.tool_routing import audit_dir, audit_tools, creative_menu, route_scenes, tool_usage_report
 from schemas.artifacts import validate_artifact
 from tools.base_tool import (
     BaseTool,
@@ -77,7 +78,8 @@ class ToolRouter(BaseTool):
         "type": "object",
         "required": ["operation"],
         "properties": {
-            "operation": {"type": "string", "enum": ["audit", "route", "usage_report"]},
+            "operation": {"type": "string", "enum": ["menu", "scene_runtimes", "audit", "route", "usage_report"],
+                          "description": "menu = short tool guide for planning (default use); scene_runtimes = compact per-scene runtime list; audit/route/usage_report = debug and QA detail"},
             "run_smoke": {"type": "boolean", "default": False,
                           "description": "audit: make the smallest real call per offer (free offers only by default)"},
             "allow_cost_tiers": {"type": "array", "items": {"type": "string", "enum": ["free", "subscription", "paid"]},
@@ -111,6 +113,10 @@ class ToolRouter(BaseTool):
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         op = inputs.get("operation")
         try:
+            if op == "menu":
+                return self._menu(inputs)
+            if op == "scene_runtimes":
+                return self._scene_runtimes(inputs)
             if op == "audit":
                 return self._audit(inputs)
             if op == "route":
@@ -120,6 +126,40 @@ class ToolRouter(BaseTool):
         except (FileNotFoundError, ValueError) as exc:
             return ToolResult(success=False, error=str(exc))
         return ToolResult(success=False, error=f"unknown operation {op!r}")
+
+    def _capability(self, inputs: dict[str, Any]) -> dict[str, Any] | None:
+        """Capability for planning: explicit report, else a fresh no-call audit.
+
+        The fresh audit only reads tool status and stored evidence (no smoke
+        calls), so offers' current metadata and this machine's evidence agree.
+        """
+        source = inputs.get("capability")
+        if isinstance(source, dict):
+            return source
+        if source:
+            return _load(source, "capability audit")
+        from tools.tool_registry import registry
+
+        registry.ensure_discovered()
+        report = audit_tools(registry._tools.values())
+        return report if report["offers"] else None
+
+    def _menu(self, inputs: dict[str, Any]) -> ToolResult:
+        menu = creative_menu(self._capability(inputs), inputs.get("approved_runtimes"))
+        return ToolResult(success=True, data=menu)
+
+    def _scene_runtimes(self, inputs: dict[str, Any]) -> ToolResult:
+        scene_plan = _load(inputs.get("scene_plan"), "scene_plan")
+        if not scene_plan or not inputs.get("master_runtime"):
+            return ToolResult(success=False, error="scene_runtimes needs scene_plan and master_runtime")
+        capability = self._capability(inputs) or {}
+        unavailable = [fam["family"] for fam in creative_menu(capability)["families"]
+                       if fam["family"] in ("remotion", "hyperframes") and not fam["available"]] if capability else []
+        master = inputs["master_runtime"]
+        result = resolve_scene_runtimes(scene_plan.get("scenes", []), master,
+                                        inputs.get("approved_runtimes") or [master], unavailable)
+        out = _write(inputs.get("output_path"), result)
+        return ToolResult(success=True, data={**result, "output_path": out}, artifacts=[out] if out else [])
 
     def _audit(self, inputs: dict[str, Any]) -> ToolResult:
         from tools.tool_registry import registry

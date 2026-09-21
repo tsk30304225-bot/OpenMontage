@@ -842,3 +842,50 @@ def need_counts(scene_plan: dict[str, Any]) -> dict[str, int]:
             if k in need and need_level(need[k]) >= ROUTE_THRESHOLD:
                 out[k] += 1
     return out
+
+
+# ---------------------------------------------------------------------------
+# Context-light menu (what planning stages read)
+# ---------------------------------------------------------------------------
+
+MENU_FAMILIES = (
+    ("footage", "Footage", ("reality_footage", 'reality_still'), 'scene runtime "footage"'),
+    ("remotion", "Remotion", ("structured_graphics",), 'scene runtime "remotion"'),
+    ("hyperframes", "HyperFrames", ("expressive_motion",), 'scene runtime "hyperframes"'),
+    ("generated", "Generated image / video", ("synthetic_image", "synthetic_video"), "a generated asset in a footage scene"),
+    ("tracks", "Voice / captions / music", ("narration", "alignment", "caption", "music", "sfx"), "project tracks"),
+)
+
+
+def creative_menu(capability: Optional[dict[str, Any]], approved_runtimes: Optional[Iterable[str]] = None
+                  ) -> dict[str, Any]:
+    """Short tool menu for directors: families, what they are for, available or not.
+
+    Built from the audit report's routable offers (and their one-line
+    ``notes``). Verification history, scores, candidates and the registry are
+    deliberately left out; ask ``tool_router`` for ``audit`` when debugging.
+    """
+    offers = (capability or {}).get("offers", [])
+    families = []
+    lines = ["Creative tools on this machine (pick one main runtime per scene):"]
+    for key, label, axes, use_as in MENU_FAMILIES:
+        fam = [o for o in offers if set(o["axes"]) & set(axes)]
+        ready = [o for o in fam if o.get("routable")]
+        tools = sorted({o["tool"] for o in ready})
+        use_for = next((o.get("notes") for o in sorted(ready or fam, key=lambda o: -max(o.get("strengths", {}).values() or [3]))
+                        if o.get("notes")), "")
+        families.append({"family": key, "available": bool(ready), "tools": tools, "use_for": use_for})
+        if key == "tracks":
+            missing = sorted({a for a in axes if not any(a in o["axes"] and o.get("routable") for o in fam)})
+            lines.append(f"- {label}: {', '.join(tools) or 'none verified'}"
+                         + (f" (missing: {', '.join(missing)})" if missing else ""))
+        elif ready:
+            lines.append(f"- {label} ({', '.join(tools)}): {use_for} -> {use_as}")
+        else:
+            lines.append(f"- {label}: {use_for or 'no tool'} -> UNAVAILABLE here, do not select")
+    if approved_runtimes is not None:
+        lines.append(f"Approved runtimes: {', '.join(sorted(approved_runtimes))}. "
+                     "A fitting runtime that is not approved: say so (RUNTIME_NOT_APPROVED), do not use it.")
+    if not capability:
+        lines.append("No capability audit on this machine yet: run scripts/tool_capability_audit.py --smoke.")
+    return {"text": "\n".join(lines), "families": families}

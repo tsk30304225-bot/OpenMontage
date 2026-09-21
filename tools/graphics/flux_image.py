@@ -62,6 +62,7 @@ class FluxImage(BaseTool):
             strengths={"impossible_visual": 4},
             fallback=("comfyui_still",),
             cost_tier="paid",
+            notes="images of things real footage cannot show",
         ),
     ]
 

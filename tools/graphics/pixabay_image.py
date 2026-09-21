@@ -68,6 +68,7 @@ class PixabayImage(BaseTool):
             triggers=("location", "physical_object", "infrastructure", "nature"),
             strengths={"reality": 2},
             fallback=("pexels_still",),
+            notes="real places and objects (photos)",
         ),
     ]
 

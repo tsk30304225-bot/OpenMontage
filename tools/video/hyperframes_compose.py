@@ -115,7 +115,7 @@ class HyperFramesCompose(BaseTool):
             fallback=("remotion_graphics",),
             runtime="hyperframes",
             authoring="medium",
-            notes="HTML/GSAP motion where the motion itself carries meaning; renders a clip or a whole scene.",
+            notes="kinetic typography, hero reveals, fast expressive motion, short transitions and emphasis",
         ),
     ]
 
