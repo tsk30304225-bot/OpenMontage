@@ -62,6 +62,10 @@
             }
           }
         },
+        "audio_delivery": {
+          "type": "object",
+          "description": "Final audio delivery contract: contract, normalization applied, authoritative loudness/true-peak measurement of the final file and the verdict (lib/audio_delivery.py). applies=false for files without declared audio."
+        },
         "audio_spotcheck": {
           "type": "object",
           "description": "Audio quality verification",

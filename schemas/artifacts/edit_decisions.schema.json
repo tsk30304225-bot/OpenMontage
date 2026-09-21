@@ -245,6 +245,36 @@
         "required": ["type", "at_seconds", "duration_seconds"]
       }
     },
+    "audio_delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Final audio delivery contract, enforced on the final MP4 by video_compose's final review (lib/audio_delivery.py). Precedence per field: this object > metadata.loudnorm_target (target only) > defaults -14 LUFS +/-1.5 LU, true peak <= -1.5 dBTP, normalize true (skills/creative/sound-design.md).",
+      "properties": {
+        "target_lufs": {
+          "type": "number",
+          "minimum": -40,
+          "maximum": 0
+        },
+        "tolerance_lu": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 6
+        },
+        "true_peak_max_dbtp": {
+          "type": "number",
+          "minimum": -9,
+          "maximum": 0
+        },
+        "normalize": {
+          "type": "boolean",
+          "description": "Normalize an audible out-of-contract track before the gate (video stream copied)."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Audio must be present and audible even when no narration/music is declared."
+        }
+      }
+    },
     "approved_runtimes": {
       "type": "array",
       "items": {

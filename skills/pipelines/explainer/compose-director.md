@@ -16,6 +16,8 @@ Read `edit_decisions.render_runtime` before anything else. It was locked at prop
 
 `final_review.checks.promise_preservation.render_runtime_used` must equal the runtime that actually ran; `runtime_swap_detected` must be `false` unless an approved decision authorizes the swap.
 
+**Audio delivery (hard gate).** Every render path ends in the final review, which normalizes an audible out-of-contract track (audio stream only, video copied) and then re-measures the final MP4: `final_review.checks.audio_delivery`. Contract: `edit_decisions.audio_delivery` > `metadata.loudnorm_target` > default -14 LUFS +/-1.5 LU, true peak <= -1.5 dBTP (`skills/creative/sound-design.md`). Out of range, or silent while narration/music is declared, fails the render. Never report a delivery as ready from the normalization step alone.
+
 **Pass `proposal_packet` to `video_compose.execute()`** so in-tool swap detection can actually fire. Without it the `runtime_swap_check` is reported as `skipped` and you have to rely on the reviewer skill's cross-artifact comparison instead.
 
 ## Prerequisites

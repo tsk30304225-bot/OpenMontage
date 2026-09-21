@@ -60,6 +60,8 @@ Each cut defines what visual is shown and when:
 - `overlay` — text cards, stat cards, key terms (on top of primary)
 - `background` — solid color or texture behind everything
 
+Set `edit_decisions.audio_delivery` when the platform differs from the default (-14 LUFS +/-1.5 LU, true peak <= -1.5 dBTP; `skills/creative/sound-design.md`). Keep an existing `metadata.loudnorm_target`; it stays the target unless `audio_delivery.target_lufs` overrides it.
+
 ### Step 2b: Compile the Visual Timeline (when `visual_direction` has models)
 
 Resolve every beat's narration anchor against the real forced-aligned narration. Never estimate times from `scene_plan`. **This applies to atelier too**: set `edit_decisions.visual_timeline` to the compiled file in both composition modes.

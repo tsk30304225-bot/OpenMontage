@@ -2732,6 +2732,13 @@ class VideoCompose(BaseTool):
         log = logging.getLogger("video_compose.final_review")
         issues: list[str] = []
 
+        # --- 0. Audio delivery: every render path joins here. Normalize an
+        # audible out-of-contract track in place (video stream copied); the
+        # verdict below re-measures the final file (lib/audio_delivery.py).
+        from lib import audio_delivery
+
+        delivery_report = audio_delivery.deliver(output_path, edit_decisions)
+
         # --- 1. Technical probe via ffprobe ---
         technical_probe: dict[str, Any] = {
             "valid_container": False,
@@ -3072,6 +3079,20 @@ class VideoCompose(BaseTool):
         )
         issues.extend(transcript_comparison.get("issues", []))
 
+        # --- 6b. Audio delivery gate: authoritative measurement of the final file ---
+        final_loudness = audio_delivery.measure(output_path)
+        delivery_verdict = audio_delivery.evaluate(
+            final_loudness, delivery_report["contract"], delivery_report["expected"])
+        audio_delivery_check = {
+            "contract": delivery_report["contract"],
+            "audio_expected": delivery_report["expected"],
+            "before": delivery_report["before"],
+            "normalization": delivery_report["normalization"],
+            "final": final_loudness,
+            **delivery_verdict,
+        }
+        issues.extend(delivery_verdict["issues"])
+
         # --- 7. Determine overall status ---
         critical_issues = [
             i for i in issues
@@ -3095,6 +3116,9 @@ class VideoCompose(BaseTool):
         if not technical_probe.get("valid_container"):
             status = "fail"
             recommended_action = "re_render"
+        elif delivery_verdict["applies"] and not delivery_verdict["ok"]:
+            status = "fail"
+            recommended_action = "revise_assets"
 
         final_review = {
             "version": "1.0",
@@ -3104,6 +3128,7 @@ class VideoCompose(BaseTool):
                 "technical_probe": technical_probe,
                 "visual_spotcheck": visual_spotcheck,
                 "audio_spotcheck": audio_spotcheck,
+                "audio_delivery": audio_delivery_check,
                 "promise_preservation": promise_preservation,
                 "subtitle_check": subtitle_check,
                 "transcript_comparison": transcript_comparison,
