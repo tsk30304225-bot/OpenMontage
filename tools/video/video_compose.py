@@ -42,6 +42,7 @@ from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import unquote, urlsplit
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -75,6 +76,28 @@ class VideoCompose(BaseTool):
         "overlay_assets",
         "encode_profile",
         "remotion_render",
+    ]
+
+    route_offers = [
+        RouteOffer(
+            id="remotion_graphics",
+            axes=("structured_graphics",),
+            scopes=("project", "scene"),
+            triggers=("data_value", "comparison", "process", "diagram", "timeline_axis", "label"),
+            strengths={"information_precision": 5, "motion_expressiveness": 3},
+            runtime="remotion",
+            authoring="medium",
+            notes="Precise, data-driven React composition; also the master compositor.",
+        ),
+        RouteOffer(
+            id="phrase_captions",
+            axes=("caption",),
+            scopes=("track", "scene"),
+            triggers=("spoken_words",),
+            strengths={"captions": 5},
+            runtime="remotion",
+            notes='Shared PhraseCaptions: subtitles.style="karaoke", source = qwen3_tts timestamps_path.',
+        ),
     ]
 
     input_schema = {
@@ -333,6 +356,28 @@ class VideoCompose(BaseTool):
             "user approval before switching."
         )
         return info
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        # One 2 s templated render with karaoke captions serves both offers
+        # (karaoke without word timings fails loudly, so success proves captions loaded).
+        timing = workdir / "om_segments.json"
+        timing.write_text(json.dumps({"segments": [{
+            "id": "s1", "text": "smoke test", "start": 0.2, "end": 1.6,
+            "words": [{"word": "smoke", "start": 0.2, "end": 0.8}, {"word": "test", "start": 0.9, "end": 1.6}],
+        }]}), encoding="utf-8")
+        return smoke_via_execute(self, {
+            "operation": "render",
+            "output_path": str(workdir / "smoke.mp4"),
+            "edit_decisions": {
+                "version": "1.0",
+                "renderer_family": "explainer-data",
+                "render_runtime": "remotion",
+                "cuts": [{"id": "c1", "source": "", "in_seconds": 0, "out_seconds": 2,
+                          "type": "text_card", "text": "smoke test"}],
+                "subtitles": {"enabled": True, "style": "karaoke", "source": str(timing)},
+            },
+            "asset_manifest": {"assets": []},
+        }, cache, key="render")
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         operation = inputs["operation"]

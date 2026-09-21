@@ -11,6 +11,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -84,6 +85,18 @@ class ComfyUIImage(BaseTool):
     fallback = "flux_image"
     fallback_tools = ["flux_image", "local_diffusion", "openai_image"]
 
+    route_offers = [
+        RouteOffer(
+            id="comfyui_still",
+            axes=("synthetic_image",),
+            scopes=("scene", "asset"),
+            triggers=("not_filmable", "abstract_concept", "metaphor"),
+            strengths={"impossible_visual": 3},
+            fallback=("flux_still",),
+            notes="Local GPU generation through a running ComfyUI server.",
+        ),
+    ]
+
     input_schema = {
         "type": "object",
         "required": ["prompt"],
@@ -156,6 +169,10 @@ class ComfyUIImage(BaseTool):
         info["setup_offer"] = self.setup_offer
         info["bundled_model_stack"] = BUNDLED_MODEL_STACKS["flux2-txt2img"]
         return info
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        return smoke_via_execute(self, {"prompt": "a small red cube on a white table", "width": 512, "height": 512,
+                                        "steps": 8, "output_path": str(workdir / "smoke.png")}, cache)
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         custom_workflow = bool(inputs.get("workflow_json") or inputs.get("workflow_path"))

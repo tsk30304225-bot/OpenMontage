@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -49,6 +50,19 @@ class LTXVideoLocal(BaseTool):
     not_good_for = ["CPU-only machines"]
     provider_matrix = {key: {"tool": "ltx_video_local", **value, "mode": "local_gpu"} for key, value in LTX_LOCAL_VARIANTS.items()}
 
+    route_offers = [
+        RouteOffer(
+            id="ltx_local_clip",
+            axes=("synthetic_video",),
+            scopes=("scene", "asset"),
+            triggers=("not_filmable", "metaphor", "abstract_concept"),
+            strengths={"impossible_visual": 3},
+            fallback=("comfyui_still",),
+            authoring="medium",
+            notes="Local GPU text-to-video; slow, short clips.",
+        ),
+    ]
+
     input_schema = {
         "type": "object",
         "required": ["prompt"],
@@ -82,6 +96,11 @@ class LTXVideoLocal(BaseTool):
 
     def estimate_runtime(self, inputs: dict[str, object]) -> float:
         return estimate_local_runtime(LTX_LOCAL_VARIANTS["ltx2-local"]["speed"])
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        return smoke_via_execute(self, {"prompt": "slow pan across a calm lake at dawn", "width": 512, "height": 320,
+                                        "num_frames": 25, "num_inference_steps": 8,
+                                        "output_path": str(workdir / "smoke.mp4")}, cache)
 
     def execute(self, inputs: dict[str, object]) -> ToolResult:
         if self.get_status() != ToolStatus.AVAILABLE:

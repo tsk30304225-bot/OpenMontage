@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -85,6 +86,17 @@ class MusicLibrary(BaseTool):
     not_good_for = [
         "generating new music (use music_gen / suno_music)",
         "searching an external catalog (use freesound_music / pixabay_music)",
+    ]
+
+    route_offers = [
+        RouteOffer(
+            id="library_music",
+            axes=("music",),
+            scopes=("project", "section", "track"),
+            triggers=("emotional_shift", "chapter_transition"),
+            strengths={"mood": 3},
+            notes="User-curated local tracks; free, no generation.",
+        ),
     ]
 
     input_schema = {
@@ -185,6 +197,13 @@ class MusicLibrary(BaseTool):
 
     def estimate_runtime(self, inputs: dict[str, Any]) -> float:
         return 1.0
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        out = smoke_via_execute(self, {}, cache)
+        tracks = out["data"].get("tracks") or []
+        if not tracks:
+            raise RuntimeError(f"music library is empty: {out['data'].get('library_dir')}")
+        return {**out, "artifact": tracks[0]["path"]}
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         start = time.time()

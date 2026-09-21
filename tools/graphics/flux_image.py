@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -52,6 +53,18 @@ class FluxImage(BaseTool):
     ]
     not_good_for = ["text rendering in images", "offline generation"]
 
+    route_offers = [
+        RouteOffer(
+            id="flux_still",
+            axes=("synthetic_image",),
+            scopes=("scene", "asset"),
+            triggers=("not_filmable", "abstract_concept", "metaphor"),
+            strengths={"impossible_visual": 4},
+            fallback=("comfyui_still",),
+            cost_tier="paid",
+        ),
+    ]
+
     input_schema = {
         "type": "object",
         "required": ["prompt"],
@@ -93,6 +106,11 @@ class FluxImage(BaseTool):
         if "pro" in model:
             return 0.05
         return 0.03  # dev tier
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        # Paid: the audit only runs this when the paid tier was approved.
+        return smoke_via_execute(self, {"prompt": "a small red cube on a white table",
+                                        "output_path": str(workdir / "smoke.png")}, cache)
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         api_key = self._get_api_key()

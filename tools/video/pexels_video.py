@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -57,6 +58,17 @@ class PexelsVideo(BaseTool):
     ]
     fallback_tools = ["pixabay_video"]
 
+    route_offers = [
+        RouteOffer(
+            id="pexels_footage",
+            axes=("reality_footage",),
+            scopes=("scene", "asset"),
+            triggers=("location", "human_activity", "physical_object", "infrastructure", "nature"),
+            strengths={"reality": 4},
+            fallback=("pixabay_footage", "pexels_still"),
+        ),
+    ]
+
     input_schema = {
         "type": "object",
         "required": ["query"],
@@ -105,6 +117,12 @@ class PexelsVideo(BaseTool):
 
     def estimate_cost(self, inputs: dict[str, Any]) -> float:
         return 0.0
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        # One free search + the smallest rendition of the first hit (no duration
+        # filter: it is applied client-side and can empty a one-result page).
+        return smoke_via_execute(self, {"query": "city street", "per_page": 1, "preferred_quality": "sd",
+                                         "output_path": str(workdir / "smoke.mp4")}, cache)
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         api_key = os.environ.get("PEXELS_API_KEY")

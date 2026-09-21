@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -57,6 +58,17 @@ class PixabayImage(BaseTool):
         "full-resolution originals (standard API limited to 1280px)",
         "custom compositions",
         "offline use",
+    ]
+
+    route_offers = [
+        RouteOffer(
+            id="pixabay_still",
+            axes=("reality_still",),
+            scopes=("scene", "asset"),
+            triggers=("location", "physical_object", "infrastructure", "nature"),
+            strengths={"reality": 2},
+            fallback=("pexels_still",),
+        ),
     ]
 
     input_schema = {
@@ -110,6 +122,10 @@ class PixabayImage(BaseTool):
 
     def estimate_cost(self, inputs: dict[str, Any]) -> float:
         return 0.0  # Pixabay is free
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        return smoke_via_execute(self, {"query": "city street", "per_page": 3,
+                                        "output_path": str(workdir / "smoke.jpg")}, cache)
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         api_key = os.environ.get("PIXABAY_API_KEY")

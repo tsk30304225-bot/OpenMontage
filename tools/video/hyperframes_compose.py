@@ -25,6 +25,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
+from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -103,6 +104,20 @@ class HyperFramesCompose(BaseTool):
         "Existing React scene stack (text_card, stat_card, chart, comparison): reuse Remotion",
     ]
     fallback_tools = ["video_compose"]
+
+    route_offers = [
+        RouteOffer(
+            id="hyperframes_motion",
+            axes=("expressive_motion",),
+            scopes=("scene", "beat"),
+            triggers=("kinetic_text", "major_reveal", "chapter_transition", "metaphor", "emotional_shift"),
+            strengths={"motion_expressiveness": 5, "information_precision": 2},
+            fallback=("remotion_graphics",),
+            runtime="hyperframes",
+            authoring="medium",
+            notes="HTML/GSAP motion where the motion itself carries meaning; renders a clip or a whole scene.",
+        ),
+    ]
 
     input_schema = {
         "type": "object",
@@ -455,6 +470,34 @@ class HyperFramesCompose(BaseTool):
     # ------------------------------------------------------------------
     # Execute
     # ------------------------------------------------------------------
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> dict[str, Any] | None:
+        # Scaffold + lint + render of one 2 s text card, in a fresh workspace.
+        workspace = workdir / "workspace"
+        shutil.rmtree(workspace, ignore_errors=True)
+        return smoke_via_execute(self, {
+            "operation": "render",
+            "workspace_path": str(workspace),
+            "output_path": str(workdir / "smoke.mp4"),
+            "edit_decisions": {
+                "version": "1.0",
+                "renderer_family": "animation-first",
+                "render_runtime": "hyperframes",
+                "cuts": [{"id": "c1", "source": "", "in_seconds": 0, "out_seconds": 2,
+                          "type": "text_card", "text": "smoke test"}],
+            },
+            "asset_manifest": {"assets": []},
+            "playbook": {
+                "name": "routing-smoke",
+                "visual_language": {"color_palette": {"background": "#0F172A", "text": "#F8FAFC",
+                                                      "accent": "#F59E0B", "primary": "#2563EB"}},
+                "typography": {"heading": {"font": "Inter"}, "body": {"font": "Inter"}},
+                "motion": {"pace": "moderate"},
+            },
+            "quality": "draft",
+            "fps": 30,
+            "skip_contrast": True,
+        }, cache, key="render")
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         operation = inputs["operation"]
