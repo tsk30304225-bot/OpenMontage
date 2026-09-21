@@ -1,0 +1,95 @@
+{
+  "version": "1.0",
+  "viewer_journey": [
+    {
+      "id": "j1",
+      "scene_ids": [
+        "sc1",
+        "sc2"
+      ],
+      "viewer_goal": "water has a long way to travel"
+    },
+    {
+      "id": "j2",
+      "scene_ids": [
+        "sc3",
+        "sc4",
+        "sc5"
+      ],
+      "viewer_goal": "a quarter is lost, and it is fixable"
+    }
+  ],
+  "rhythm": "REALITY -> MODEL -> HERO -> MODEL -> HERO",
+  "visual_models": [
+    {
+      "id": "statement",
+      "type": "kinetic_statement",
+      "renderer": "bespoke",
+      "title": "Key statement",
+      "grammar": {
+        "headline": "the one fact the viewer must keep"
+      },
+      "initial_state": {
+        "elements": [
+          {
+            "id": "loss",
+            "kind": "label",
+            "label": "1 in 4"
+          },
+          {
+            "id": "action",
+            "kind": "label",
+            "label": "Fix it"
+          }
+        ]
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "sc1",
+      "narrative_role": "immersion",
+      "visual_mode": "reality"
+    },
+    {
+      "scene_id": "sc2",
+      "narrative_role": "explanation",
+      "visual_mode": "text"
+    },
+    {
+      "scene_id": "sc3",
+      "narrative_role": "evidence",
+      "visual_mode": "model",
+      "visual_model_id": "statement",
+      "beats": [
+        {
+          "id": "b1",
+          "narration_anchor": "one litre in four",
+          "operation": "REVEAL",
+          "target": "loss",
+          "takeaway": "a quarter is lost"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc4",
+      "narrative_role": "explanation",
+      "visual_mode": "text"
+    },
+    {
+      "scene_id": "sc5",
+      "narrative_role": "closure",
+      "visual_mode": "model",
+      "visual_model_id": "statement",
+      "beats": [
+        {
+          "id": "b2",
+          "narration_anchor": "fix it",
+          "operation": "REVEAL",
+          "target": "action",
+          "takeaway": "the answer"
+        }
+      ]
+    }
+  ]
+}

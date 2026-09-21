@@ -1,0 +1,199 @@
+{
+  "segments": [
+    {
+      "id": "s1",
+      "text": "Water leaves the plant every morning.",
+      "start": 0.3,
+      "end": 3.0,
+      "words": [
+        {
+          "word": "Water",
+          "start": 0.3,
+          "end": 0.7
+        },
+        {
+          "word": "leaves",
+          "start": 0.75,
+          "end": 1.1
+        },
+        {
+          "word": "the",
+          "start": 1.15,
+          "end": 1.3
+        },
+        {
+          "word": "plant",
+          "start": 1.35,
+          "end": 1.8
+        },
+        {
+          "word": "every",
+          "start": 1.9,
+          "end": 2.3
+        },
+        {
+          "word": "morning.",
+          "start": 2.35,
+          "end": 3.0
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "text": "It travels through old pipes under the city.",
+      "start": 4.3,
+      "end": 7.4,
+      "words": [
+        {
+          "word": "It",
+          "start": 4.3,
+          "end": 4.5
+        },
+        {
+          "word": "travels",
+          "start": 4.55,
+          "end": 5.0
+        },
+        {
+          "word": "through",
+          "start": 5.05,
+          "end": 5.4
+        },
+        {
+          "word": "old",
+          "start": 5.45,
+          "end": 5.7
+        },
+        {
+          "word": "pipes",
+          "start": 5.75,
+          "end": 6.2
+        },
+        {
+          "word": "under",
+          "start": 6.25,
+          "end": 6.6
+        },
+        {
+          "word": "the",
+          "start": 6.65,
+          "end": 6.8
+        },
+        {
+          "word": "city.",
+          "start": 6.85,
+          "end": 7.4
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "text": "But one litre in four never arrives.",
+      "start": 8.3,
+      "end": 11.7,
+      "words": [
+        {
+          "word": "But",
+          "start": 8.3,
+          "end": 8.7
+        },
+        {
+          "word": "one",
+          "start": 9.5,
+          "end": 9.8
+        },
+        {
+          "word": "litre",
+          "start": 9.85,
+          "end": 10.2
+        },
+        {
+          "word": "in",
+          "start": 10.25,
+          "end": 10.4
+        },
+        {
+          "word": "four",
+          "start": 10.45,
+          "end": 10.9
+        },
+        {
+          "word": "never",
+          "start": 11.0,
+          "end": 11.3
+        },
+        {
+          "word": "arrives.",
+          "start": 11.35,
+          "end": 11.7
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "text": "Leaks hide underground where nobody looks.",
+      "start": 12.3,
+      "end": 15.3,
+      "words": [
+        {
+          "word": "Leaks",
+          "start": 12.3,
+          "end": 12.7
+        },
+        {
+          "word": "hide",
+          "start": 12.75,
+          "end": 13.1
+        },
+        {
+          "word": "underground",
+          "start": 13.15,
+          "end": 13.9
+        },
+        {
+          "word": "where",
+          "start": 13.95,
+          "end": 14.2
+        },
+        {
+          "word": "nobody",
+          "start": 14.25,
+          "end": 14.7
+        },
+        {
+          "word": "looks.",
+          "start": 14.75,
+          "end": 15.3
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "text": "So fix it first.",
+      "start": 16.3,
+      "end": 18.4,
+      "words": [
+        {
+          "word": "So",
+          "start": 16.3,
+          "end": 16.6
+        },
+        {
+          "word": "fix",
+          "start": 17.2,
+          "end": 17.5
+        },
+        {
+          "word": "it",
+          "start": 17.55,
+          "end": 17.8
+        },
+        {
+          "word": "first.",
+          "start": 17.9,
+          "end": 18.4
+        }
+      ]
+    }
+  ]
+}

@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.atelier_direction import build_trace
+from lib.scene_runtime import scene_events, trace_workspace
 from lib.tool_routing import tool_usage_report
 from lib.visual_direction import REALITY_ROLES, ineffective_events
 from tools.base_tool import (
@@ -182,11 +183,29 @@ class DirectionQA(BaseTool):
                 warnings.extend(trace["warnings"])
                 implemented = {e["event_id"]: e["implemented"] for e in trace["events"]}
 
+        # HyperFrames scene cuts (cut.runtime) execute their scene's events in the
+        # authored workspace; trace them like atelier source.
+        hf_cuts = [c for c in cuts if (c.get("runtime") or "").lower() == "hyperframes"]
+        hf_traces: dict[str, Any] = {}
+        for c in hf_cuts:
+            ws = Path(str((c.get("hyperframes") or {}).get("workspace") or ""))
+            if not (ws / "index.html").is_file():
+                hard.append(f"cut {c['id']}: HyperFrames workspace not found ({ws}); implementation cannot be traced")
+                continue
+            tr = trace_workspace(ws, scene_events(timeline, c))
+            hard.extend(f"cut {c['id']}: {h}" for h in tr["hard_failures"])
+            implemented.update({row["event_id"]: row["implemented"] for row in tr["events"]})
+            hf_traces[c["id"]] = tr
+
         def cut_for(ev: dict[str, Any]) -> dict[str, Any] | None:
             t = ev["time_seconds"]
             for c in model_cuts:
                 if (c.get("visual_model") or {}).get("model_id") == ev["model_id"] and c["in_seconds"] - 1e-3 <= t < c["out_seconds"]:
                     return c
+            for c in hf_cuts:
+                mine = ev.get("scene_id") == c["scene_id"] if c.get("scene_id") else c["in_seconds"] - 1e-3 <= t < c["out_seconds"]
+                if mine:
+                    return {**c, "visual_model": {"region": "full"}}
             return None
 
         video = Path(inputs["video_path"]) if inputs.get("video_path") else None
@@ -204,7 +223,7 @@ class DirectionQA(BaseTool):
                 cut = cut_for(ev)
             row: dict[str, Any] = {"event": ev["id"], "operation": ev["operation"], "target": ev["target"],
                                    "time_seconds": ev["time_seconds"], "anchor": (ev.get("anchor") or {}).get("text")}
-            if atelier:
+            if atelier or ev["id"] in implemented:
                 row["implemented"] = implemented.get(ev["id"], False)
             if cut is None:
                 hard.append(f"{ev['id']} ({ev['operation']} {ev['target']}) at {ev['time_seconds']}s: no visual_model cut for "
@@ -301,6 +320,7 @@ class DirectionQA(BaseTool):
             "events_checked": len(events),
             "checks": checks,
             "implementation_trace": trace,
+            "hyperframes_traces": hf_traces or None,
             "tool_usage": tool_usage,
         }
         artifacts = []

@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "scenes": [
+    {
+      "id": "sc1",
+      "type": "broll",
+      "description": "Morning, water leaves a treatment plant",
+      "start_seconds": 0.0,
+      "end_seconds": 4.0,
+      "runtime": "footage",
+      "runtime_reason": "real place"
+    },
+    {
+      "id": "sc2",
+      "type": "text_card",
+      "description": "Old pipes run under the city",
+      "start_seconds": 4.0,
+      "end_seconds": 8.0,
+      "runtime": "remotion",
+      "runtime_reason": "structured explanation"
+    },
+    {
+      "id": "sc3",
+      "type": "animation",
+      "description": "One litre in four never arrives",
+      "start_seconds": 8.0,
+      "end_seconds": 12.0,
+      "runtime": "hyperframes",
+      "runtime_reason": "hero reveal of the key number"
+    },
+    {
+      "id": "sc4",
+      "type": "text_card",
+      "description": "Leaks hide underground",
+      "start_seconds": 12.0,
+      "end_seconds": 16.0,
+      "runtime": "remotion",
+      "runtime_reason": "structured explanation"
+    },
+    {
+      "id": "sc5",
+      "type": "animation",
+      "description": "So fix it first",
+      "start_seconds": 16.0,
+      "end_seconds": 20.0,
+      "runtime": "hyperframes",
+      "runtime_reason": "kinetic closing statement"
+    }
+  ]
+}

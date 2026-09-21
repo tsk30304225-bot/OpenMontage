@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>scene runtime fixture sc3</title>
+  <style>
+    body { margin: 0; background: #101418; color: #F4EFE6; font-family: Inter, Arial, sans-serif; }
+    [data-composition-id="root"] { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+    .clip { position: absolute; inset: 0; }
+    .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; }
+    .kicker { font-size: 48px; letter-spacing: 12px; text-transform: uppercase; color: #8FA3B8; }
+    .headline { font-size: 220px; font-weight: 900; color: #FFB000; opacity: 0; transform: scale(0.6); }
+    .bar { width: 0; height: 24px; background: #FFB000; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <!-- Generated per render by video_compose: this scene's visual_timeline events (scene-local seconds). -->
+  <script src="om-direction.js"></script>
+</head>
+<body>
+  <div data-composition-id="root" data-start="0" data-duration="4" data-width="1920" data-height="1080">
+    <div id="stage" class="clip stage" data-start="0" data-duration="4" data-track-index="1">
+      <div class="kicker">one number</div>
+      <div id="headline" class="headline">1 in 4</div>
+      <div id="bar" class="bar"></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      tl.from(".kicker", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 0.1);
+      // The reveal lands on the narration word the visual direction anchored it to.
+      tl.to("#headline", { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, OM.at("ev-b1"));
+      tl.to("#bar", { width: 900, duration: 0.6, ease: "power2.out" }, OM.at("ev-b1") + 0.2);
+      window.__timelines["root"] = tl;
+    </script>
+  </div>
+</body>
+</html>

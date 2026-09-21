@@ -87,7 +87,7 @@ class VideoCompose(BaseTool):
             strengths={"information_precision": 5, "motion_expressiveness": 3},
             runtime="remotion",
             authoring="medium",
-            notes="Precise, data-driven React composition; also the master compositor.",
+            notes="data, numbers, comparisons, causal diagrams, persistent models, narration-timed state changes",
         ),
         RouteOffer(
             id="phrase_captions",
@@ -96,7 +96,7 @@ class VideoCompose(BaseTool):
             triggers=("spoken_words",),
             strengths={"captions": 5},
             runtime="remotion",
-            notes='Shared PhraseCaptions: subtitles.style="karaoke", source = qwen3_tts timestamps_path.',
+            notes='karaoke narration captions (PhraseCaptions)',
         ),
     ]
 
@@ -1913,6 +1913,18 @@ class VideoCompose(BaseTool):
                 resolved_cut["source"] = asset_lookup[source_id]["path"]
             resolved_cuts.append(resolved_cut)
 
+        # --- Scene runtime overrides (v1): render HyperFrames scenes to clips ---
+        scene_runtimes = None
+        if any(c.get("runtime") for c in resolved_cuts):
+            if render_runtime != "remotion":
+                return ToolResult(success=False, error=(
+                    "Scene runtime overrides (cut.runtime) are assembled by the Remotion templated path in v1; "
+                    f"this edit renders with {render_runtime!r}."))
+            scene_runtimes = self._render_scene_runtimes(edit_decisions, resolved_cuts, output_path, inputs)
+            if isinstance(scene_runtimes, ToolResult):
+                return scene_runtimes
+            resolved_cuts = scene_runtimes["cuts"]
+
         # --- Pre-compose validation gate ---
         scene_plan = inputs.get("scene_plan")
         validation_block = self._pre_compose_validation(edit_decisions, resolved_cuts, scene_plan)
@@ -2020,6 +2032,8 @@ class VideoCompose(BaseTool):
                 render_result.data = {}
             render_result.data["final_review"] = final_review
             render_result.data["final_review_status"] = final_review["status"]
+            if scene_runtimes is not None:
+                render_result.data["scene_runtimes"] = scene_runtimes["report"]
 
             # If the self-review says fail, downgrade the ToolResult
             if final_review["status"] == "fail":
@@ -2033,6 +2047,88 @@ class VideoCompose(BaseTool):
                 )
 
         return render_result
+
+    def _render_scene_runtimes(
+        self,
+        edit_decisions: dict[str, Any],
+        cuts: list[dict[str, Any]],
+        output_path: Path,
+        inputs: dict[str, Any],
+    ) -> dict[str, Any] | ToolResult:
+        """Render every ``runtime: "hyperframes"`` cut to a scene clip.
+
+        Each clip replaces its cut as an ordinary video cut of the same length,
+        so the Remotion assembly, captions and audio work unchanged. The scene's
+        visual_timeline events are written into the workspace (om-direction.js)
+        and every one must be placed by the authored code before it renders.
+        """
+        from lib.scene_runtime import approved_runtimes, scene_events, trace_workspace, write_bridge
+        from tools.video.hyperframes_compose import HyperFramesCompose
+
+        approved = approved_runtimes(edit_decisions, "remotion")
+        timeline = edit_decisions.get("visual_timeline")
+        if isinstance(timeline, str):
+            try:
+                timeline = json.loads(Path(timeline).read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                return ToolResult(success=False, error=f"Could not read visual_timeline for scene runtimes: {exc}")
+        clip_dir = output_path.parent / "scene_clips"
+        out_cuts: list[dict[str, Any]] = []
+        report: list[dict[str, Any]] = []
+        for cut in cuts:
+            runtime = (cut.get("runtime") or "remotion").lower()
+            row = {"cut_id": cut.get("id"), "scene_id": cut.get("scene_id"), "runtime": runtime}
+            if runtime != "hyperframes":
+                if runtime == "footage" and not self._is_media_source(cut.get("source")):
+                    return ToolResult(success=False, error=(
+                        f"cut {cut.get('id')}: runtime 'footage' needs a video or image source, got "
+                        f"{cut.get('source')!r}"))
+                out_cuts.append(cut)
+                report.append(row)
+                continue
+            if "hyperframes" not in approved:
+                return ToolResult(success=False, error=(
+                    f"RUNTIME_NOT_APPROVED: cut {cut.get('id')} uses runtime 'hyperframes' but approved runtimes are "
+                    f"{sorted(approved)}. Approve HyperFrames at proposal (edit_decisions.approved_runtimes) or "
+                    "author this scene in Remotion."))
+            spec = cut.get("hyperframes") or {}
+            workspace = Path(str(spec.get("workspace") or ""))
+            if not spec.get("workspace") or not (workspace / "index.html").is_file():
+                return ToolResult(success=False, error=(
+                    f"cut {cut.get('id')}: runtime 'hyperframes' needs hyperframes.workspace with an authored "
+                    f"index.html (got {spec.get('workspace')!r})"))
+            duration = float(cut["out_seconds"]) - float(cut["in_seconds"])
+            events = scene_events(timeline, cut)
+            write_bridge(workspace, cut, events)
+            trace = trace_workspace(workspace, events, expected_duration=duration)
+            if trace["hard_failures"]:
+                return ToolResult(success=False, error=(
+                    f"HyperFrames scene {cut.get('id')} does not implement its visual direction: "
+                    + "; ".join(trace["hard_failures"])), data={"trace": trace})
+            clip_dir.mkdir(parents=True, exist_ok=True)
+            clip = clip_dir / f"{cut.get('id') or 'scene'}.mp4"
+            result = HyperFramesCompose().execute({
+                "operation": "render_existing",
+                "workspace_path": str(workspace),
+                "output_path": str(clip),
+                "quality": spec.get("quality", "standard"),
+                "skip_contrast": spec.get("skip_contrast", True),
+                **({"profile": inputs["profile"]} if inputs.get("profile") else {}),
+            })
+            if not result.success:
+                return ToolResult(success=False, error=f"HyperFrames scene {cut.get('id')} failed: {result.error}",
+                                  data=result.data)
+            placed = {k: v for k, v in cut.items() if k not in ("runtime", "hyperframes", "type")}
+            placed.update({"source": str(clip), "source_in_seconds": 0})
+            out_cuts.append(placed)
+            report.append({**row, "clip": str(clip), "events": len(events), "implemented": trace["implemented"],
+                           "trace": trace["events"]})
+        return {"cuts": out_cuts, "report": report}
+
+    @staticmethod
+    def _is_media_source(source: Any) -> bool:
+        return bool(source) and Path(str(source)).suffix.lower() in {
+            ".mp4", ".mov", ".webm", ".mkv", ".avi", ".png", ".jpg", ".jpeg", ".webp"}
 
     def _render_via_hyperframes(
         self,

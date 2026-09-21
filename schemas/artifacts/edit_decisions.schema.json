@@ -63,6 +63,43 @@
           },
           "reason": { "type": "string" },
           "type": { "type": "string", "description": "Remotion render template for this cut (e.g. text_card, stat_card, visual_model). visual_model renders a persistent model from visual_timeline." },
+          "runtime": {
+            "type": "string",
+            "enum": [
+              "remotion",
+              "hyperframes",
+              "footage"
+            ],
+            "description": "Scene runtime override (v1: one main runtime per scene). Omit to inherit render_runtime. 'hyperframes' renders hyperframes.workspace to a clip placed as this cut; 'footage' marks a real video/still source."
+          },
+          "scene_id": {
+            "type": "string",
+            "description": "scene_plan scene this cut shows; used to hand the scene's visual_timeline events to a HyperFrames scene."
+          },
+          "hyperframes": {
+            "type": "object",
+            "required": [
+              "workspace"
+            ],
+            "additionalProperties": false,
+            "description": "HyperFrames scene (runtime='hyperframes'): an authored workspace whose root data-duration equals out_seconds - in_seconds and which loads the generated om-direction.js.",
+            "properties": {
+              "workspace": {
+                "type": "string"
+              },
+              "quality": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "standard",
+                  "high"
+                ]
+              },
+              "skip_contrast": {
+                "type": "boolean"
+              }
+            }
+          },
           "visual_model": {
             "type": "object",
             "description": "Required when type='visual_model'. The model keeps its state across cuts because state is computed from the absolute video time, so consecutive cuts on the same model_id read as one evolving graphic.",
@@ -207,6 +244,19 @@
         },
         "required": ["type", "at_seconds", "duration_seconds"]
       }
+    },
+    "approved_runtimes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "remotion",
+          "hyperframes",
+          "ffmpeg"
+        ]
+      },
+      "uniqueItems": true,
+      "description": "Every composition runtime the user approved at proposal. render_runtime is the master assembly; a cut may use another approved runtime (cut.runtime). Defaults to [render_runtime]."
     },
     "renderer_family": {
       "type": "string",

@@ -59,6 +59,21 @@
             "enum": ["establish_context", "introduce_subject", "build_tension", "deliver_payload", "transition", "emotional_beat", "evidence", "comparison", "resolution", "call_to_action", "immersion", "explanation", "breather", "closure"],
             "description": "What role this scene plays in the narrative structure. immersion = real-world footage that puts the viewer in the situation; explanation = a model or diagram that shows the mechanism; breather = a short real-world beat with no new information (walking, a door, a corridor) that lets the viewer rest between explanations; closure = the real-world ending that visually answers the opening."
           },
+          "runtime": {
+            "type": "string",
+            "enum": [
+              "inherit",
+              "remotion",
+              "hyperframes",
+              "footage"
+            ],
+            "default": "inherit",
+            "description": "Main runtime for this scene. inherit = project render_runtime. footage = real places/people/industry; remotion = data, comparisons, causal diagrams, persistent models, narration-timed state; hyperframes = kinetic type, hero reveals, fast expressive motion. Only approved, available runtimes run (tool_router menu)."
+          },
+          "runtime_reason": {
+            "type": "string",
+            "description": "One short phrase: why this runtime fits the scene."
+          },
           "visual_need": {
             "type": "object",
             "additionalProperties": false,
