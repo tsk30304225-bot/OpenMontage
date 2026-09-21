@@ -31,7 +31,7 @@ Quick routing for common explainer needs:
 | Schema | `schemas/artifacts/asset_manifest.schema.json` | Artifact validation |
 | Prior artifacts | `state.artifacts["scene_plan"]["scene_plan"]`, `state.artifacts["script"]["script"]`, `state.artifacts["proposal"]["proposal_packet"]` | What to produce |
 | Playbook | Active style playbook | Image prompts, diagram style, audio preferences |
-| Tools | `tts_selector`, `image_selector`, `video_selector`, `diagram_gen`, `code_snippet`, `music_gen` — selectors auto-discover all available providers from the registry | Generation capabilities |
+| Tools | `tts_selector`, `image_selector`, `video_selector`, `diagram_gen`, `code_snippet`, `music_gen` — selectors auto-discover all available providers from the registry (subscription tools `codex_image` / `grok_cli_*` need approval and a direct call, see Generated assets below) | Generation capabilities |
 | Cost tracker | `tools/cost_tracker.py` | Budget governance |
 
 ## Process
@@ -50,6 +50,8 @@ r = ToolRouter().execute({"operation": "scene_runtimes",
 ```
 
 `footage` scenes need a real clip or still; `hyperframes` scenes need an authored HyperFrames workspace for that scene (root `data-duration` = the scene's cut length, loads `om-direction.js`, places every direction event with `OM.at("<event id>")`). `remotion` scenes are assembled as usual.
+
+**Generated assets** (`skills/core/tool-routing.md` section 5): search stock first. Only when stock cannot show the scene, and only after the user approved that provider for this project (logged in `decision_log`), generate it: `codex_image` for readable text or explanatory illustration, `grok_cli_image` for a photoreal still, and for a short shot a still first, then `grok_cli_video` (image-to-video, 6 or 10 s). Read `.agents/skills/codex-image/SKILL.md` or `.agents/skills/grok-cli-media/SKILL.md` (local overlay) first, call the tool directly with `subscription_approved: true` (the `image_selector` / `video_selector` path does not pass the approval and is refused), and record `source_tool` + `scene_id` in the asset manifest. Without approval, use stock or another runtime and say which scene lost its generated asset.
 
 Walk every scene in the scene plan. For each `required_assets` entry, create an asset task:
 
@@ -121,7 +123,7 @@ or ignores intended pauses, do not batch the remaining sections. Revise the
 
 Process asset tasks grouped by tool for efficiency:
 
-**Images (`image_selector`)**:
+**Images (`image_selector`)** (API/local providers; the approval-gated `codex_image` / `grok_cli_image` are called directly, see Generated assets above):
 1. Build the prompt from the scene's actual purpose:
    - scene-specific shot/lighting/texture cues from `shot_language`, `shot_intent`, and `texture_keywords`
    - an adapted visual anchor from the playbook or custom identity

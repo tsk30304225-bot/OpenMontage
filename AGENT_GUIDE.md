@@ -457,6 +457,8 @@ Do not rely on memory or old docs when the registry can answer it.
 
 Planning reads a short tool menu (`tool_router` `operation: "menu"`), not the registry or the capability audit. Each scene picks one main runtime: `footage`, `remotion`, `hyperframes` or `inherit` (the project `render_runtime`, still the master assembly). When the user approves both Remotion and HyperFrames at proposal (`edit_decisions.approved_runtimes`), scenes may mix them freely: HyperFrames scenes render to clips placed in the Remotion assembly and must place their visual_timeline events (`OM.at(...)`). A fitting runtime that was not approved is reported as `RUNTIME_NOT_APPROVED`, never used silently. Audit and routing detail (`scripts/tool_capability_audit.py`, `tool_router route`) are for debugging. Read `skills/core/tool-routing.md`.
 
+Generated media (`codex_image`, `grok_cli_image`, `grok_cli_video`) are **asset generation tools, not scene runtimes**: nothing picks them automatically. The menu shows them as `APPROVAL_REQUIRED` = working on this machine, but never call them without the user's per-project approval for that provider (`subscription_approved: true`). Stock first; readable text or illustration → `codex_image`; photoreal still → `grok_cli_image`; short generated shot → still first, then `grok_cli_video`. The generic `image_selector` / `video_selector` do not pass the approval, so call the tool directly after approval. Rules and order: `skills/core/tool-routing.md` section 5.
+
 ## Tool Families
 
 **Do not maintain hardcoded tool lists.** Always query the registry at runtime:

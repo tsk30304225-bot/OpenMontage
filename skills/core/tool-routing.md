@@ -83,6 +83,41 @@ source. A composition that never reads `sceneClips` is refused.
 
 This is not a layer compositor. A scene has one main runtime.
 
+## 5. Generated assets (not a scene runtime)
+
+`codex_image`, `grok_cli_image` and `grok_cli_video` are **asset generation
+tools**, not scene runtimes. A scene still picks `footage`, `remotion` or
+`hyperframes`; a generated still or clip is an asset you make for that scene
+(usually placed like footage). Nothing selects them automatically.
+
+In the menu they show as `APPROVAL_REQUIRED`. That means they work on this
+machine but spend the user's subscription credits: never call them without the
+user's approval for that provider in this project (log it in `decision_log`,
+then pass `subscription_approved: true`). Without approval, do not plan around
+them and do not call them. Approval for Grok does not cover Codex, and vice versa.
+
+Order:
+
+1. Stock first. If Pexels/Pixabay footage or stills can show it, use stock.
+2. Only when stock cannot show it, consider a generated asset:
+   - readable text, labels, explanatory illustration, editing an existing image → `codex_image`
+   - photoreal still of something that cannot be filmed → `grok_cli_image`
+   - short generated shot → **still first, then video**: make and approve the start
+     frame with `grok_cli_image` (or pick an existing image), then animate it
+     with `grok_cli_video` (image-to-video only, 6 or 10 s, one camera move)
+3. Read the tool's skill before the first call. These are local-overlay skills,
+   present only on machines where the overlay is installed (the tool is missing
+   from the registry otherwise):
+   - `.agents/skills/codex-image/SKILL.md`
+   - `.agents/skills/grok-cli-media/SKILL.md`
+
+**Selector limit:** `image_selector` / `video_selector` discover these tools
+but do not pass `subscription_approved`, so a selector call is refused by the
+approval gate. After approval, call the tool directly, for example
+`GrokCliVideo().execute({"prompt": ..., "image_path": ..., "duration": 6,
+"subscription_approved": True, "output_path": ...})`, and record the asset
+in `asset_manifest` with `source_tool` and `scene_id`.
+
 ## Debug / audit only
 
 Planning never needs any of this. Use it when a tool looks wrong or missing:
