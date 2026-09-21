@@ -20,6 +20,7 @@ ARTIFACT_NAMES = [
     "pose_library",
     "scene_plan",
     "visual_direction",
+    "tool_plan",
     "action_timeline",
     "asset_manifest",
     "edit_decisions",

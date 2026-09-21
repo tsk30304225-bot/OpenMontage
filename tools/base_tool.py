@@ -283,6 +283,13 @@ class BaseTool(ABC):
     # --- Verification ---
     user_visible_verification: list[str] = []
 
+    # --- Capability routing (lib/tool_routing.py) ---
+    # What the tool router may pick this tool FOR (lib.tool_routing.RouteOffer),
+    # independent of the selector-facing `capability` string. Empty = the tool
+    # is never auto-routed. An offer is routed only once this machine holds
+    # smoke + output evidence for it (see scripts/tool_capability_audit.py).
+    route_offers: list = []
+
     # --- Optional telemetry / quality hints for the scoring engine ---
     # If set (0.0-1.0), lib/scoring.py uses these directly instead of falling
     # back to stability-based heuristics. Leave unset unless the tool has a
@@ -369,7 +376,22 @@ class BaseTool(ABC):
             "quality_score": self.quality_score,
             "historical_success_rate": self.historical_success_rate,
             "latency_p50_seconds": self.latency_p50_seconds,
+            "route_offers": [offer.to_dict() for offer in self.route_offers],
         }
+
+    # ---- Routing smoke ----
+
+    def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> Optional[dict[str, Any]]:
+        """Smallest real call proving a route offer works on this machine.
+
+        Return ``{"artifact": <path>, "detail": str}`` on success and raise on
+        failure; ``None`` means no smoke is defined. ``cache`` is shared by the
+        tool's offers within one audit run, so offers served by the same call
+        (e.g. narration + alignment) run it once. The audit only calls this
+        for offers whose cost tier was approved, but a smoke must still be the
+        cheapest possible call.
+        """
+        return None
 
     # ---- Cost estimation ----
 

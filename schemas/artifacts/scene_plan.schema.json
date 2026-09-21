@@ -59,6 +59,134 @@
             "enum": ["establish_context", "introduce_subject", "build_tension", "deliver_payload", "transition", "emotional_beat", "evidence", "comparison", "resolution", "call_to_action", "immersion", "explanation", "breather", "closure"],
             "description": "What role this scene plays in the narrative structure. immersion = real-world footage that puts the viewer in the situation; explanation = a model or diagram that shows the mechanism; breather = a short real-world beat with no new information (walking, a door, a corridor) that lets the viewer rest between explanations; closure = the real-world ending that visually answers the opening."
           },
+          "visual_need": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reality": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "Real places, people, objects or actions must be seen (stock/archive footage or photos)."
+              },
+              "impossible_visual": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "Something that cannot be filmed or photographed must be seen (generated image/video)."
+              },
+              "information_precision": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "Exact numbers, labels, axes or diagrams must be readable."
+              },
+              "motion_expressiveness": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "The motion itself carries the meaning (kinetic type, a reveal, a transition)."
+              },
+              "rhythm_accent": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "A sound accent should mark a beat (impact, UI feedback, transition)."
+              },
+              "narration": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "A spoken voice carries this scene."
+              },
+              "word_sync": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "Visuals or captions must land on specific spoken words."
+              },
+              "captions": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "Narration must be captioned on screen."
+              },
+              "mood": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "low",
+                  "medium",
+                  "high"
+                ],
+                "description": "A music bed sets the feeling of this stretch."
+              },
+              "cues": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "location",
+                    "human_activity",
+                    "physical_object",
+                    "infrastructure",
+                    "nature",
+                    "data_value",
+                    "comparison",
+                    "process",
+                    "diagram",
+                    "timeline_axis",
+                    "label",
+                    "kinetic_text",
+                    "major_reveal",
+                    "chapter_transition",
+                    "metaphor",
+                    "not_filmable",
+                    "abstract_concept",
+                    "spoken_words",
+                    "impact",
+                    "ui_feedback",
+                    "emotional_shift"
+                  ]
+                },
+                "uniqueItems": true,
+                "description": "What kind of content the scene shows; matched against tool trigger cues."
+              }
+            },
+            "description": "WHAT this scene needs, in tool-agnostic dimensions (none|low|medium|high). Never name a tool here: lib/tool_routing.py turns needs into a tool_plan from verified tool offers. medium or high is routed; low is recorded only."
+          },
           "information_role": {
             "type": "string",
             "description": "What the viewer learns or feels from this scene"

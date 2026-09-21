@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tool_plan",
+  "description": "WHAT WITH: which verified tool offer fills each scene need (lib/tool_routing.py route_scenes). Scene needs come from scene_plan.scenes[].visual_need; candidates come from the machine's tool capability audit. Executors follow it or record an override with a reason.",
+  "type": "object",
+  "required": ["version", "scenes", "tracks", "warnings"],
+  "additionalProperties": false,
+  "definitions": {
+    "layer": {
+      "type": "object",
+      "required": ["role", "need", "offer", "tool", "reason"],
+      "properties": {
+        "role": {"type": "string", "enum": ["visual_source", "base_composition", "emphasis_overlay", "sound", "narration", "sync", "captions", "music"]},
+        "need": {"type": "string"},
+        "offer": {"type": "string"},
+        "tool": {"type": "string"},
+        "provider": {"type": ["string", "null"]},
+        "runtime": {"type": ["string", "null"]},
+        "score": {"type": "number"},
+        "reason": {"type": "string"},
+        "scenes": {"type": "array", "items": {"type": ["string", "null"]}},
+        "rejected": {"type": "array", "items": {"$ref": "#/definitions/rejection"}}
+      }
+    },
+    "rejection": {
+      "type": "object",
+      "required": ["need", "reason"],
+      "properties": {
+        "need": {"type": "string"},
+        "offer": {"type": ["string", "null"]},
+        "tool": {"type": ["string", "null"]},
+        "reason": {"type": "string"}
+      }
+    },
+    "unmet": {
+      "type": "object",
+      "required": ["need", "level", "blocked"],
+      "properties": {
+        "need": {"type": "string"},
+        "level": {"type": "integer"},
+        "scenes": {"type": "array", "items": {"type": ["string", "null"]}},
+        "blocked": {"type": "array", "items": {"type": "object"}},
+        "rejected": {"type": "array", "items": {"$ref": "#/definitions/rejection"}}
+      }
+    }
+  },
+  "properties": {
+    "version": {"type": "string"},
+    "master_runtime": {"type": ["string", "null"]},
+    "approved_runtimes": {"type": ["array", "null"], "items": {"type": "string"}},
+    "capability_generated_at": {"type": ["string", "null"]},
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scene_id", "need", "layers", "rejected", "unmet"],
+        "properties": {
+          "scene_id": {"type": ["string", "null"]},
+          "need": {"type": "object"},
+          "cues": {"type": "array", "items": {"type": "string"}},
+          "layers": {"type": "array", "items": {"$ref": "#/definitions/layer"}},
+          "rejected": {"type": "array", "items": {"$ref": "#/definitions/rejection"}},
+          "unmet": {"type": "array", "items": {"$ref": "#/definitions/unmet"}}
+        }
+      }
+    },
+    "tracks": {"type": "array", "items": {"$ref": "#/definitions/layer"}},
+    "unmet_tracks": {"type": "array", "items": {"$ref": "#/definitions/unmet"}},
+    "overrides": {
+      "type": "array",
+      "description": "Layers the executor deliberately did not use. Without a reason, tool_usage QA reports ROUTED_LAYER_IGNORED.",
+      "items": {
+        "type": "object",
+        "required": ["scene_id", "offer", "reason"],
+        "properties": {
+          "scene_id": {"type": ["string", "null"]},
+          "offer": {"type": "string"},
+          "reason": {"type": "string", "minLength": 1},
+          "replacement": {"type": "string"}
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {"code": {"type": "string"}, "message": {"type": "string"}}
+      }
+    },
+    "summary": {"type": "object"}
+  }
+}

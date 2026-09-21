@@ -47,6 +47,7 @@ SUPPLEMENTARY_ARTIFACTS = {
     "video_analysis_brief", # Reference-video grounding artifact carried alongside stages
     "visual_direction",     # Scene-stage meaning contract: viewer journey, visual models, anchored beats
     "visual_timeline",      # Edit-stage execution contract: beats resolved to aligned narration time
+    "tool_plan",            # Scene-stage WHAT WITH: verified tool offers routed from scene visual_need
 }
 
 
