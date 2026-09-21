@@ -74,6 +74,7 @@ r = VisualTimelineCompiler().execute({
     'alignment': '<qwen3_tts timestamps_path, e.g. assets/narration/.qnttslocal/om_segments.json>',
     'output_path': 'projects/<project>/artifacts/visual_timeline.json',
 })
+# Pass 'tool_plan': 'projects/<project>/artifacts/tool_plan.json' as well: the timeline keeps tool_layers per scene.
 # r.success is False when an anchor is unmatched or an event changes nothing - fix the direction, do not hand-edit times.
 # r.data['warnings'] lists events that fire outside their scene window - extend that model cut.
 ```

@@ -453,6 +453,10 @@ For finalist tools inspect:
 
 Do not rely on memory or old docs when the registry can answer it.
 
+### Capability routing (which tool fills which scene need)
+
+`available` only means dependencies are present. Scenes declare **needs** (`scene_plan.scenes[].visual_need`: reality, information_precision, motion_expressiveness, impossible_visual, rhythm_accent, narration, word_sync, captions, mood), and `tool_router` routes each need to a tool offer that this machine has **verified** (`scripts/tool_capability_audit.py`: DISCOVERED → AVAILABLE → SMOKE_TESTED → OUTPUT_VERIFIED → PRODUCTION_VERIFIED; routable from OUTPUT_VERIFIED). One scene may combine several tools (stock footage + precise graphic + expressive overlay + narration + captions). The router never overrides the runtime rule above: an offer whose runtime was not approved at proposal is reported as `RUNTIME_NOT_APPROVED`, not chosen. The audit only calls free offers unless the user approves a paid tier. Read `skills/core/tool-routing.md`.
+
 ## Tool Families
 
 **Do not maintain hardcoded tool lists.** Always query the registry at runtime:

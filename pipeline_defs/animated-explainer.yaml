@@ -152,6 +152,7 @@ stages:
       - Full script duration covered with no gaps
       - "Visual variety: no 3+ consecutive scenes of same type"
       - "visual_direction: viewer journey, reality/breather/closure roles, persistent visual model with narration-anchored beats (skills/core/visual-direction.md); visual_timeline_compiler validate passes"
+      - "visual_need on every scene (skills/core/tool-routing.md): needs rated, no tool or runtime names in the scene plan"
       - Asset feasibility - every required_asset uses a tool from the production plan
       - Playbook adherence - transitions, colors, pacing rules
     success_criteria:
@@ -184,6 +185,7 @@ stages:
       - code_snippet
       - music_gen
       - math_animate
+      - tool_router
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -192,6 +194,7 @@ stages:
       - Narration assets apply the approved voice performance plan and sample settings
       - Total cost within approved budget from proposal_packet
       - Image style consistency across all generated visuals
+      - "tool_plan routed from scene visual_need before spend; every layer produced with its routed tool or listed in tool_plan.overrides with a reason; RUNTIME_NOT_APPROVED and NEED_UNMET raised with the user"
     success_criteria:
       - Schema-valid asset_manifest with all required assets generated
       - All file paths resolve to existing files
@@ -248,6 +251,7 @@ stages:
       - "If render_runtime='hyperframes': `hyperframes lint` and `hyperframes validate` must pass before render"
       - "When edit_decisions.visual_timeline exists: direction_qa has no hard failures; warnings reviewed against anchor frames"
       - "Atelier: visual_direction models/beats kept (renderer bespoke when no generic renderer), visual_timeline compiled, every event implemented in the direction_qa implementation_trace"
+      - "When tool_plan exists: direction_qa tool_usage warnings (ROUTED_LAYER_IGNORED, *_UNDERUSED) fixed or explained"
     success_criteria:
       - Schema-valid render_report with output paths
       - Output file exists and passes ffprobe validation

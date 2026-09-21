@@ -96,6 +96,12 @@ VisualTimelineCompiler().execute({
 
 Every scene id in `visual_direction` must exist in `scene_plan`; mirror the same `narrative_role` into `scene_plan.scenes[].narrative_role`.
 
+#### Step 3c: Visual Need per Scene (what, never which tool)
+
+Give every scene a `visual_need` (`skills/core/tool-routing.md`): rate `reality`, `impossible_visual`, `information_precision`, `motion_expressiveness`, `rhythm_accent` and the tracks (`narration`, `word_sync`, `captions`, `mood`) as `none|low|medium|high`, and add `cues` (`location`, `data_value`, `major_reveal`, `not_filmable`, ...). One scene can need several things at once: a real data centre (`reality: high`) with an exact figure (`information_precision: medium`) that lands as a reveal (`motion_expressiveness: high`).
+
+Do **not** name tools, runtimes or providers here or in `description`: the router picks verified tools from the needs, and naming them re-creates the habit of defaulting to one runtime. A `narrative_role` of `immersion`, `breather` or `closure` almost always means `reality: medium` or higher.
+
 #### Render Templates and Scene Types
 
 The canonical `scene_plan.scenes[].type` vocabulary is `talking_head`, `broll`,
