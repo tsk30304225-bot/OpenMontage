@@ -1,145 +1,99 @@
-# Tool Routing — needs first, verified tools second
+# Tool Routing — a short menu, one main runtime per scene
 
-## Why this exists
+Tool choice stays light; scene execution stays flexible. Planning reads a
+seven-line menu, not the registry or any audit detail.
 
-Installed tools were going unused. A tool could report `available`, but nothing
-said *when* to use it, so planning fell back to the familiar runtime: every scene
-became Remotion, and stock footage, HyperFrames, generated media and SFX sat idle.
-Tool routing fixes this in two parts:
-
-1. The scene director says **what a scene needs**, never which tool to use.
-2. The router picks **verified** tools for each need. One scene can use several
-   tools, e.g. stock footage + a precise graphic + an expressive overlay +
-   narration + captions.
-
-| Artifact | Answers | Written by |
-|---|---|---|
-| `scene_plan.scenes[].visual_need` | WHAT the scene needs (tool-agnostic) | scene director |
-| `visual_direction` | WHAT changes, on which narration words | scene director |
-| `tool_plan` | WHAT WITH: which verified tool fills each need | `tool_router route` |
-| `visual_timeline` | WHEN (keeps `tool_layers` from the tool_plan) | edit director |
-| composition | HOW it looks | templated / atelier |
-
-Code: `lib/tool_routing.py`, `tools/analysis/tool_router.py`,
-`scripts/tool_capability_audit.py`.
-
-## 1. visual_need (scene director)
-
-Each scene rates every relevant dimension `none | low | medium | high`.
-`medium` or `high` is routed; `low` is only recorded.
-
-| Need | Meaning | Fills role |
-|---|---|---|
-| `reality` | real places, people, objects, actions must be seen | visual_source |
-| `impossible_visual` | something that cannot be filmed must be seen | visual_source |
-| `information_precision` | exact numbers, labels, axes, diagrams | base_composition |
-| `motion_expressiveness` | the motion itself carries the meaning | emphasis_overlay |
-| `rhythm_accent` | a sound accent marks the beat | sound |
-| `narration` / `word_sync` / `captions` / `mood` | project tracks | narration / sync / captions / music |
-
-Add `cues` for the content type: `location`, `human_activity`,
-`physical_object`, `infrastructure`, `nature`, `data_value`, `comparison`,
-`process`, `diagram`, `timeline_axis`, `label`, `kinetic_text`, `major_reveal`,
-`chapter_transition`, `metaphor`, `not_filmable`, `abstract_concept`,
-`spoken_words`, `impact`, `ui_feedback`, `emotional_shift`.
-
-```json
-"visual_need": {"reality": "high", "information_precision": "medium",
-                "motion_expressiveness": "high", "narration": "high",
-                "word_sync": "high", "captions": "high",
-                "cues": ["infrastructure", "data_value", "major_reveal"]}
-```
-
-**Do not name tools** in `visual_need`; the schema rejects unknown keys. Don't
-name them in the scene description either, or the router raises
-`TOOL_NAMED_IN_SCENE_PLAN`. Rate the need honestly: a scene about a real
-place is `reality: high` even if you expect to draw it.
-
-## 2. Capability audit: what this machine can actually do
-
-A tool is routed only when it is **routable**. That means its route offer
-metadata is complete and this machine has evidence that it produces valid
-output. The evidence levels:
-
-| Level | Evidence |
-|---|---|
-| DISCOVERED | registered with a route offer |
-| AVAILABLE | dependencies / keys present (`get_status`) |
-| SMOKE_TESTED | the smallest real call succeeded |
-| OUTPUT_VERIFIED | that call's artifact exists and probes valid (ffprobe / JSON) → **routable** |
-| PRODUCTION_VERIFIED | successful real-project calls in `projects/*/events.jsonl` (single-offer tools only; events do not name the offer) |
-
-```bash
-python scripts/tool_capability_audit.py            # levels from status + stored evidence, no calls
-python scripts/tool_capability_audit.py --smoke    # + smallest real call per FREE offer
-```
-
-Paid and subscription offers are **never** called by the audit unless you pass
-`--allow-cost-tier paid|subscription`, and you need the user's approval first.
-The report and evidence live in the machine-level audit dir
-(`~/.openmontage/tool_audit`, or `$OPENMONTAGE_TOOL_AUDIT_DIR`). Every checkout
-and worktree shares it, and it is never committed. Evidence expires after 30
-days or when the tool's version changes.
-
-Tools that only exist on this machine (for example local Qwen3-TTS) declare
-their offers in `<audit dir>/local_offers.json`, including a declarative smoke
-call. The repo cannot carry them.
-
-## 3. Route (asset director, before any spend)
+## 1. Read the menu (planning)
 
 ```python
 from tools.analysis.tool_router import ToolRouter
-ToolRouter().execute({
-    "operation": "route",
-    "scene_plan": "projects/<project>/artifacts/scene_plan.json",
-    "master_runtime": "remotion",                    # the approved render_runtime
-    "approved_runtimes": ["remotion", "hyperframes"],  # every runtime the user approved at proposal
-    "output_path": "projects/<project>/artifacts/tool_plan.json",
-})
+print(ToolRouter().execute({"operation": "menu",
+                            "approved_runtimes": ["remotion", "hyperframes"]}).data["text"])
 ```
 
-- Each scene gets `layers`, plus the `rejected` candidates and why, plus
-  `unmet` needs with the unverified candidates that were blocked.
-- `RUNTIME_NOT_APPROVED`: a verified offer fits these scenes, but its runtime
-  was not approved. This follows the proposal-stage runtime rule in
-  AGENT_GUIDE, so present it to the user. Do not quietly drop it.
-- `NEED_UNMET`: no routable tool exists for the need. Either run the audit
-  smoke for the blocked candidate (paid ones need approval), or tell the user
-  this dimension will be missing.
-- Selection is deterministic: strength for the need, cue matches, evidence
-  level and cost tier, with ties broken by offer id.
+It lists only the families this machine can actually use (verified tools), what
+each is for, and marks the rest `UNAVAILABLE here, do not select`. Registry,
+proposal preflight and the approved runtimes stay authoritative.
 
-## 4. Execute or override
+## 2. Pick one main runtime per scene (scene director)
 
-Produce each layer with the chosen tool. For assets, record `source_tool` (and
-`provider` when a selector delegates) with `scene_id` in `asset_manifest`, so
-usage can be checked. If you deliberately skip a layer, append it to
-`tool_plan.overrides` as `{scene_id, offer, reason}`. A reason like "user
-supplied footage" is fine; silence is not.
+`scene_plan.scenes[].runtime` = `inherit` (project default) | `footage` |
+`remotion` | `hyperframes`, plus a short `runtime_reason`.
 
-Pass `tool_plan` to `visual_timeline_compiler` `compile`. It keeps
-`tool_layers` on the timeline.
+| Runtime | Use for |
+|---|---|
+| `footage` | reality: places, people, industry, immersion / breather / closure |
+| `remotion` | data, numbers, comparisons, causal diagrams, persistent models, state changes locked to narration |
+| `hyperframes` | kinetic typography, strong reveals, hero moments, fast expressive motion, short transitions and emphasis |
 
-## 5. Usage QA (soft warnings)
+Decide from the scene's meaning, not from habit. Most scenes can
+`inherit`. Only use a runtime that the menu lists as available and that the
+proposal approved. If a runtime fits but was not approved, record it: the
+`scene_runtimes` step raises `RUNTIME_NOT_APPROVED` rather than dropping it
+silently. `visual_need` is optional detail and never required.
 
-`direction_qa` accepts `tool_plan` + `asset_manifest`. You can also call
-`tool_router` with `operation: "usage_report"`. Possible warnings:
+## 3. Resolve (asset / edit director)
 
-- `ROUTED_LAYER_IGNORED`: a routed layer was never used, and no override
-  gives a reason.
-- `REAL_WORLD_BROLL_UNDERUSED`, `EXPRESSIVE_RUNTIME_UNDERUSED`,
-  `SYNTHETIC_VISUAL_UNDERUSED`, `SFX_UNDERUSED`,
-  `STRUCTURED_GRAPHICS_UNDERUSED`: fewer than half of the scenes that needed
-  it were honoured.
-- `ROUTED_TRACK_IGNORED` and `NEED_UNMET`.
+```python
+ToolRouter().execute({"operation": "scene_runtimes",
+                      "scene_plan": "projects/<p>/artifacts/scene_plan.json",
+                      "master_runtime": "remotion",
+                      "approved_runtimes": ["remotion", "hyperframes"]})
+```
 
-These warnings never block a render. The reviewer must address each one.
-Static-screen excess is scored by `lib/slideshow_risk.py`, not here.
+This returns one compact row per scene, `{scene_id, runtime, reason}`, plus any
+warnings (`RUNTIME_NOT_APPROVED`, `RUNTIME_UNAVAILABLE`). Downstream stages
+only need these rows.
 
-## Adding a tool to routing
+## 4. Execute (edit_decisions)
 
-Declare `route_offers = [RouteOffer(...)]` on the tool class, with axes,
-scopes, triggers, strengths, fallback, runtime and cost tier. Implement
-`routing_smoke(offer_id, workdir, cache)` as the cheapest real call that
-writes an artifact. Leave the selector `capability` string alone: selectors
-discover providers by it. Then run the audit with `--smoke`.
+The project `render_runtime` is still the master assembly, and in v1 it must
+be `remotion` (templated). List every approved runtime in
+`edit_decisions.approved_runtimes`. Then, per cut:
+
+- `footage`: an ordinary video or image cut with `"runtime": "footage"`.
+- `remotion`: an ordinary templated cut. `"runtime"` may be omitted.
+- `hyperframes`: `{"runtime": "hyperframes", "scene_id": "sc3", "hyperframes": {"workspace": "<dir>"}}`.
+  `video_compose` renders that workspace to a clip and places it as this
+  cut. Captions, audio and the rest of the assembly stay unchanged.
+
+**HyperFrames scenes keep the visual-direction contract.** Before rendering,
+`video_compose` writes `om-direction.js` into the workspace. It holds the
+scene's `visual_timeline` events in scene-local seconds. The authored
+`index.html` must:
+
+1. load it: `<script src="om-direction.js"></script>` before the timeline script;
+2. place every event of the scene on the GSAP timeline:
+   `tl.to("#headline", {...}, OM.at("ev-b1"))` (or `data-om-event="ev-b1"`);
+3. set the root `data-duration` to the cut length (`out_seconds - in_seconds`).
+
+A missing script, an unplaced event, a stale event id or a wrong duration
+refuses the render. `direction_qa` traces the workspace and checks that the
+picture changes at each event in the final MP4.
+
+This is not a layer compositor. A scene has one main runtime.
+
+## Debug / audit only
+
+Planning never needs any of this. Use it when a tool looks wrong or missing:
+
+- `python scripts/tool_capability_audit.py [--smoke]`: the evidence ladder
+  (DISCOVERED → AVAILABLE → SMOKE_TESTED → OUTPUT_VERIFIED →
+  PRODUCTION_VERIFIED; routable from OUTPUT_VERIFIED). Smoke calls are free
+  offers only unless a paid tier is approved. Evidence is kept in the
+  machine-level audit dir (`~/.openmontage/tool_audit`); local-only tools
+  declare offers in `local_offers.json` there.
+- `tool_router` `route`: the full `tool_plan` (candidates, rejections,
+  fallbacks) from `visual_need`.
+- `tool_router` `usage_report` / `direction_qa` with `tool_plan`: soft warnings
+  for routed tools that production ignored.
+
+Add a tool to routing by declaring `route_offers` (with a one-line `notes`
+"use for") and `routing_smoke` on the tool class. Leave the selector
+`capability` string alone.
+
+## Worktrees
+
+Remove OpenMontage worktrees with `python scripts/safe_worktree_remove.py <dir>`,
+never with `git worktree remove --force`. On Windows, git follows the
+node_modules / local-overlay junctions and empties the shared targets.

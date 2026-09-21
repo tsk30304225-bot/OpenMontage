@@ -19,6 +19,7 @@ Explainer proposals must lock **both** a `renderer_family` (creative grammar) an
    - **Remotion** — one line on fit (mention the React scene stack components that apply), one line on tradeoff.
    - **HyperFrames** — one line on fit (mention HTML/GSAP motion, registry blocks, kinetic typography if applicable), one line on tradeoff.
 3. Recommend one with rationale tied to the brief's `delivery_promise`, `visual_approach`, and whether word-level caption burn is required (that one forces Remotion).
+   Also offer **Remotion master + HyperFrames scenes**: the assembly stays Remotion (`render_runtime: "remotion"`) and hero/kinetic scenes may use HyperFrames (`production_plan.approved_runtimes: ["remotion", "hyperframes"]`, see `skills/core/tool-routing.md`). Without that approval, scenes cannot use HyperFrames.
 4. Wait for explicit user approval. Do NOT write `render_runtime` into `proposal_packet.production_plan` before approval.
 5. Log a `render_runtime_selection` decision in `decision_log` with BOTH runtimes (plus `ffmpeg` if it was a realistic option) in `options_considered`, the user's pick as `selected`, and the rationale as `reason`. If a runtime was unavailable, record it as rejected with `rejected_because: "runtime not available on this machine"`.
 

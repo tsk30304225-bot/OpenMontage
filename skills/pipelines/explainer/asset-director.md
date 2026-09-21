@@ -38,21 +38,18 @@ Quick routing for common explainer needs:
 
 ### Step 1: Inventory Required Assets
 
-Start from the **tool_plan**, not from habit. Route the scene needs to verified tools before any spend (`skills/core/tool-routing.md`):
+Resolve the scene runtimes first (`skills/core/tool-routing.md`):
 
 ```python
 from tools.analysis.tool_router import ToolRouter
-r = ToolRouter().execute({
-    "operation": "route",
-    "scene_plan": "projects/<project>/artifacts/scene_plan.json",
-    "master_runtime": "<approved render_runtime>",
-    "approved_runtimes": ["<every runtime approved at proposal>"],
-    "output_path": "projects/<project>/artifacts/tool_plan.json",
-})
+r = ToolRouter().execute({"operation": "scene_runtimes",
+                          "scene_plan": "projects/<project>/artifacts/scene_plan.json",
+                          "master_runtime": "<approved render_runtime>",
+                          "approved_runtimes": ["<every runtime approved at proposal>"]})
+# r.data["scenes"]: [{scene_id, runtime, reason}] - all later stages need; r.data["warnings"]: raise with the user
 ```
 
-Each scene's `layers` name the tool for each need (footage source, graphic base, expressive overlay, sound); `tracks` name narration, alignment, captions and music. Produce every layer with the routed tool and record `source_tool` / `provider` + `scene_id` in the asset manifest. To skip a layer, add `{scene_id, offer, reason}` to `tool_plan.overrides`. `RUNTIME_NOT_APPROVED` means a verified tool fits but its runtime was not approved: raise it with the user instead of dropping it. `NEED_UNMET` means no tool on this machine is verified for that need: say which dimension will be missing (or run `scripts/tool_capability_audit.py --smoke` for a free candidate; paid candidates need approval first).
-
+`footage` scenes need a real clip or still; `hyperframes` scenes need an authored HyperFrames workspace for that scene (root `data-duration` = the scene's cut length, loads `om-direction.js`, places every direction event with `OM.at("<event id>")`). `remotion` scenes are assembled as usual.
 
 Walk every scene in the scene plan. For each `required_assets` entry, create an asset task:
 

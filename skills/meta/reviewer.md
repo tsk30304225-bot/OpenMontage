@@ -201,15 +201,14 @@ Applies when the project has `visual_direction`. Contract: `skills/core/visual-d
 - `direction_qa.implementation_trace`: every event implemented with a `file:line Component` reference; any gap is **critical**.
 - Diagrams complete from their first frame (all parts present before the narration builds them) are **major** even when pixels change somewhere; open the anchor frames.
 
-## Tool Routing Review (tool_plan)
+## Scene Runtime Review
 
-Applies when scenes carry `visual_need`. Contract: `skills/core/tool-routing.md`.
+Applies when scenes set `runtime`. Contract: `skills/core/tool-routing.md`.
 
-- `scene_plan` names tools or runtimes instead of needs (`TOOL_NAMED_IN_SCENE_PLAN`) - **major**.
-- A scene whose `narrative_role` is `immersion`, `breather` or `closure` rated `reality` below `medium` - **major** (the need was under-rated to avoid footage).
-- `RUNTIME_NOT_APPROVED` in the tool_plan that was never presented to the user - **major**.
-- `direction_qa.tool_usage` / `tool_router usage_report`: every `ROUTED_LAYER_IGNORED` either fixed or covered by a `tool_plan.overrides` reason; `*_UNDERUSED` explained - unexplained ones are **major**.
-- `NEED_UNMET` accepted silently - **minor** when disclosed to the user, **major** otherwise.
+- Reality scenes (`immersion`, `breather`, `closure`) rendered as graphics while footage is available - **major**.
+- `RUNTIME_NOT_APPROVED` never presented to the user - **major**.
+- A HyperFrames scene whose direction events are not placed (`direction_qa.hyperframes_traces`) or whose picture does not change at an event - **critical** (same rule as atelier).
+- Tool names in scene descriptions instead of meaning - **minor**.
 
 ## Slideshow Risk Review
 

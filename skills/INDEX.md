@@ -92,7 +92,7 @@ Key capability families to look for in the output:
 | Azure TTS | (tool: `azure_tts`) | Optional cloud neural narration (SSML prosody, express-as styles) — same Speech key as `azure_stt` | `azure-text-to-speech` |
 | Subtitle Sync | `core/subtitle-sync.md` | Subtitle timing and alignment | `remotion-best-practices` |
 | Visual Direction | `core/visual-direction.md` | Viewer journey, reality vs model roles, persistent visual models, narration-anchored beats -> `visual_timeline` -> Direction QA | `remotion-best-practices` |
-| Tool Routing | `core/tool-routing.md` | Scene `visual_need` (no tool names) -> verified tool offers (capability audit ladder) -> `tool_plan` layers per scene -> usage QA | - |
+| Tool Routing | `core/tool-routing.md` | Short tool menu -> one main runtime per scene (footage / Remotion / HyperFrames) -> HyperFrames scene clips keep the direction contract; audit detail on request only | - |
 | Color Grading | `core/color-grading.md` | FFmpeg color profiles, LUT workflow, accessibility | `ffmpeg` |
 
 ## Creative Skills

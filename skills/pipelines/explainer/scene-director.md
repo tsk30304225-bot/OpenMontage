@@ -96,11 +96,9 @@ VisualTimelineCompiler().execute({
 
 Every scene id in `visual_direction` must exist in `scene_plan`; mirror the same `narrative_role` into `scene_plan.scenes[].narrative_role`.
 
-#### Step 3c: Visual Need per Scene (what, never which tool)
+#### Step 3c: Main Runtime per Scene
 
-Give every scene a `visual_need` (`skills/core/tool-routing.md`): rate `reality`, `impossible_visual`, `information_precision`, `motion_expressiveness`, `rhythm_accent` and the tracks (`narration`, `word_sync`, `captions`, `mood`) as `none|low|medium|high`, and add `cues` (`location`, `data_value`, `major_reveal`, `not_filmable`, ...). One scene can need several things at once: a real data centre (`reality: high`) with an exact figure (`information_precision: medium`) that lands as a reveal (`motion_expressiveness: high`).
-
-Do **not** name tools, runtimes or providers here or in `description`: the router picks verified tools from the needs, and naming them re-creates the habit of defaulting to one runtime. A `narrative_role` of `immersion`, `breather` or `closure` almost always means `reality: medium` or higher.
+Read the short tool menu (`tool_router` `operation: "menu"`, `skills/core/tool-routing.md`) and give each scene a `runtime` with a short `runtime_reason`: `footage` for reality (places, people, industry, immersion/breather/closure), `remotion` for data, comparisons, causal diagrams and narration-locked state changes, `hyperframes` for kinetic type, hero reveals and fast expressive emphasis. Leave the rest `inherit`. Choose from the scene's meaning and only from families the menu lists as available; a fitting runtime that the proposal did not approve is written anyway and surfaces as `RUNTIME_NOT_APPROVED` for the user. Keep tool names out of `description`.
 
 #### Render Templates and Scene Types
 

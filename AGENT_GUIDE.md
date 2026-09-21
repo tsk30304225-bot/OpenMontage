@@ -453,9 +453,9 @@ For finalist tools inspect:
 
 Do not rely on memory or old docs when the registry can answer it.
 
-### Capability routing (which tool fills which scene need)
+### Scene runtimes (which runtime shows each scene)
 
-`available` only means dependencies are present. Scenes declare **needs** (`scene_plan.scenes[].visual_need`: reality, information_precision, motion_expressiveness, impossible_visual, rhythm_accent, narration, word_sync, captions, mood), and `tool_router` routes each need to a tool offer that this machine has **verified** (`scripts/tool_capability_audit.py`: DISCOVERED → AVAILABLE → SMOKE_TESTED → OUTPUT_VERIFIED → PRODUCTION_VERIFIED; routable from OUTPUT_VERIFIED). One scene may combine several tools (stock footage + precise graphic + expressive overlay + narration + captions). The router never overrides the runtime rule above: an offer whose runtime was not approved at proposal is reported as `RUNTIME_NOT_APPROVED`, not chosen. The audit only calls free offers unless the user approves a paid tier. Read `skills/core/tool-routing.md`.
+Planning reads a short tool menu (`tool_router` `operation: "menu"`), not the registry or the capability audit. Each scene picks one main runtime: `footage`, `remotion`, `hyperframes` or `inherit` (the project `render_runtime`, still the master assembly). When the user approves both Remotion and HyperFrames at proposal (`edit_decisions.approved_runtimes`), scenes may mix them freely: HyperFrames scenes render to clips placed in the Remotion assembly and must place their visual_timeline events (`OM.at(...)`). A fitting runtime that was not approved is reported as `RUNTIME_NOT_APPROVED`, never used silently. Audit and routing detail (`scripts/tool_capability_audit.py`, `tool_router route`) are for debugging. Read `skills/core/tool-routing.md`.
 
 ## Tool Families
 
