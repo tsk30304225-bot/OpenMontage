@@ -28,32 +28,46 @@ from tools.base_tool import (
 )
 
 
+PROBE_ATTEMPTS = 4          # ffprobe calls at most, per file
+PROBE_RETRY_SECONDS = 1.0   # pause between attempts
+
+
 def probe_duration(file_path: str | Path) -> float | None:
     """Quick helper: return duration in seconds, or None on failure.
 
     Use this from other tools that just need the duration without
     going through the full tool execute() flow.
+
+    ffprobe output is decoded as UTF-8 (locale-independent: it may echo
+    non-ASCII paths), and a failed probe is retried a few times because on
+    Windows a file a worker process has just written can be briefly locked.
+    A missing ffprobe or a missing file returns None at once.
     """
     ffprobe = shutil.which("ffprobe")
-    if not ffprobe:
+    if not ffprobe or not Path(file_path).is_file():
         return None
-    try:
-        result = subprocess.run(
-            [
-                ffprobe,
-                "-v", "quiet",
-                "-print_format", "json",
-                "-show_format",
-                str(file_path),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        data = json.loads(result.stdout)
-        return float(data["format"]["duration"])
-    except Exception:
-        return None
+    for attempt in range(PROBE_ATTEMPTS):
+        try:
+            result = subprocess.run(
+                [
+                    ffprobe,
+                    "-v", "quiet",
+                    "-print_format", "json",
+                    "-show_format",
+                    str(file_path),
+                ],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=10,
+            )
+            data = json.loads(result.stdout)
+            return float(data["format"]["duration"])
+        except Exception:
+            if attempt < PROBE_ATTEMPTS - 1:
+                time.sleep(PROBE_RETRY_SECONDS)
+    return None
 
 
 class AudioProbe(BaseTool):
