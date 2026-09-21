@@ -859,11 +859,14 @@ MENU_FAMILIES = (
 
 def creative_menu(capability: Optional[dict[str, Any]], approved_runtimes: Optional[Iterable[str]] = None
                   ) -> dict[str, Any]:
-    """Short tool menu for directors: families, what they are for, available or not.
+    """Short tool menu for directors: families, what they are for, and their state.
 
-    Built from the audit report's routable offers (and their one-line
-    ``notes``). Verification history, scores, candidates and the registry are
-    deliberately left out; ask ``tool_router`` for ``audit`` when debugging.
+    States: ROUTABLE (output verified on this machine), APPROVAL_REQUIRED
+    (routable but spends credits: only with the user's per-project approval for
+    that provider), AVAILABLE (installed/authenticated, output not verified
+    here: do not select), UNAVAILABLE (cannot run here). Built from the audit
+    report and the offers' one-line ``notes``; verification history, scores,
+    candidates and the registry are deliberately left out.
     """
     offers = (capability or {}).get("offers", [])
     families = []
@@ -871,18 +874,32 @@ def creative_menu(capability: Optional[dict[str, Any]], approved_runtimes: Optio
     for key, label, axes, use_as in MENU_FAMILIES:
         fam = [o for o in offers if set(o["axes"]) & set(axes)]
         ready = [o for o in fam if o.get("routable")]
+        installed = [o for o in fam if not o.get("routable") and o.get("status") == "available"]
         tools = sorted({o["tool"] for o in ready})
-        use_for = next((o.get("notes") for o in sorted(ready or fam, key=lambda o: -max(o.get("strengths", {}).values() or [3]))
-                        if o.get("notes")), "")
-        families.append({"family": key, "available": bool(ready), "tools": tools, "use_for": use_for})
+        by_strength = lambda o: -max(o.get("strengths", {}).values() or [3])
+        use_for = next((o.get("notes") for o in sorted(ready or installed or fam, key=by_strength) if o.get("notes")), "")
+        if ready:
+            state = "ROUTABLE" if any(o.get("cost_tier", "free") == "free" for o in ready) else "APPROVAL_REQUIRED"
+        else:
+            state = "AVAILABLE" if installed else "UNAVAILABLE"
+        families.append({"family": key, "state": state, "available": bool(ready), "tools": tools, "use_for": use_for})
         if key == "tracks":
             missing = sorted({a for a in axes if not any(a in o["axes"] and o.get("routable") for o in fam)})
             lines.append(f"- {label}: {', '.join(tools) or 'none verified'}"
                          + (f" (missing: {', '.join(missing)})" if missing else ""))
-        elif ready:
-            lines.append(f"- {label} ({', '.join(tools)}): {use_for} -> {use_as}")
+            continue
+        unverified = sorted({o["tool"] for o in installed} - set(tools))
+        tail = f"; not verified here: {', '.join(unverified)}" if ready and unverified else ""
+        if state == "ROUTABLE":
+            lines.append(f"- [ROUTABLE] {label} ({', '.join(tools)}): {use_for} -> {use_as}{tail}")
+        elif state == "APPROVAL_REQUIRED":
+            lines.append(f"- [APPROVAL_REQUIRED] {label} ({', '.join(tools)}): {use_for} -> {use_as}, only after the "
+                         f"user approves that provider for this project{tail}")
+        elif state == "AVAILABLE":
+            lines.append(f"- [AVAILABLE] {label} ({', '.join(sorted({o['tool'] for o in installed}))}): {use_for} -> "
+                         f"installed but output not verified here, do not select")
         else:
-            lines.append(f"- {label}: {use_for or 'no tool'} -> UNAVAILABLE here, do not select")
+            lines.append(f"- [UNAVAILABLE] {label}: {use_for or 'no tool'} -> do not select")
     if approved_runtimes is not None:
         lines.append(f"Approved runtimes: {', '.join(sorted(approved_runtimes))}. "
                      "A fitting runtime that is not approved: say so (RUNTIME_NOT_APPROVED), do not use it.")

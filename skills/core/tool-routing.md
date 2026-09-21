@@ -11,9 +11,11 @@ print(ToolRouter().execute({"operation": "menu",
                             "approved_runtimes": ["remotion", "hyperframes"]}).data["text"])
 ```
 
-It lists only the families this machine can actually use (verified tools), what
-each is for, and marks the rest `UNAVAILABLE here, do not select`. Registry,
-proposal preflight and the approved runtimes stay authoritative.
+Each family line carries a state: `ROUTABLE` (output verified on this machine),
+`APPROVAL_REQUIRED` (verified, but spends subscription/paid credits: use only
+after the user approves that provider for this project), `AVAILABLE` (installed
+and authenticated, output not verified here: do not select) or `UNAVAILABLE`.
+Registry, proposal preflight and the approved runtimes stay authoritative.
 
 ## 2. Pick one main runtime per scene (scene director)
 

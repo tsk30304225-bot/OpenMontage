@@ -60,13 +60,28 @@ def test_menu_is_short_and_carries_no_audit_detail() -> None:
     assert len(text.splitlines()) <= 8 and len(text) < 1200
     for leak in ("OUTPUT_VERIFIED", "smoke", "evidence", "score", "blocked", "C:/x", "rejected"):
         assert leak not in text, leak
-    assert 'HyperFrames (hyperframes_compose): kinetic type, hero reveals -> scene runtime "hyperframes"' in text
-    assert "Generated image / video: things footage cannot show -> UNAVAILABLE here, do not select" in text
+    assert '[ROUTABLE] HyperFrames (hyperframes_compose): kinetic type, hero reveals -> scene runtime "hyperframes"' in text
+    assert "[UNAVAILABLE] Generated image / video: things footage cannot show -> do not select" in text
 
 
 def test_menu_marks_unverified_runtime_unavailable() -> None:
     text = creative_menu(_cap(hyperframes=False))["text"]
-    assert "HyperFrames: kinetic type, hero reveals -> UNAVAILABLE here" in text
+    assert "[UNAVAILABLE] HyperFrames: kinetic type, hero reveals -> do not select" in text
+
+
+def test_menu_separates_installed_unverified_and_approval_required() -> None:
+    cap = _cap()
+    grok = {"offer": "grok_i2v_clip", "tool": "grok_cli_video", "axes": ["synthetic_video"], "notes": "I2V shots",
+            "strengths": {}, "routable": False, "status": "available", "cost_tier": "subscription"}
+    text = creative_menu({**cap, "offers": [o for o in cap["offers"] if o["offer"] != "flux_still"] + [grok]})["text"]
+    assert "[AVAILABLE] Generated image / video (grok_cli_video): I2V shots -> installed but output not verified here" in text
+    codex = {"offer": "codex_still", "tool": "codex_image", "axes": ["synthetic_image"], "notes": "text stills",
+             "strengths": {}, "routable": True, "status": "available", "cost_tier": "subscription"}
+    menu = creative_menu({**cap, "offers": cap["offers"] + [grok, codex]})
+    line = next(l for l in menu["text"].splitlines() if "Generated" in l)
+    assert line.startswith("- [APPROVAL_REQUIRED] Generated image / video (codex_image): text stills")
+    assert "only after the user approves that provider" in line and line.endswith("not verified here: grok_cli_video")
+    assert {f["family"]: f["state"] for f in menu["families"]}["footage"] == "ROUTABLE"
 
 
 def test_live_menu_lists_only_offered_families_not_the_registry(monkeypatch) -> None:
