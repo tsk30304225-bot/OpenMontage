@@ -321,9 +321,22 @@ try:
 except Exception as e:
     check("Scene plan validates against schema", False, str(e))
 
+# The explainer scene_plan checkpoint requires a visual_direction that passes
+# validate_direction. These scenes are titles/cards without an explanation
+# role, so the direction needs no visual model.
+SCENE_ROLES = ["establish_context", "introduce_subject", "evidence", "deliver_payload", "call_to_action"]
+visual_direction = {
+    "version": "1.0",
+    "viewer_journey": [{"id": "j1", "scene_ids": [s["id"] for s in scene_plan["scenes"]],
+                        "viewer_goal": "understand the topic end to end"}],
+    "scenes": [{"scene_id": s["id"], "narrative_role": SCENE_ROLES[i], "visual_mode": "text"}
+               for i, s in enumerate(scene_plan["scenes"])],
+}
+check("Visual direction validates against schema", not validate_artifact("visual_direction", visual_direction))
+
 write_checkpoint(
     PIPELINE_DIR, PROJECT_ID, "scene_plan", "completed", human_approved=True,
-    artifacts={"scene_plan": scene_plan},
+    artifacts={"scene_plan": scene_plan, "visual_direction": visual_direction},
     pipeline_type="animated-explainer",
 )
 
