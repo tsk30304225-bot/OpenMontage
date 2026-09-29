@@ -381,6 +381,15 @@ class BaseTool(ABC):
 
     # ---- Routing smoke ----
 
+    def runtime_fingerprint(self) -> Optional[str]:
+        """Version of the external runtime this tool drives (e.g. an auto-updating CLI).
+
+        Routing evidence records it; when it changes, the evidence no longer
+        proves the tool works and the offer drops out of routing until it is
+        re-verified. None (default) means the tool has no such runtime.
+        """
+        return None
+
     def routing_smoke(self, offer_id: str, workdir: Path, cache: dict[str, Any]) -> Optional[dict[str, Any]]:
         """Smallest real call proving a route offer works on this machine.
 

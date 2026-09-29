@@ -429,3 +429,28 @@ def test_synthetic_fixture_routes_to_composed_scenes() -> None:
     assert roles["sc5"] == []  # impossible visual: generator unverified -> unmet, not faked
     assert {t["role"] for t in plan["tracks"]} == {"narration", "sync", "captions"}
     assert not [w for w in plan["warnings"] if w["code"] == "TOOL_NAMED_IN_SCENE_PLAN"]
+
+
+# ---------------------------------------------------------------- runtime fingerprint (auto-updating CLIs)
+
+def test_evidence_is_dropped_when_the_runtime_changes(tmp_path) -> None:
+    tool = _fake(runtime_fingerprint=lambda self: "cli 1.0.40")
+    _audit([tool], tmp_path, run_smoke=True)
+    same = _audit([_fake(runtime_fingerprint=lambda self: "cli 1.0.40")], tmp_path)["offers"][0]
+    assert same["routable"] and same["smoke"]["from_evidence"]
+    updated = _audit([_fake(runtime_fingerprint=lambda self: "cli 1.0.44")], tmp_path)["offers"][0]
+    assert updated["evidence_level"] == "AVAILABLE" and not updated["routable"]
+    assert any("runtime changed since verification (cli 1.0.40 -> cli 1.0.44)" in b for b in updated["blocked_by"])
+
+
+def test_production_evidence_does_not_outlive_a_runtime_change(tmp_path) -> None:
+    projects = tmp_path / "projects"
+    _events(projects, "fake_tool")
+    _audit([_fake(runtime_fingerprint=lambda self: "cli 1")], tmp_path, run_smoke=True, projects_roots=[projects])
+    rec = _audit([_fake(runtime_fingerprint=lambda self: "cli 2")], tmp_path, projects_roots=[projects])["offers"][0]
+    assert rec["evidence_level"] == "AVAILABLE" and not rec["routable"]
+
+
+def test_tools_without_a_runtime_fingerprint_are_unaffected(tmp_path) -> None:
+    _audit([_fake()], tmp_path, run_smoke=True)
+    assert _audit([_fake()], tmp_path)["offers"][0]["routable"]

@@ -308,6 +308,17 @@ def load_evidence(root: Path, tool: str, offer: str, version: str) -> Optional[d
     return ev
 
 
+def runtime_changed(evidence: Optional[dict[str, Any]], fingerprint: Optional[str]) -> Optional[str]:
+    """Why stored evidence no longer applies to the installed runtime, or None."""
+    if not evidence or not fingerprint:
+        return None
+    verified_on = evidence.get("runtime_fingerprint") or evidence.get("cli_version")
+    if verified_on == fingerprint:
+        return None
+    return (f"runtime changed since verification ({verified_on or 'not recorded'} -> {fingerprint}); "
+            f"re-run the audit smoke for this offer")
+
+
 def write_evidence(root: Path, tool: str, offer: str, record: dict[str, Any]) -> Path:
     path = _evidence_path(root, tool, offer)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -354,6 +365,10 @@ def audit_tools(
         available = status == "available"
         prod = production_successes(tool.name, roots)
         smoke_cache: dict[str, Any] = {}
+        try:
+            fingerprint = tool.runtime_fingerprint() if available else None
+        except Exception:  # a broken version probe must not break the audit
+            fingerprint = None
         for offer, local_smoke in route_offers:
             problems = offer.problems()
             record: dict[str, Any] = {
@@ -382,19 +397,25 @@ def audit_tools(
                         record["output_probe"] = probe_artifact(record["smoke"].get("artifact"))
                         write_evidence(root, tool.name, offer.id, {
                             "tool_version": tool.version,
+                            "runtime_fingerprint": fingerprint,
                             "checked_at": time.time(),
                             "smoke": record["smoke"],
                             "output_probe": record["output_probe"],
                         })
             if record["smoke"] is None and available:
                 ev = load_evidence(root, tool.name, offer.id, tool.version)
+                stale = runtime_changed(ev, fingerprint)
+                if stale:
+                    record["notes_audit"].append(stale)
+                    record["runtime_changed"] = True
+                    ev = None
                 if ev:
                     record["smoke"] = {**ev.get("smoke", {}), "from_evidence": True}
                     record["output_probe"] = ev.get("output_probe")
 
             # Backlot events name the tool, not the offer: production evidence
             # proves an offer only when the tool has no other offer.
-            prod_for_offer = prod if len(route_offers) == 1 else 0
+            prod_for_offer = prod if len(route_offers) == 1 and not record.get("runtime_changed") else 0
             if prod and not prod_for_offer:
                 record["notes_audit"].append(
                     f"{prod} production call(s) are tool-level and do not show which of "
