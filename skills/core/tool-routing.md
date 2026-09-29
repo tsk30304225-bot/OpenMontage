@@ -118,6 +118,24 @@ approval gate. After approval, call the tool directly, for example
 "subscription_approved": True, "output_path": ...})`, and record the asset
 in `asset_manifest` with `source_tool` and `scene_id`.
 
+**When a generated asset fails.** These tools can return no media even though
+the CLI exits 0. Read the failed receipt (`<output>.receipt.json`) before doing
+anything else:
+
+- `permission_cancelled` lists tools Grok's agent reached for that the call
+  does not allow; generation never ran. Rewording the prompt does not change
+  that, so do not retry with a new prompt. Report it (the tool itself should
+  prevent it; see the skill).
+- Every retry spends credits. Retry at most once, and only for a different,
+  understood cause.
+- If the scene was locked as required, stop before render and report, unless
+  the user named a fallback (stock, Remotion) for that scene. For a scene that
+  was only a suggestion, use the fallback and log the decision.
+
+The menu shows a generator as `AVAILABLE` (not verified) after its CLI has
+auto-updated: evidence is tied to the CLI version. Do not select it until it is
+re-verified (see below; the smoke spends credits, so ask first).
+
 ## Debug / audit only
 
 Planning never needs any of this. Use it when a tool looks wrong or missing:
@@ -128,14 +146,22 @@ Planning never needs any of this. Use it when a tool looks wrong or missing:
   offers only unless a paid tier is approved. Evidence is kept in the
   machine-level audit dir (`~/.openmontage/tool_audit`); local-only tools
   declare offers in `local_offers.json` there.
+- Evidence is tied to the tool's external runtime version
+  (`BaseTool.runtime_fingerprint()`, e.g. the Grok or Codex CLI version). When
+  that version changes (both CLIs auto-update), stored and production evidence
+  stop counting and the offer drops to `AVAILABLE` with "runtime changed since
+  verification". Re-verify one tool with
+  `python scripts/tool_capability_audit.py --smoke --allow-cost-tier subscription --only grok_cli_video`
+  after the user approves the spend.
 - `tool_router` `route`: the full `tool_plan` (candidates, rejections,
   fallbacks) from `visual_need`.
 - `tool_router` `usage_report` / `direction_qa` with `tool_plan`: soft warnings
   for routed tools that production ignored.
 
 Add a tool to routing by declaring `route_offers` (with a one-line `notes`
-"use for") and `routing_smoke` on the tool class. Leave the selector
-`capability` string alone.
+"use for") and `routing_smoke` on the tool class, plus `runtime_fingerprint`
+when it drives an external runtime that can change underneath it. Leave the
+selector `capability` string alone.
 
 ## Worktrees
 

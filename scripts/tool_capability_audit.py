@@ -9,7 +9,13 @@ and marks the ones the tool router may pick (``routable``).
     python scripts/tool_capability_audit.py --smoke --only pexels_video hyperframes_compose
 
 Paid or subscription offers are never called unless their tier is passed with
-``--allow-cost-tier`` (get the user's approval first). The report and evidence
+``--allow-cost-tier`` (get the user's approval first):
+
+    python scripts/tool_capability_audit.py --smoke --allow-cost-tier subscription --only grok_cli_video
+
+Evidence is tied to a tool's runtime version (``runtime_fingerprint``, e.g. an
+auto-updating CLI); after that version changes the offer reads AVAILABLE with
+"runtime changed since verification" until it is smoked again. The report and evidence
 live in the machine-level audit dir (``~/.openmontage/tool_audit`` or
 ``$OPENMONTAGE_TOOL_AUDIT_DIR``), shared by every checkout and never committed.
 """
