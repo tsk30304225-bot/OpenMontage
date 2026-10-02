@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmontage:schema:direction_review",
+  "title": "Direction Review (46) — v1.2",
+  "description": "Human Direction Review of the render, only for scenes whose review is required (qa_contract.review resolved to required: causal motion, an action/state sequence, a PVM transition, or static_replacement_valid=false). Records the judgement the structural QA (45) cannot make: does the picture actually show the mechanism. Bound to one render (sha256) and one contract revision.",
+  "type": "object",
+  "required": [
+    "version",
+    "contract",
+    "render",
+    "scenes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "1.2"
+    },
+    "contract": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"
+    },
+    "render": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "scene_id",
+          "verdict",
+          "reviewer"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "scene_id": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+          },
+          "verdict": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "NOT_REVIEWED"
+            ]
+          },
+          "reviewer": {
+            "type": "string"
+          },
+          "reviewed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence_frames": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "state_id",
+                "time_seconds",
+                "path"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "state_id": {
+                  "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+                },
+                "time_seconds": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "path": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "question",
+                "answer"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "violations": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:openmontage:schema:direction_common#/$defs/prohibited_simplification"
+            }
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "version": "1.2",
+  "contract": {
+    "artifact": "visual_direction_contract",
+    "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
+    "revision": 1,
+    "fingerprint": "sha256:65d58660737383838fcd56ea1ebdb5653161ff5924d811677b4f4e430cfcab21"
+  },
+  "production_scenes": [
+    {
+      "scene_id": "sc15",
+      "source_scene_ids": [
+        "SC009"
+      ],
+      "split": {
+        "part": 1,
+        "of": 3
+      },
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC009/B01",
+          "SC009/B02"
+        ],
+        "state_ids": [
+          "SC009/S0",
+          "SC009/S1"
+        ],
+        "action_ids": [
+          "SC009/A01"
+        ],
+        "event_ids": [
+          "SC009/E01"
+        ],
+        "anchor_ids": [
+          "SC009/AN01",
+          "SC009/AN02"
+        ],
+        "invariant_ids": [
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03"
+        ],
+        "object_ids": [
+          "SC009/POOL",
+          "SC009/META",
+          "SC009/AMZN"
+        ],
+        "pvm_ids": [
+          "CAPITAL_FLOW"
+        ],
+        "causal_chain_ids": [
+          "SC009/CC01"
+        ]
+      },
+      "added_implementation_fields": [
+        "runtime",
+        "resolved_anchors"
+      ],
+      "transformations": [
+        {
+          "type": "SPLIT",
+          "target_ids": [
+            "SC009/B01",
+            "SC009/B02"
+          ],
+          "detail": "SC009 part 1 of 3"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc16",
+      "source_scene_ids": [
+        "SC009"
+      ],
+      "split": {
+        "part": 2,
+        "of": 3
+      },
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC009/B03"
+        ],
+        "state_ids": [
+          "SC009/S2"
+        ],
+        "action_ids": [
+          "SC009/A02"
+        ],
+        "event_ids": [
+          "SC009/E02"
+        ],
+        "anchor_ids": [
+          "SC009/AN03"
+        ],
+        "invariant_ids": [
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03"
+        ],
+        "object_ids": [
+          "SC009/ALLOC_UST",
+          "SC009/ALLOC_META",
+          "SC009/ALLOC_AMZN"
+        ],
+        "pvm_ids": [
+          "CAPITAL_FLOW"
+        ],
+        "causal_chain_ids": [
+          "SC009/CC01"
+        ]
+      },
+      "transformations": [
+        {
+          "type": "SPLIT",
+          "target_ids": [
+            "SC009/B03"
+          ],
+          "detail": "SC009 part 2 of 3"
+        },
+        {
+          "type": "IMPLEMENTATION_DETAIL",
+          "target_ids": [
+            "SC009/A02"
+          ],
+          "detail": "REVEAL x2, then EXPAND x3 in one sync group (sc16-realloc)"
+        }
+      ],
+      "added_implementation_fields": [
+        "runtime"
+      ]
+    },
+    {
+      "scene_id": "sc17",
+      "source_scene_ids": [
+        "SC009"
+      ],
+      "split": {
+        "part": 3,
+        "of": 3
+      },
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC009/B04"
+        ],
+        "state_ids": [
+          "SC009/S3"
+        ],
+        "action_ids": [
+          "SC009/A03"
+        ],
+        "event_ids": [
+          "SC009/E03"
+        ],
+        "anchor_ids": [
+          "SC009/AN04",
+          "SC009/AN05"
+        ],
+        "invariant_ids": [
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03"
+        ],
+        "object_ids": [
+          "SC009/YIELD_META"
+        ],
+        "pvm_ids": [
+          "CAPITAL_FLOW"
+        ],
+        "causal_chain_ids": [
+          "SC009/CC01"
+        ]
+      },
+      "transformations": [
+        {
+          "type": "SPLIT",
+          "target_ids": [
+            "SC009/B04"
+          ],
+          "detail": "SC009 part 3 of 3"
+        }
+      ],
+      "added_implementation_fields": [
+        "runtime"
+      ]
+    },
+    {
+      "scene_id": "sc18",
+      "source_scene_ids": [
+        "SC010"
+      ],
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC010/B01"
+        ],
+        "state_ids": [
+          "SC010/S0"
+        ],
+        "anchor_ids": [
+          "SC010/AN01",
+          "SC010/AN02"
+        ],
+        "object_ids": [
+          "SC010/RATE_TABLE"
+        ]
+      },
+      "transformations": [
+        {
+          "type": "ASSET_BINDING",
+          "target_ids": [
+            "SC010/RATE_TABLE"
+          ],
+          "detail": "kb_rate_table_capture.png"
+        }
+      ],
+      "added_implementation_fields": [
+        "runtime"
+      ]
+    },
+    {
+      "scene_id": "sc19",
+      "source_scene_ids": [
+        "SC014"
+      ],
+      "runtime": "footage",
+      "consumed": {
+        "beat_ids": [
+          "SC014/B01"
+        ],
+        "anchor_ids": [
+          "SC014/AN01",
+          "SC014/AN02"
+        ]
+      },
+      "transformations": [
+        {
+          "type": "RUNTIME_BINDING",
+          "target_ids": [
+            "SC014/B01"
+          ],
+          "detail": "footage: Pexels data center exterior"
+        }
+      ],
+      "added_implementation_fields": [
+        "runtime"
+      ]
+    }
+  ],
+  "system_coverage": {
+    "computed_by": "check_lineage",
+    "computed_at": "2026-10-02T15:00:00+09:00",
+    "effective_must_preserve_count": 23,
+    "omitted_locked_ids": [
+      "SC009/A02",
+      "SC009/B03",
+      "SC009/CC01",
+      "SC009/INV03",
+      "SC009/S2",
+      "SC009/S3"
+    ],
+    "claimed_but_not_implemented": [
+      "SC009/A02",
+      "SC009/B03",
+      "SC009/CC01",
+      "SC009/INV03",
+      "SC009/S2",
+      "SC009/S3"
+    ]
+  }
+}

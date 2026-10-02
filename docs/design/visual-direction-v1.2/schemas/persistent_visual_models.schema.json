@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmontage:schema:persistent_visual_models",
+  "title": "Persistent Visual Models (41) — v1.2",
+  "description": "Project-level authority for every persistent visual model (PVM), written by the Director, never by the planner. A scene ending does not end a model: its state survives while hidden (HIDDEN_BUT_ACTIVE). The model is the existing visual_direction visual_model (same types, operations, reducers, renderers); components = its elements. This artifact adds named states, allowed transitions and scene handoffs. current_state / state_history are derived by replay, never authored. 40 references models and states by id and never redefines them.",
+  "type": "object",
+  "required": [
+    "version",
+    "models"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "1.2"
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/pvm"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "pvm": {
+      "type": "object",
+      "required": [
+        "definition",
+        "semantic_role",
+        "named_states"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "urn:openmontage:schema:visual_direction#/$defs/visual_model",
+          "description": "Unchanged v1.0 visual_model: id, type, grammar, palette, labels, initial_state, renderer. definition.id is the model id."
+        },
+        "named_states": {
+          "type": "array",
+          "minItems": 1,
+          "description": "States the contract may refer to as <model_id>.<state id>. Each is a set of assertions on the model state signature, so it can be checked by replay.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "assert"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+              },
+              "description": {
+                "type": "string"
+              },
+              "assert": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "urn:openmontage:schema:direction_common#/$defs/assertion"
+                }
+              }
+            }
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "description": "Allowed moves between named states. A contract action whose from/to pair is not listed is a contract error. Empty or absent = any move between named states is allowed.",
+          "items": {
+            "type": "object",
+            "required": [
+              "from",
+              "to"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "meaning": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "handoffs": {
+          "type": "array",
+          "description": "Where the model must carry its state across a scene boundary: the next scene starts from exactly this state.",
+          "items": {
+            "type": "object",
+            "required": [
+              "from_scene",
+              "to_scene",
+              "state"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "from_scene": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+              },
+              "to_scene": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+              },
+              "state": {
+                "type": "string",
+                "description": "named state id of this model"
+              }
+            }
+          }
+        },
+        "persistence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "survives_hidden": {
+              "type": "boolean",
+              "default": true,
+              "description": "State is kept while the model is off screen."
+            },
+            "first_scene": {
+              "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+            },
+            "last_scene": {
+              "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+            },
+            "default_visibility": {
+              "enum": [
+                "VISIBLE",
+                "HIDDEN_BUT_ACTIVE"
+              ],
+              "default": "VISIBLE"
+            }
+          }
+        },
+        "semantic_role": {
+          "type": "string",
+          "description": "What this model explains across the video."
+        }
+      }
+    }
+  }
+}
