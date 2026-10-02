@@ -436,8 +436,9 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
                 p_from, p_to = states[frm].get("pvm_state"), states[to].get("pvm_state")
                 if p_from and p_to and p_from.split(".")[0] == p_to.split(".")[0]:
                     mid = p_from.split(".")[0]
+                    # absent or empty transitions = unrestricted; a non-empty list is an allowlist (41 schema)
                     pairs = {(t["from"], t["to"]) for t in contract.models[mid].get("transitions") or []}
-                    if (p_from.split(".")[1], p_to.split(".")[1]) not in pairs:
+                    if pairs and (p_from.split(".")[1], p_to.split(".")[1]) not in pairs:
                         err(f"{aid}: {p_from} -> {p_to} is not a transition of {mid} in persistent_visual_models")
                 if states[to].get("entered_by") not in (None, aid):
                     err(f"{aid} enters {to} but {to}.entered_by is {states[to]['entered_by']}")
