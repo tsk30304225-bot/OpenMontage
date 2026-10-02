@@ -53,8 +53,8 @@ CASES = [
     ("direction_qa_report", "45_direction_qa_report.as_produced.json"),
 ]
 DOWNSTREAM = [name for kind, name in CASES if not name.startswith(("40_", "41_"))]
-GENERATED_KIND = {"visual_direction_v1_2": "visual_direction.v1.2.schema.json",
-                  "visual_timeline_v1_2": "visual_timeline.v1.2.schema.json"}
+GENERATED_KIND = {"visual_direction_v1_2": derive.SHIPPED / "visual_direction.schema.json",
+                  "visual_timeline_v1_2": derive.SHIPPED / "visual_timeline.schema.json"}
 SCRIPT_CANONICALIZATION = "SCRIPT_SECTIONS_TEXT_V1"
 
 
@@ -73,7 +73,7 @@ def script_sha256(script: dict) -> str:
 
 
 def registry() -> Registry:
-    schemas = [load(p) for p in (HERE / "schemas").glob("*.schema.json") if p.name not in GENERATED_KIND.values()]
+    schemas = [load(p) for p in (HERE / "schemas").glob("*.schema.json")]
     # 41 reuses the v1.0 visual_model definition; register the frozen v1.0 base under the id 41 references.
     v10 = load(HERE / "schemas" / "base" / "visual_direction.v1.0.schema.json")
     v10["$id"] = URN + "visual_direction"
@@ -83,7 +83,7 @@ def registry() -> Registry:
 
 def validator(reg: Registry, kind: str) -> Draft202012Validator:
     if kind in GENERATED_KIND:  # self-contained: no registry, like validate_artifact
-        return Draft202012Validator(load(HERE / "schemas" / GENERATED_KIND[kind]))
+        return Draft202012Validator(load(GENERATED_KIND[kind]))
     return Draft202012Validator(reg.get_or_retrieve(URN + kind).value.contents, registry=reg)
 
 
@@ -124,11 +124,11 @@ def main() -> int:
 
     # generated 1.2 schemas: current, self-contained, identical shared definitions
     gen = {name: build() for name, build in derive.GENERATED.items()}
-    stale_gen = [n for n, s in gen.items() if derive.render(s) != (HERE / "schemas" / n).read_text(encoding="utf-8")]
+    stale_gen = [n for n, s in gen.items() if s != load(derive.SHIPPED / n)]
     external = sorted(r for s in gen.values() for r in derive._refs(s, set()) if not r.startswith("#/"))
     shared = sorted(set.intersection(*(set(s["$defs"]) & set(derive.COMMON) for s in gen.values())))
     differing = [d for d in shared if any(s["$defs"][d] != derive.COMMON[d] for s in gen.values())]
-    failures += report(not stale_gen, "generated 1.2 schemas are current" + (f" — stale {stale_gen}" if stale_gen else ""))
+    failures += report(not stale_gen, "shipped schemas/artifacts visual_direction / visual_timeline == generator output" + (f" — stale {stale_gen}" if stale_gen else ""))
     failures += report(not external, "generated 1.2 schemas have no external $ref" + (f" — {external}" if external else ""))
     failures += report(not differing, f"shared definitions identical in both and equal to direction_common ({', '.join(shared)})"
                        + (f" — differ {differing}" if differing else ""))

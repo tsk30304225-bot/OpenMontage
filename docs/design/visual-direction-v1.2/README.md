@@ -246,8 +246,8 @@ schemas/
   direction_review.schema.json             46
   base/visual_direction.v1.0.schema.json   v1.0 원본 (생성 입력, 고정)
   base/visual_timeline.v1.0.schema.json    v1.0 원본 (생성 입력, 고정)
-  visual_direction.v1.2.schema.json        생성물, self-contained (derive_v12_schemas.py) → schemas/artifacts로 ship
-  visual_timeline.v1.2.schema.json         생성물, self-contained
+  (생성물은 이 폴더에 두지 않는다: derive_v12_schemas.py가 schemas/artifacts/visual_direction.schema.json ·
+   visual_timeline.schema.json을 self-contained로 직접 생성. 손으로 고치지 않는다)
 examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40, 41, 42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced, 43 good, 44, 45 good/as_produced
 derive_v12_schemas.py                      v1.0 → 1.2 변경분 정의 + common 정의 materialize + 생성
 validate_examples.py                       스키마·생성물·canonical script/span·fingerprint·legacy·부정 사례 검증

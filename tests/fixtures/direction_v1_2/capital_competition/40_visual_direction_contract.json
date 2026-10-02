@@ -12,9 +12,9 @@
     "locked_at": "2026-10-02T12:00:00+09:00"
   },
   "authority": {
-    "script_ref": "examples/capital-competition/script.txt",
-    "script_sha256": "45226c0d9272ab9cb98c2a040cf7e4c433e1ab144b1deb44d60a6def29f4904d",
-    "script_normalization": "NFC_WHITESPACE",
+    "script_ref": "examples/capital-competition/script.json",
+    "script_sha256": "b383505409845a8ebf178fe33fcc66cff3a2e996e9cf451b09e511567698cfe6",
+    "canonicalization_id": "SCRIPT_SECTIONS_TEXT_V1",
     "pvm_ref": {
       "artifact": "persistent_visual_models"
     }
@@ -50,26 +50,46 @@
         {
           "anchor_id": "SC009/AN01",
           "exact_text": "투자할 수 있는 장기 자금은 정해져 있습니다",
+          "source_span": {
+            "char_start": 0,
+            "char_end": 24
+          },
           "edge": "START"
         },
         {
           "anchor_id": "SC009/AN02",
           "exact_text": "메타와 아마존이 채권을 쏟아내기 시작했습니다",
+          "source_span": {
+            "char_start": 30,
+            "char_end": 54
+          },
           "edge": "START"
         },
         {
           "anchor_id": "SC009/AN03",
           "exact_text": "같은 돈이 더 많은 채권 사이로 나뉘어 흘러갑니다",
+          "source_span": {
+            "char_start": 56,
+            "char_end": 83
+          },
           "edge": "START"
         },
         {
           "anchor_id": "SC009/AN04",
           "exact_text": "더 높은 금리를 약속해야 했습니다",
+          "source_span": {
+            "char_start": 95,
+            "char_end": 113
+          },
           "edge": "START"
         },
         {
           "anchor_id": "SC009/AN05",
           "exact_text": "더 높은 금리를 약속해야 했습니다",
+          "source_span": {
+            "char_start": 95,
+            "char_end": 113
+          },
           "edge": "END"
         }
       ],
@@ -583,11 +603,19 @@
         {
           "anchor_id": "SC010/AN01",
           "exact_text": "은행 금리표에는 이 변화가 그대로 찍혀 있습니다",
+          "source_span": {
+            "char_start": 115,
+            "char_end": 141
+          },
           "edge": "START"
         },
         {
           "anchor_id": "SC010/AN02",
           "exact_text": "은행 금리표에는 이 변화가 그대로 찍혀 있습니다",
+          "source_span": {
+            "char_start": 115,
+            "char_end": 141
+          },
           "edge": "END"
         }
       ],
@@ -683,11 +711,19 @@
         {
           "anchor_id": "SC014/AN01",
           "exact_text": "이 모든 돈은 결국 거대한 데이터센터로 향합니다",
+          "source_span": {
+            "char_start": 143,
+            "char_end": 169
+          },
           "edge": "START"
         },
         {
           "anchor_id": "SC014/AN02",
           "exact_text": "이 모든 돈은 결국 거대한 데이터센터로 향합니다",
+          "source_span": {
+            "char_start": 143,
+            "char_end": 169
+          },
           "edge": "END"
         }
       ],

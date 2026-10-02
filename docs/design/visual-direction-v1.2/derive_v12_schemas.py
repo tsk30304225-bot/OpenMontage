@@ -8,13 +8,15 @@ Authoring sources (edit these, never the generated files):
 - schemas/direction_common.schema.json: shared definitions of 40–46;
 - the v1.2 delta below.
 
-Output (decision A, 2026-10-02): schemas/visual_direction.v1.2.schema.json and
-schemas/visual_timeline.v1.2.schema.json. They are SELF-CONTAINED: every common
+Output (decision A, 2026-10-02): the SHIPPED schemas
+schemas/artifacts/visual_direction.schema.json and schemas/artifacts/visual_timeline.schema.json
+(fork-owned files, validated by the upstream validate_artifact). They are SELF-CONTAINED: every common
 definition they use is materialized from direction_common into their own $defs
 (transitive closure, refs rewritten to "#/$defs/<name>"), so the plain upstream
 validate_artifact() validates them with no registry and no external $ref.
 Both outputs materialize the same common definitions byte-for-byte; a regression
-test compares them. These outputs are what ships as schemas/artifacts/visual_*.schema.json.
+test (tests/tools/test_direction_v12_schemas.py) compares them and checks the shipped
+files equal this generator's output.
 
 What changes (additive and conditional; v1.0 documents keep validating):
 - version: "1.0" or "1.2".
@@ -39,6 +41,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SCHEMAS = HERE / "schemas"
+SHIPPED = HERE.parents[2] / "schemas" / "artifacts"
 COMMON_URN = "urn:openmontage:schema:direction_common#/$defs/"
 
 
@@ -186,8 +189,8 @@ def derive_visual_timeline() -> dict:
 
 
 GENERATED = {
-    "visual_direction.v1.2.schema.json": derive_visual_direction,
-    "visual_timeline.v1.2.schema.json": derive_visual_timeline,
+    "visual_direction.schema.json": derive_visual_direction,
+    "visual_timeline.schema.json": derive_visual_timeline,
 }
 
 
@@ -197,5 +200,5 @@ def render(schema: dict) -> str:
 
 if __name__ == "__main__":
     for name, build in GENERATED.items():
-        (SCHEMAS / name).write_text(render(build()), encoding="utf-8")
-        print("wrote", SCHEMAS / name)
+        (SHIPPED / name).write_bytes(render(build()).encode("utf-8"))
+        print("wrote", SHIPPED / name)
