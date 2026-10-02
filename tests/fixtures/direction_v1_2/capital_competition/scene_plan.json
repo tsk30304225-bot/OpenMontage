@@ -6,35 +6,35 @@
       "type": "diagram",
       "description": "장기자금 풀과 새 채권 공급",
       "start_seconds": 0.0,
-      "end_seconds": 7.56
+      "end_seconds": 8.36
     },
     {
       "id": "sc16",
       "type": "diagram",
       "description": "같은 자금의 재배분",
-      "start_seconds": 7.56,
-      "end_seconds": 11.72
+      "start_seconds": 8.36,
+      "end_seconds": 12.92
     },
     {
       "id": "sc17",
       "type": "diagram",
       "description": "요구수익률 상승",
-      "start_seconds": 11.72,
-      "end_seconds": 15.46
+      "start_seconds": 12.92,
+      "end_seconds": 17.06
     },
     {
       "id": "sc18",
       "type": "text_card",
       "description": "은행 금리표 원본",
-      "start_seconds": 15.46,
-      "end_seconds": 19.2
+      "start_seconds": 17.06,
+      "end_seconds": 21.2
     },
     {
       "id": "sc19",
       "type": "broll",
       "description": "데이터센터 외관",
-      "start_seconds": 19.2,
-      "end_seconds": 22.6
+      "start_seconds": 21.2,
+      "end_seconds": 24.6
     }
   ]
 }

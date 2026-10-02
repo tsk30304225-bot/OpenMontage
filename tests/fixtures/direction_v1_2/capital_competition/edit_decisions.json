@@ -14,35 +14,35 @@
       "scene_id": "sc15",
       "source": "",
       "in_seconds": 0.0,
-      "out_seconds": 7.56
+      "out_seconds": 8.36
     },
     {
       "id": "c-sc16",
       "scene_id": "sc16",
       "source": "",
-      "in_seconds": 7.56,
-      "out_seconds": 11.72
+      "in_seconds": 8.36,
+      "out_seconds": 12.92
     },
     {
       "id": "c-sc17",
       "scene_id": "sc17",
       "source": "",
-      "in_seconds": 11.72,
-      "out_seconds": 15.46
+      "in_seconds": 12.92,
+      "out_seconds": 17.06
     },
     {
       "id": "c-sc18",
       "scene_id": "sc18",
       "source": "assets/evidence/kb_rate_table_capture.png",
-      "in_seconds": 15.46,
-      "out_seconds": 19.2
+      "in_seconds": 17.06,
+      "out_seconds": 21.2
     },
     {
       "id": "c-sc19",
       "scene_id": "sc19",
       "source": "",
-      "in_seconds": 19.2,
-      "out_seconds": 22.6
+      "in_seconds": 21.2,
+      "out_seconds": 24.6
     }
   ]
 }

@@ -1,4 +1,4 @@
-"""Visual Direction v1.2, Phase 1 — acceptance (fixed before implementation).
+"""Visual Direction v1.2, Phase 1 — acceptance (fixed before implementation, xfail-strict until it landed).
 
 Fixture: tests/fixtures/direction_v1_2/capital_competition — the SC009 capital
 competition scene of the failed production, written as a Director contract
@@ -24,8 +24,6 @@ from pathlib import Path
 
 import jsonschema
 import pytest
-
-pytestmark = pytest.mark.xfail(strict=True, reason="Visual Direction v1.2 Phase 1 is not implemented yet")
 
 REPO = Path(__file__).resolve().parents[2]
 FIX = REPO / "tests" / "fixtures" / "direction_v1_2" / "capital_competition"

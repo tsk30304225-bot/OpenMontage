@@ -25,14 +25,20 @@ invariants, order, binding) are the future API's job, not this script's.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
-import unicodedata
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+# the rules come from the runtime, so the examples are checked by exactly what production runs
+from lib.direction_contract.authority import (
+    SCRIPT_SECTIONS_TEXT_V1,
+    canonical_script_text,
+    fingerprint,
+    script_sha256,
+    source_identical,
+)
 from schemas.direction_contract import SCHEMA_DIR, URN
 from schemas.direction_contract import generate_artifact_schemas as derive
 from schemas.direction_contract import registry as runtime_registry
@@ -57,32 +63,11 @@ CASES = [
 DOWNSTREAM = [name for kind, name in CASES if not name.startswith(("40_", "41_"))]
 GENERATED_KIND = {"visual_direction_v1_2": derive.SHIPPED / "visual_direction.schema.json",
                   "visual_timeline_v1_2": derive.SHIPPED / "visual_timeline.schema.json"}
-SCRIPT_CANONICALIZATION = "SCRIPT_SECTIONS_TEXT_V1"
+SCRIPT_CANONICALIZATION = SCRIPT_SECTIONS_TEXT_V1
 
 
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def canonical_script_text(script: dict) -> str:
-    """SCRIPT_SECTIONS_TEXT_V1: sections[i].text in array order, CRLF/CR -> LF, NFC, joined by exactly one LF, no trim."""
-    return "\n".join(unicodedata.normalize("NFC", s["text"].replace("\r\n", "\n").replace("\r", "\n"))
-                     for s in script["sections"])
-
-
-def script_sha256(script: dict) -> str:
-    return hashlib.sha256(canonical_script_text(script).encode("utf-8")).hexdigest()
-
-
-def _segments(ref: str) -> list[str]:
-    ref = unicodedata.normalize("NFC", ref.replace("\\", "/"))
-    return [s for s in ref.split("/") if s not in ("", ".")]
-
-
-def source_identical(contract_asset: str, cut_source: str) -> bool:
-    """SOURCE_IDENTITY_V1 (README 6-1): equal, or the cut path ends with every segment of the contract reference."""
-    want, have = _segments(contract_asset), _segments(cut_source)
-    return bool(want) and have[-len(want):] == want
 
 
 def registry():
@@ -93,12 +78,6 @@ def validator(reg, kind: str) -> Draft202012Validator:
     if kind in GENERATED_KIND:  # self-contained: no registry, like validate_artifact
         return Draft202012Validator(load(GENERATED_KIND[kind]))
     return Draft202012Validator(reg.get_or_retrieve(URN + kind).value.contents, registry=reg)
-
-
-def fingerprint(contract: dict, pvm: dict) -> str:
-    body = {"contract": {k: v for k, v in contract.items() if k != "lifecycle"}, "pvm": pvm}
-    canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return "sha256:" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
 
 def stamp() -> None:
