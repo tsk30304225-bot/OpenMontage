@@ -248,5 +248,12 @@
         "runtime"
       ]
     }
-  ]
+  ],
+  "system_coverage": {
+    "computed_by": "check_lineage",
+    "computed_at": "2026-10-02T15:00:00+09:00",
+    "effective_must_preserve_count": 23,
+    "omitted_locked_ids": [],
+    "claimed_but_not_implemented": []
+  }
 }

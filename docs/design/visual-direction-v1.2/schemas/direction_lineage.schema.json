@@ -2,62 +2,204 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:openmontage:schema:direction_lineage",
   "title": "Direction Lineage (42) — v1.2",
-  "description": "Planner lineage (scene stage): which production scenes (scene_plan ids) consume which contract ids. Separate from scene_plan, whose upstream schema forbids extra fields. The planner may split or merge Director scenes; it may not drop, rename or re-decide a locked id. omitted_locked_ids must stay empty; a locked id that cannot be placed needs a deviation (44). check_lineage() verifies this against the contract and the visual_direction beats.",
+  "description": "Planner lineage (scene stage): which production scenes (scene_plan ids) consume which contract ids, and how each was transformed for production. Separate from scene_plan, whose upstream schema forbids extra fields. Only production transformations are allowed (split, merge, timing, asset, runtime, implementation detail); a semantic change to a REQUIRED_LOCKED id is never a transformation — it is a deviation (44) and a new approved contract revision. Coverage is NOT taken from the planner: check_lineage() computes system_coverage from the approved contract's effective must_preserve and the real lineage + visual_direction beats, and 45 recomputes it independently.",
   "type": "object",
-  "required": ["version", "contract", "production_scenes", "omitted_locked_ids"],
+  "required": [
+    "version",
+    "contract",
+    "production_scenes"
+  ],
   "additionalProperties": false,
   "properties": {
-    "version": {"const": "1.2"},
-    "contract": {"$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"},
+    "version": {
+      "const": "1.2"
+    },
+    "contract": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"
+    },
     "production_scenes": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["scene_id", "source_scene_ids", "consumed"],
+        "required": [
+          "scene_id",
+          "source_scene_ids",
+          "consumed"
+        ],
         "additionalProperties": false,
         "properties": {
-          "scene_id": {"type": "string", "description": "scene_plan.scenes[].id"},
-          "source_scene_ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"}, "minItems": 1},
+          "scene_id": {
+            "type": "string",
+            "description": "scene_plan.scenes[].id"
+          },
+          "source_scene_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+            },
+            "minItems": 1
+          },
           "split": {
             "type": "object",
-            "required": ["part", "of"],
+            "required": [
+              "part",
+              "of"
+            ],
             "additionalProperties": false,
-            "properties": {"part": {"type": "integer", "minimum": 1}, "of": {"type": "integer", "minimum": 1}}
+            "properties": {
+              "part": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "of": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
           },
           "consumed": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "beat_ids": {"$ref": "#/$defs/ids"},
-              "state_ids": {"$ref": "#/$defs/ids"},
-              "action_ids": {"$ref": "#/$defs/ids"},
-              "event_ids": {"$ref": "#/$defs/ids"},
-              "anchor_ids": {"$ref": "#/$defs/ids"},
-              "invariant_ids": {"$ref": "#/$defs/ids"},
-              "object_ids": {"$ref": "#/$defs/ids"},
-              "pvm_ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"}}
-            }
+              "beat_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "state_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "action_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "event_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "anchor_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "invariant_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "object_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "pvm_ids": {
+                "type": "array",
+                "items": {
+                  "$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"
+                }
+              },
+              "causal_chain_ids": {
+                "$ref": "#/$defs/ids"
+              }
+            },
+            "description": "One field per must_preserve category, so every preserved id can be claimed: beats, states, actions, events, anchors, invariants, objects (incl. last-frame elements), causal chains, persistent models."
           },
-          "transformed": {
+          "added_implementation_fields": {
             "type": "array",
-            "description": "How a consumed id was adapted for production (split timing, layout). Never a change of meaning, state or order.",
-            "items": {"type": "object", "required": ["id", "change"], "additionalProperties": false,
-              "properties": {"id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "change": {"type": "string"}}}
+            "items": {
+              "type": "string"
+            },
+            "description": "e.g. runtime, asset bindings, resolved anchors"
           },
-          "added_implementation_fields": {"type": "array", "items": {"type": "string"}, "description": "e.g. runtime, asset bindings, resolved anchors"},
-          "runtime": {"enum": ["remotion", "hyperframes", "footage", "inherit"], "description": "mirror of scene_plan.scenes[].runtime; scene_plan stays the authority"}
+          "runtime": {
+            "enum": [
+              "remotion",
+              "hyperframes",
+              "footage",
+              "inherit"
+            ],
+            "description": "mirror of scene_plan.scenes[].runtime; scene_plan stays the authority"
+          },
+          "transformations": {
+            "type": "array",
+            "description": "Typed production transformations. No semantic type exists on purpose.",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "target_ids"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "enum": [
+                    "SPLIT",
+                    "MERGE",
+                    "TIMING_RESOLUTION",
+                    "ASSET_BINDING",
+                    "RUNTIME_BINDING",
+                    "IMPLEMENTATION_DETAIL"
+                  ]
+                },
+                "target_ids": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+                  },
+                  "minItems": 1
+                },
+                "detail": {
+                  "type": "string"
+                }
+              }
+            }
+          }
         }
       }
     },
-    "omitted_locked_ids": {
+    "deviation_ids": {
       "type": "array",
-      "maxItems": 0,
-      "description": "Must be empty. A locked id that is not consumed is listed in deviations (44), not here."
+      "items": {
+        "type": "string",
+        "pattern": "^DEV[0-9]{3,}$"
+      },
+      "description": "deviations raised while planning"
     },
-    "deviation_ids": {"type": "array", "items": {"type": "string", "pattern": "^DEV[0-9]{3,}$"}, "description": "deviations raised while planning"}
+    "system_coverage": {
+      "type": "object",
+      "required": [
+        "computed_by",
+        "computed_at",
+        "effective_must_preserve_count",
+        "omitted_locked_ids"
+      ],
+      "additionalProperties": false,
+      "description": "Written by check_lineage(), never by the planner (a planner-written value is ignored and overwritten). The gate requires omitted_locked_ids to be empty unless each id is covered by an APPROVED deviation; 45 recomputes the same set independently.",
+      "properties": {
+        "computed_by": {
+          "const": "check_lineage"
+        },
+        "computed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "effective_must_preserve_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "omitted_locked_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+          }
+        },
+        "claimed_but_not_implemented": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+          },
+          "description": "ids the lineage says a scene consumes but no beat of that scene implements"
+        }
+      }
+    }
   },
   "$defs": {
-    "ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}}
+    "ids": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+      }
+    }
   }
 }

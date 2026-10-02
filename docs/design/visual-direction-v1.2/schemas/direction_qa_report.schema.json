@@ -2,91 +2,275 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:openmontage:schema:direction_qa_report",
   "title": "Direction QA Report (45) — v1.2",
-  "description": "Structural Direction QA, separate from render QA. Consumes canonical contract ids: lineage, anchor resolution, state transitions and invariants (by replay), order, causal chains, persistent model state, last frame, binding, prohibited simplifications, and the existing pixel-change check (direction_qa tool) as supporting evidence. Holds one locked lineage receipt per REQUIRED_LOCKED scene. A scene needing human review (46) can pass here and still be incomplete.",
+  "description": "Structural Direction QA, separate from render QA. Consumes canonical contract ids: lineage, anchor resolution, state transitions and invariants (by replay), order, causal chains, persistent model state, last frame, binding, prohibited simplifications, and the existing pixel-change check (direction_qa tool) as supporting evidence. Holds one locked lineage receipt per REQUIRED_LOCKED scene. A scene needing human review (46) can pass here and still be incomplete. PIXEL_CHANGE (the existing direction_qa pixel check) is supporting evidence only; dynamic locked scenes complete on structural QA plus the required Direction Review (46).",
   "type": "object",
-  "required": ["version", "contract", "inputs", "scenes", "verdict"],
+  "required": [
+    "version",
+    "contract",
+    "inputs",
+    "scenes",
+    "verdict"
+  ],
   "additionalProperties": false,
   "properties": {
-    "version": {"const": "1.2"},
-    "contract": {"$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"},
+    "version": {
+      "const": "1.2"
+    },
+    "contract": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"
+    },
     "inputs": {
       "type": "object",
-      "required": ["timeline_sha256"],
+      "required": [
+        "timeline_sha256"
+      ],
       "additionalProperties": false,
       "properties": {
-        "lineage_sha256": {"$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"},
-        "visual_direction_sha256": {"$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"},
-        "timeline_sha256": {"$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"},
-        "binding_sha256": {"$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"},
-        "render_sha256": {"$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"}
+        "lineage_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        },
+        "visual_direction_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        },
+        "timeline_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        },
+        "binding_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        },
+        "render_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        }
       }
     },
     "scenes": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["scene_id", "importance", "checks", "review_required", "result"],
+        "required": [
+          "scene_id",
+          "importance",
+          "checks",
+          "review_required",
+          "result"
+        ],
         "additionalProperties": false,
         "properties": {
-          "scene_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"},
-          "importance": {"enum": ["REQUIRED_LOCKED", "REQUIRED_FLEX", "DISCRETIONARY"]},
-          "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}},
-          "receipt": {"$ref": "#/$defs/locked_lineage_receipt"},
-          "review_required": {"type": "boolean", "description": "resolved qa_contract.review"},
-          "result": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"}
+          "scene_id": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+          },
+          "importance": {
+            "enum": [
+              "REQUIRED_LOCKED",
+              "REQUIRED_FLEX",
+              "DISCRETIONARY"
+            ]
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/check"
+            }
+          },
+          "receipt": {
+            "$ref": "#/$defs/locked_lineage_receipt"
+          },
+          "review_required": {
+            "type": "boolean",
+            "description": "resolved qa_contract.review"
+          },
+          "result": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+          }
         },
-        "allOf": [{"if": {"properties": {"importance": {"const": "REQUIRED_LOCKED"}}}, "then": {"required": ["receipt"]}}]
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "importance": {
+                  "const": "REQUIRED_LOCKED"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "receipt"
+              ]
+            }
+          }
+        ]
       }
     },
-    "verdict": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"}
+    "verdict": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+    }
   },
   "$defs": {
-    "ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}},
+    "ids": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+      }
+    },
     "check": {
       "type": "object",
-      "required": ["check_id", "type", "result"],
+      "required": [
+        "check_id",
+        "type",
+        "role",
+        "result"
+      ],
       "additionalProperties": false,
       "properties": {
-        "check_id": {"type": "string"},
-        "type": {"enum": ["ACTION_EXISTENCE", "ORDER", "STATE_TRANSITION", "INVARIANT", "CAUSAL_CHAIN", "ANCHOR_TIMING", "PERSISTENT_STATE", "LAST_FRAME", "PROHIBITED_SIMPLIFICATION", "BINDING", "SOURCE_EVIDENCE", "PIXEL_CHANGE"]},
-        "target_ids": {"$ref": "#/$defs/ids"},
+        "check_id": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "ACTION_EXISTENCE",
+            "ORDER",
+            "STATE_TRANSITION",
+            "INVARIANT",
+            "CAUSAL_CHAIN",
+            "ANCHOR_TIMING",
+            "PERSISTENT_STATE",
+            "LAST_FRAME",
+            "PROHIBITED_SIMPLIFICATION",
+            "BINDING",
+            "SOURCE_EVIDENCE",
+            "PIXEL_CHANGE"
+          ]
+        },
+        "target_ids": {
+          "$ref": "#/$defs/ids"
+        },
         "expected": {},
         "observed": {},
-        "time_seconds": {"type": "number", "minimum": 0},
-        "violation": {"$ref": "urn:openmontage:schema:direction_common#/$defs/prohibited_simplification"},
-        "result": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"},
-        "detail": {"type": "string"}
-      }
+        "time_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "violation": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/prohibited_simplification"
+        },
+        "result": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "REQUIRED",
+            "SUPPORTING"
+          ],
+          "description": "REQUIRED checks decide the scene result; SUPPORTING checks (PIXEL_CHANGE always) are evidence only and never make a locked scene pass or fail"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "PIXEL_CHANGE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "role": {
+                "const": "SUPPORTING"
+              }
+            }
+          }
+        }
+      ]
     },
     "id_tally": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "beats": {"$ref": "#/$defs/ids"},
-        "states": {"$ref": "#/$defs/ids"},
-        "actions": {"$ref": "#/$defs/ids"},
-        "events": {"$ref": "#/$defs/ids"},
-        "anchors": {"$ref": "#/$defs/ids"}
+        "beats": {
+          "$ref": "#/$defs/ids"
+        },
+        "states": {
+          "$ref": "#/$defs/ids"
+        },
+        "actions": {
+          "$ref": "#/$defs/ids"
+        },
+        "events": {
+          "$ref": "#/$defs/ids"
+        },
+        "anchors": {
+          "$ref": "#/$defs/ids"
+        }
       }
     },
     "locked_lineage_receipt": {
       "type": "object",
-      "required": ["expected", "implemented", "omitted", "merged", "reordered", "unresolved_anchors", "invariant_checks", "causal_contract", "last_frame", "verdict"],
+      "required": [
+        "expected",
+        "implemented",
+        "omitted",
+        "merged",
+        "reordered",
+        "unresolved_anchors",
+        "invariant_checks",
+        "causal_contract",
+        "last_frame",
+        "verdict",
+        "effective_must_preserve",
+        "lineage_coverage_agrees"
+      ],
       "additionalProperties": false,
       "description": "Proof that every preserved id of a locked scene was implemented: expected = effective must_preserve set; implemented = what lineage + timeline + binding show.",
       "properties": {
-        "expected": {"$ref": "#/$defs/id_tally"},
-        "implemented": {"$ref": "#/$defs/id_tally"},
-        "omitted": {"$ref": "#/$defs/ids"},
-        "merged": {"$ref": "#/$defs/ids"},
-        "reordered": {"$ref": "#/$defs/ids"},
-        "unresolved_anchors": {"$ref": "#/$defs/ids"},
-        "deviated": {"$ref": "#/$defs/ids", "description": "ids exempted by APPROVED deviations"},
-        "invariant_checks": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"},
-        "causal_contract": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"},
-        "last_frame": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"},
-        "binding": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"},
-        "verdict": {"$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"}
+        "expected": {
+          "$ref": "#/$defs/id_tally"
+        },
+        "implemented": {
+          "$ref": "#/$defs/id_tally"
+        },
+        "omitted": {
+          "$ref": "#/$defs/ids",
+          "description": "recomputed here from the approved contract's effective must_preserve versus what lineage, timeline and binding actually show — never copied from 42"
+        },
+        "merged": {
+          "$ref": "#/$defs/ids"
+        },
+        "reordered": {
+          "$ref": "#/$defs/ids"
+        },
+        "unresolved_anchors": {
+          "$ref": "#/$defs/ids"
+        },
+        "deviated": {
+          "$ref": "#/$defs/ids",
+          "description": "ids exempted by APPROVED deviations"
+        },
+        "invariant_checks": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+        },
+        "causal_contract": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+        },
+        "last_frame": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+        },
+        "binding": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+        },
+        "verdict": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/verdict"
+        },
+        "effective_must_preserve": {
+          "$ref": "#/$defs/ids"
+        },
+        "lineage_coverage_agrees": {
+          "type": "boolean",
+          "description": "42 system_coverage.omitted_locked_ids equals this receipt's omitted (a mismatch means 42 is stale or was tampered with)"
+        }
       }
     }
   }

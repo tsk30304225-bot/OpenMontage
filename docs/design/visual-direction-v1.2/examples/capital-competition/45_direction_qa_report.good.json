@@ -4,7 +4,7 @@
     "artifact": "visual_direction_contract",
     "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
     "revision": 1,
-    "fingerprint": "sha256:fa8f0b3738928fc23da1b3d05fb1012c8f1fc6eeb6a532e87d3f1e9fe13f4c2d"
+    "fingerprint": "sha256:65d58660737383838fcd56ea1ebdb5653161ff5924d811677b4f4e430cfcab21"
   },
   "inputs": {
     "timeline_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
@@ -17,6 +17,7 @@
         {
           "check_id": "SC009/Q01",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/AN01"
           ],
@@ -26,6 +27,7 @@
         {
           "check_id": "SC009/Q02",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/AN02"
           ],
@@ -35,6 +37,7 @@
         {
           "check_id": "SC009/Q03",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/AN03"
           ],
@@ -44,6 +47,7 @@
         {
           "check_id": "SC009/Q04",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/AN04"
           ],
@@ -53,6 +57,7 @@
         {
           "check_id": "SC009/Q05",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/AN05"
           ],
@@ -62,6 +67,7 @@
         {
           "check_id": "SC009/Q06",
           "type": "ACTION_EXISTENCE",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/A01"
           ],
@@ -71,6 +77,7 @@
         {
           "check_id": "SC009/Q07",
           "type": "ACTION_EXISTENCE",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/A02"
           ],
@@ -80,6 +87,7 @@
         {
           "check_id": "SC009/Q08",
           "type": "ACTION_EXISTENCE",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/A03"
           ],
@@ -89,6 +97,7 @@
         {
           "check_id": "SC009/Q09",
           "type": "STATE_TRANSITION",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/S0"
           ],
@@ -98,6 +107,7 @@
         {
           "check_id": "SC009/Q10",
           "type": "STATE_TRANSITION",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/S1"
           ],
@@ -107,6 +117,7 @@
         {
           "check_id": "SC009/Q11",
           "type": "STATE_TRANSITION",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/S2"
           ],
@@ -116,6 +127,7 @@
         {
           "check_id": "SC009/Q12",
           "type": "STATE_TRANSITION",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/S3"
           ],
@@ -125,16 +137,27 @@
         {
           "check_id": "SC009/Q13",
           "type": "INVARIANT",
+          "role": "REQUIRED",
           "target_ids": [
-            "SC009/INV01",
-            "SC009/INV02"
+            "SC009/INV01"
           ],
           "result": "PASS",
           "detail": "violations []"
         },
         {
           "check_id": "SC009/Q14",
+          "type": "INVARIANT",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/INV02"
+          ],
+          "result": "PASS",
+          "detail": "violations []"
+        },
+        {
+          "check_id": "SC009/Q15",
           "type": "ORDER",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/A01",
             "SC009/A02",
@@ -144,8 +167,9 @@
           "detail": "starts [4.46, 7.16, 11.96]"
         },
         {
-          "check_id": "SC009/Q15",
+          "check_id": "SC009/Q16",
           "type": "CAUSAL_CHAIN",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/CC01"
           ],
@@ -153,17 +177,53 @@
           "detail": "states ['SC009/S1', 'SC009/S2', 'SC009/S3']"
         },
         {
-          "check_id": "SC009/Q16",
+          "check_id": "SC009/Q17",
           "type": "LAST_FRAME",
+          "role": "REQUIRED",
           "target_ids": [
             "SC009/S3"
           ],
           "result": "PASS"
+        },
+        {
+          "check_id": "SC009/Q18",
+          "type": "PIXEL_CHANGE",
+          "role": "SUPPORTING",
+          "target_ids": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ],
+          "result": "UNVERIFIED",
+          "detail": "supporting evidence only; needs the render"
         }
       ],
       "review_required": true,
       "result": "UNVERIFIED",
       "receipt": {
+        "effective_must_preserve": [
+          "SC009/A01",
+          "SC009/A02",
+          "SC009/A03",
+          "SC009/AMZN",
+          "SC009/AN02",
+          "SC009/AN03",
+          "SC009/AN04",
+          "SC009/B02",
+          "SC009/B03",
+          "SC009/B04",
+          "SC009/CC01",
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03",
+          "SC009/META",
+          "SC009/POOL",
+          "SC009/S0",
+          "SC009/S1",
+          "SC009/S2",
+          "SC009/S3",
+          "SC009/YIELD_META"
+        ],
         "expected": {
           "actions": [
             "SC009/A01",
@@ -193,6 +253,7 @@
         "omitted": [],
         "merged": [],
         "reordered": [],
+        "lineage_coverage_agrees": true,
         "unresolved_anchors": [],
         "invariant_checks": "PASS",
         "causal_contract": "PASS",
@@ -208,6 +269,7 @@
         {
           "check_id": "SC010/Q01",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC010/AN01"
           ],
@@ -217,6 +279,7 @@
         {
           "check_id": "SC010/Q02",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC010/AN02"
           ],
@@ -226,6 +289,7 @@
         {
           "check_id": "SC010/Q03",
           "type": "SOURCE_EVIDENCE",
+          "role": "REQUIRED",
           "target_ids": [
             "SC010/S0"
           ],
@@ -235,6 +299,7 @@
         {
           "check_id": "SC010/Q04",
           "type": "ORDER",
+          "role": "REQUIRED",
           "target_ids": [],
           "result": "PASS",
           "detail": "starts []"
@@ -242,6 +307,7 @@
         {
           "check_id": "SC010/Q05",
           "type": "LAST_FRAME",
+          "role": "REQUIRED",
           "target_ids": [
             "SC010/S0"
           ],
@@ -252,6 +318,10 @@
       "review_required": false,
       "result": "UNVERIFIED",
       "receipt": {
+        "effective_must_preserve": [
+          "SC010/RATE_TABLE",
+          "SC010/S0"
+        ],
         "expected": {
           "actions": [],
           "states": [
@@ -267,6 +337,7 @@
         "omitted": [],
         "merged": [],
         "reordered": [],
+        "lineage_coverage_agrees": true,
         "unresolved_anchors": [],
         "invariant_checks": "PASS",
         "causal_contract": "PASS",
@@ -282,6 +353,7 @@
         {
           "check_id": "SC014/Q01",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC014/AN01"
           ],
@@ -291,6 +363,7 @@
         {
           "check_id": "SC014/Q02",
           "type": "ANCHOR_TIMING",
+          "role": "REQUIRED",
           "target_ids": [
             "SC014/AN02"
           ],

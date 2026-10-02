@@ -36,8 +36,11 @@ CASES = [
     ("visual_direction_contract", "40_visual_direction_contract.json"),
     ("persistent_visual_models", "41_persistent_visual_models.json"),
     ("direction_lineage", "42_direction_lineage.json"),
+    ("direction_lineage", "42_direction_lineage.good.json"),
+    ("direction_lineage", "42_direction_lineage.as_produced.json"),
     ("visual_direction_v1_2", "visual_direction.good.json"),
     ("visual_direction_v1_2", "visual_direction.as_produced.json"),
+    ("execution_binding", "43_execution_binding.good.json"),
     ("direction_deviations", "44_direction_deviations.json"),
     ("direction_qa_report", "45_direction_qa_report.good.json"),
     ("direction_qa_report", "45_direction_qa_report.as_produced.json"),
@@ -143,8 +146,16 @@ def main() -> int:
          lambda d: d["authority"].pop("script_sha256")),
         ("unqualified action id", "visual_direction_contract", "40_visual_direction_contract.json",
          lambda d: sc(d, "SC009")["actions"][0].update(action_id="A01")),
-        ("lineage with omitted locked ids", "direction_lineage", "42_direction_lineage.json",
-         lambda d: d["omitted_locked_ids"].append("SC009/A02")),
+        ("semantic transformation in 42 (only production types exist)", "direction_lineage", "42_direction_lineage.json",
+         lambda d: d["production_scenes"][1]["transformations"].append({"type": "SEMANTIC_CHANGE", "target_ids": ["SC009/A02"]})),
+        ("system_coverage not computed by check_lineage", "direction_lineage", "42_direction_lineage.good.json",
+         lambda d: d["system_coverage"].update(computed_by="planner")),
+        ("PIXEL_CHANGE used as a REQUIRED check", "direction_qa_report", "45_direction_qa_report.good.json",
+         lambda d: next(c for c in d["scenes"][0]["checks"] if c["type"] == "PIXEL_CHANGE").update(role="REQUIRED")),
+        ("locked receipt without effective_must_preserve", "direction_qa_report", "45_direction_qa_report.good.json",
+         lambda d: d["scenes"][0]["receipt"].pop("effective_must_preserve")),
+        ("binding action without per-layer bindings", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["actions"][0].pop("layer_bindings")),
         ("1.2 visual_direction defining its own models", "visual_direction_v1_2", "visual_direction.good.json",
          lambda d: d.update(visual_models=[])),
         ("MATERIAL deviation without approval", "direction_deviations", "44_direction_deviations.json",
@@ -156,6 +167,14 @@ def main() -> int:
     ]
     for label, kind, name, mutate in negatives:
         failures += must_fail(label, kind, name, mutate)
+
+    # 42 system coverage vs 45 independent recomputation (must agree)
+    for tag in ("good", "as_produced"):
+        lin = load(EX / f"42_direction_lineage.{tag}.json")["system_coverage"]["omitted_locked_ids"]
+        qa = sorted(i for sc in load(EX / f"45_direction_qa_report.{tag}.json")["scenes"] for i in (sc.get("receipt") or {}).get("omitted", []))
+        agree = sorted(lin) == qa
+        print(f"{'OK  ' if agree else 'FAIL'} {tag}: 42 system_coverage omitted == 45 recomputed omitted ({len(qa)} ids)")
+        failures += not agree
 
     old = ROOT / "tests" / "fixtures" / "visual_direction" / "release_plan" / "visual_direction.json"
     schema = reg.get_or_retrieve(URN + "visual_direction_v1_2").value.contents

@@ -663,6 +663,15 @@
           "SOURCE_EVIDENCE",
           "LAST_FRAME"
         ]
+      },
+      "runtime_stack": {
+        "factual_source": {
+          "runtime": "remotion",
+          "purpose": "금리표 원본 캡처를 읽을 수 있게 배치",
+          "consumes": [
+            "SC010/S0"
+          ]
+        }
       }
     },
     {
@@ -706,7 +715,13 @@
         "ASSET_CHOICE",
         "SOURCE_CROP_MARGIN",
         "MICRO_MOTION"
-      ]
+      ],
+      "runtime_stack": {
+        "base_visual": {
+          "runtime": "footage",
+          "purpose": "데이터센터 외관 실사"
+        }
+      }
     }
   ]
 }
