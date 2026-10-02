@@ -29,6 +29,7 @@ from lib.direction_contract.contract import (
     state_at,
     validate_direction,
 )
+from lib.direction_contract.hooks import attach_visual_timeline, prepare_atelier_direction
 from schemas.artifacts import validate_artifact
 from tools.analysis.direction_qa import DirectionQA
 from tools.video.video_compose import VideoCompose
@@ -144,7 +145,7 @@ def test_trace_fails_when_an_event_is_not_implemented(tmp_path) -> None:
 
     tl = tmp_path / "vt.json"
     tl.write_text(json.dumps(_timeline()), encoding="utf-8")
-    prepared = VideoCompose._prepare_atelier_direction(project / "index.tsx", _edit(tl, project / "index.tsx"), None, tmp_path / "out.mp4")
+    prepared = prepare_atelier_direction(project / "index.tsx", _edit(tl, project / "index.tsx"), None, tmp_path / "out.mp4")
     assert "does not implement the direction contract" in prepared["error"] and "ev-b8" in prepared["error"]
 
 
@@ -165,14 +166,14 @@ def test_atelier_render_requires_the_compiled_timeline_and_injects_it(tmp_path) 
     shutil.copy(FIXTURE / "visual_direction.json", project / "artifacts" / "visual_direction.json")
     edit = _edit("unused", project / "index.tsx")
     edit.pop("visual_timeline")
-    missing = VideoCompose._prepare_atelier_direction(project / "index.tsx", edit, None, tmp_path / "out.mp4")
+    missing = prepare_atelier_direction(project / "index.tsx", edit, None, tmp_path / "out.mp4")
     assert "visual_timeline is missing" in missing["error"]
 
     tl = tmp_path / "vt.json"
     tl.write_text(json.dumps(_timeline()), encoding="utf-8")
     props = tmp_path / "props.json"
     props.write_text(json.dumps({"durationSeconds": 22}), encoding="utf-8")
-    ok = VideoCompose._prepare_atelier_direction(project / "index.tsx", _edit(tl, project / "index.tsx"), str(props), tmp_path / "out.mp4")
+    ok = prepare_atelier_direction(project / "index.tsx", _edit(tl, project / "index.tsx"), str(props), tmp_path / "out.mp4")
     merged = json.loads(Path(ok["props_path"]).read_text(encoding="utf-8"))
     assert merged["durationSeconds"] == 22 and len(merged["visualTimeline"]["events"]) == 8
     assert ok["trace"]["implemented"] == 8
@@ -183,7 +184,7 @@ def test_templated_render_refuses_a_bespoke_model(tmp_path) -> None:
     tl.write_text(json.dumps(_timeline()), encoding="utf-8")
     props = {"cuts": [{"id": "c", "source": "", "in_seconds": 0, "out_seconds": 5, "type": "visual_model",
                        "visual_model": {"model_id": "route"}}], "visual_timeline": str(tl)}
-    assert "Render it in atelier" in VideoCompose._attach_visual_timeline(props, "Explainer")
+    assert "Render it in atelier" in attach_visual_timeline(props, "Explainer")
 
 
 def test_direction_qa_contract_mode_for_atelier() -> None:

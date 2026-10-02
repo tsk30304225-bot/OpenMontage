@@ -14,9 +14,9 @@ from pathlib import Path
 import pytest
 
 from lib.direction_contract.binding.hyperframes import scene_events, trace_workspace, write_bridge
+from lib.direction_contract.hooks import compile_timeline, prepare_atelier_direction
 from lib.scene_runtime import resolve_scene_runtimes
 from lib.tool_routing import creative_menu
-from lib.direction_contract.hooks import compile_timeline
 from schemas.artifacts import validate_artifact
 from tools.analysis.direction_qa import DirectionQA
 from tools.analysis.tool_router import ToolRouter
@@ -348,7 +348,7 @@ def test_atelier_props_carry_scene_clips_and_trace_skips_their_events(tmp_path) 
         {"id": "c3", "scene_id": "sc3", "in_seconds": 11.07, "out_seconds": 18.61, "runtime": "hyperframes",
          "hyperframes": {"workspace": "unused"}}]}
     clips = [{"scene_id": "sc3", "cut_id": "c3", "src": "scene_clips/c3.mp4", "start": 11.07, "end": 18.61}]
-    out = VideoCompose._prepare_atelier_direction(ROUTE / "atelier_route_fixture" / "index.tsx", edit, None,
+    out = prepare_atelier_direction(ROUTE / "atelier_route_fixture" / "index.tsx", edit, None,
                                                   tmp_path / "o.mp4", scene_clips=clips)
     assert "error" not in out, out.get("error")
     props = json.loads(Path(out["props_path"]).read_text(encoding="utf-8"))

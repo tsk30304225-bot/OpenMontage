@@ -29,6 +29,7 @@ from lib.direction_contract.contract import (
     replay_model_states,
     validate_direction,
 )
+from lib.direction_contract.hooks import attach_visual_timeline
 from schemas.artifacts import validate_artifact
 from tools.analysis.direction_qa import DirectionQA
 from tools.video.video_compose import VideoCompose
@@ -219,13 +220,13 @@ def test_video_compose_attaches_timeline_and_rejects_unknown_model(tmp_path) -> 
     validate_artifact("edit_decisions", edit)
 
     props = json.loads(json.dumps(edit))
-    assert VideoCompose._attach_visual_timeline(props, "Explainer") is None
+    assert attach_visual_timeline(props, "Explainer") is None
     assert len(props["visualTimeline"]["events"]) == 6 and "visual_timeline" not in props
 
     props = json.loads(json.dumps(edit))
     props["cuts"][1]["visual_model"]["model_id"] = "other"
-    assert "not in visual_timeline models" in VideoCompose._attach_visual_timeline(props, "Explainer")
-    assert "Explainer" in VideoCompose._attach_visual_timeline(json.loads(json.dumps(edit)), "CinematicRenderer")
+    assert "not in visual_timeline models" in attach_visual_timeline(props, "Explainer")
+    assert "Explainer" in attach_visual_timeline(json.loads(json.dumps(edit)), "CinematicRenderer")
 
 
 def test_direction_qa_hard_fails_event_without_its_model_on_screen(tmp_path) -> None:

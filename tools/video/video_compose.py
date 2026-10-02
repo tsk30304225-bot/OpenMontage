@@ -968,53 +968,6 @@ class VideoCompose(BaseTool):
         return None
 
     @staticmethod
-    def _attach_visual_timeline(props: dict[str, Any], composition_id: str) -> str | None:
-        """Load visual_timeline for type: "visual_model" cuts.
-
-        The renderer executes the compiled events; it must not guess a model
-        from a scene description. Missing timelines, unknown model ids and
-        unresolved anchors are errors rather than a silent static card.
-        """
-        model_cuts = [c for c in props.get("cuts") or [] if isinstance(c, dict) and c.get("type") == "visual_model"]
-        timeline = props.pop("visual_timeline", None)
-        if not model_cuts:
-            if timeline is not None:
-                props["visualTimeline"] = timeline if isinstance(timeline, dict) else None
-            return None
-        if composition_id != "Explainer":
-            return (
-                f"visual_model cuts render in the Explainer composition; renderer_family maps to {composition_id}. "
-                "Use an explainer renderer_family for model scenes."
-            )
-        if isinstance(timeline, str):
-            path = Path(timeline)
-            if not path.is_file():
-                return f"edit_decisions.visual_timeline file not found: {path}"
-            try:
-                timeline = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, ValueError) as exc:
-                return f"Could not read visual_timeline {path}: {exc}"
-        if not isinstance(timeline, dict):
-            return "visual_model cuts need edit_decisions.visual_timeline (compiled by visual_timeline_compiler)."
-        if timeline.get("unmatched"):
-            ids = ", ".join(str(u.get("beat_id")) for u in timeline["unmatched"])
-            return f"visual_timeline has unresolved narration anchors ({ids}); recompile before rendering."
-        models = {m.get("id"): m for m in timeline.get("models") or []}
-        for cut in model_cuts:
-            mid = (cut.get("visual_model") or {}).get("model_id")
-            if mid not in models:
-                return f"cut {cut.get('id')}: visual_model.model_id {mid!r} is not in visual_timeline models {sorted(models)}"
-            if models[mid].get("type") != "timeline_rail" or models[mid].get("renderer") == "bespoke":
-                return (
-                    f"cut {cut.get('id')}: model {mid!r} (type {models[mid].get('type')!r}) has no generic renderer. "
-                    "Render it in atelier (composition_mode='atelier') where the bespoke composition implements the "
-                    "same visual_timeline, or give those scenes runtime 'hyperframes' (HyperFrames scene clips place the "
-                    "events with OM.at); do not drop the model."
-                )
-        props["visualTimeline"] = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
-        return None
-
-    @staticmethod
     def _file_uri_to_raw_path(uri: str) -> str:
         """Convert a ``file:`` URI to a raw filesystem path string.
 
@@ -1225,16 +1178,12 @@ class VideoCompose(BaseTool):
         # Scene runtime overrides: HyperFrames scene cuts render to clips the
         # bespoke composition places from props.sceneClips.
         scene_clips = None
-        from lib.direction_contract.hooks import hyperframes_cuts
+        from lib.direction_contract.hooks import hyperframes_cuts, prepare_atelier_direction, scene_clips_unread_error
         hf_cuts = hyperframes_cuts(edit_decisions)
         if hf_cuts:
-            if not any("sceneClips" in f.read_text(encoding="utf-8", errors="ignore")
-                       for f in entry_path.parent.rglob("*") if f.suffix in (".tsx", ".ts", ".jsx", ".js")
-                       and "node_modules" not in f.parts):
-                return ToolResult(success=False, error=(
-                    "edit_decisions has HyperFrames scene cuts but the atelier composition never reads "
-                    "props.sceneClips; place each clip (<Sequence from={start*fps}><OffthreadVideo "
-                    "src={staticFile(clip.src)} /></Sequence>) at its scene window."))
+            unread = scene_clips_unread_error(entry_path)
+            if unread:
+                return ToolResult(success=False, error=unread)
             rendered = self._render_scene_runtimes(edit_decisions, hf_cuts, output_path, inputs)
             if isinstance(rendered, ToolResult):
                 return rendered
@@ -1248,8 +1197,8 @@ class VideoCompose(BaseTool):
                 scene_clips.append({"scene_id": cut.get("scene_id"), "cut_id": cut.get("id"),
                                     "src": dest.relative_to(public_root).as_posix(),
                                     "start": float(cut["in_seconds"]), "end": float(cut["out_seconds"])})
-        direction = self._prepare_atelier_direction(entry_path, edit_decisions, props_path, output_path,
-                                                    scene_clips=scene_clips)
+        direction = prepare_atelier_direction(entry_path, edit_decisions, props_path, output_path,
+                                              scene_clips=scene_clips)
         if direction.get("error"):
             return ToolResult(success=False, error=direction["error"], data={"direction_trace": direction.get("trace")})
         props_path = direction.get("props_path") or props_path
@@ -1340,69 +1289,6 @@ class VideoCompose(BaseTool):
             )
 
         return ToolResult(success=True, data=data, artifacts=[str(output_path)])
-
-    @staticmethod
-    def _prepare_atelier_direction(
-        entry_path: Path,
-        edit_decisions: dict[str, Any],
-        props_path: str | None,
-        output_path: Path,
-        scene_clips: list[dict[str, Any]] | None = None,
-    ) -> dict[str, Any]:
-        """Bind an atelier render to the visual_direction / visual_timeline contract.
-
-        Returns {"props_path": merged props with visualTimeline, "trace": …} or
-        {"error": …}. A project whose visual_direction declares models must ship
-        a compiled visual_timeline; every event must be implemented through the
-        direction runtime (see lib/direction_contract/binding/remotion_source.py).
-        """
-        from lib.direction_contract.hooks import build_trace, hyperframes_cuts, without_scene_events
-
-        project_dir = entry_path.parent
-
-        def merged_props(extra: dict[str, Any]) -> str:
-            props: dict[str, Any] = json.loads(Path(props_path).read_text(encoding="utf-8")) if props_path else {}
-            props.update(extra)
-            if scene_clips:
-                props["sceneClips"] = scene_clips
-            merged = output_path.parent / f".{output_path.stem}.atelier_props.json"
-            merged.write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")
-            return str(merged)
-
-        timeline = edit_decisions.get("visual_timeline")
-        if isinstance(timeline, str):
-            tp = Path(timeline)
-            if not tp.is_file():
-                return {"error": f"edit_decisions.visual_timeline file not found: {tp}"}
-            timeline = json.loads(tp.read_text(encoding="utf-8"))
-        if timeline is None:
-            direction_path = project_dir / "artifacts" / "visual_direction.json"
-            if direction_path.is_file():
-                try:
-                    declared = json.loads(direction_path.read_text(encoding="utf-8")).get("visual_models") or []
-                except (OSError, ValueError):
-                    declared = []
-                if declared:
-                    return {"error": (
-                        f"{direction_path} declares visual models {[m.get('id') for m in declared]} but "
-                        "edit_decisions.visual_timeline is missing. Compile it with visual_timeline_compiler from the real "
-                        "alignment; atelier implements the contract, it does not replace it."
-                    )}
-            return {"props_path": merged_props({})} if scene_clips else {}
-        if not isinstance(timeline, dict):
-            return {"error": "edit_decisions.visual_timeline must be the compiled visual_timeline (object or path)"}
-        if timeline.get("unmatched"):
-            ids = ", ".join(str(u.get("beat_id")) for u in timeline["unmatched"])
-            return {"error": f"visual_timeline has unresolved narration anchors ({ids}); recompile before rendering."}
-
-        # Events of HyperFrames scene cuts are implemented (and traced) in their workspaces.
-        trace = build_trace(without_scene_events(timeline, hyperframes_cuts(edit_decisions)), project_dir)
-        if trace["hard_failures"]:
-            return {"error": "atelier composition does not implement the direction contract:\n"
-                             + "\n".join(f"  • {f}" for f in trace["hard_failures"]), "trace": trace}
-
-        visual = {"models": timeline.get("models") or [], "events": timeline.get("events") or []}
-        return {"props_path": merged_props({"visualTimeline": visual}), "trace": trace}
 
     # Source-file extensions that get staged into the composer tree at render time.
     # Anything not in this set lives only under the real project dir (assets, renders,
@@ -2427,7 +2313,9 @@ class VideoCompose(BaseTool):
         if caption_error:
             return ToolResult(success=False, error=caption_error)
 
-        timeline_error = self._attach_visual_timeline(props, composition_id)
+        from lib.direction_contract.hooks import attach_visual_timeline
+
+        timeline_error = attach_visual_timeline(props, composition_id)
         if timeline_error:
             return ToolResult(success=False, error=timeline_error)
 
