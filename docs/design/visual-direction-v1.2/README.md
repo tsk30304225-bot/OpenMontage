@@ -1,7 +1,8 @@
-# Visual Direction v1.2 — machine schema 설계 (개정 4, 설계 정정)
+# Visual Direction v1.2 — machine schema 설계 (개정 5, 설계 정정)
 
-상태: **설계. 런타임 구현 없음.** 40–46 스키마는 이 폴더의 `schemas/`에 있다. `visual_direction`/`visual_timeline` 1.2는 이 폴더의 authoring source에서 **self-contained로 생성**되고, 그 생성물이 `schemas/artifacts/`의 shipped 스키마를 대체한다 (D14).
+상태: **설계 문서.** 이 폴더에는 README·예시(와 Director용 문법 가이드)만 있다. 40–46 canonical runtime 스키마와 생성·검증 스크립트는 포크 소유 `schemas/direction_contract/`에 있고 (D18), `visual_direction`/`visual_timeline` 1.2는 거기서 **self-contained로 생성**되어 `schemas/artifacts/`의 shipped 스키마가 된다 (D14). runtime은 이 폴더를 읽지 않는다.
 개정 4 (2026-10-02, Phase 1 착수 중 발견한 결함 정정): D14 스키마 통합, D15 script canonicalization.
+개정 5 (2026-10-03): D16 43 binding-centric (원문 §18), D17 SOURCE_EVIDENCE·LAST_FRAME 판정, D18 스키마 위치.
 기준 코드: 포크 `origin/main` 4a9aed4 (Phase 0 병합 후).
 기준 문서: 사용자 원문 「연출안 형식 설계.txt」 **전체 (§0–§35, v1.1→v1.2 표)** + 2026-10-02 확정 결정 D1–D13.
 
@@ -31,7 +32,7 @@
 | D7 | 앵커 = **script digest + canonical script text의 exact span** (D15로 정밀화: `source_span` 필수, `occurrence_index` 폐지). fuzzy는 alignment(timeline)에서만. 잠긴 앵커가 다른 구간으로 resolve되면 deviation | 40 `anchors`, timeline `anchor_resolution`, 6절 |
 | D8 | 번호: **40** contract · **41** PVM · **42** lineage · **43** execution_binding · **44** deviations · **45** direction_qa_report · **46** direction_review | 2절 |
 | D9 | Director용 41 작성 문법 가이드 (새 엔진 아님, 기존 replay 모델의 표준 문법) | `director-pvm-grammar.md` |
-| D10 | binding은 deterministic_graphics 전용이 아니다. 40 `runtime_stack`에서 **잠긴 요구를 `consumes`로 선언한 모든 layer**를 검사. 엔진은 primary runtime 중심이어도 스키마는 multi-runtime 유지 | 43 `actions[].layer_bindings[]` |
+| D10 | binding은 deterministic_graphics 전용이 아니다. 40 `runtime_stack`에서 **잠긴 요구를 `consumes`로 선언한 모든 layer**를 검사. 엔진은 primary runtime 중심이어도 스키마는 multi-runtime 유지 | 43 `bindings[]` (개정 5, D16으로 대체: 옛 `actions[].layer_bindings[]`) |
 | D11 | 42 `transformed`(자유 문장) → **typed `transformations[]`**: SPLIT · MERGE · TIMING_RESOLUTION · ASSET_BINDING · RUNTIME_BINDING · IMPLEMENTATION_DETAIL. 의미 변경 타입은 없다 → LOCKED 의미 변경은 deviation + 새 승인 revision | 42 schema |
 | D12 | `PIXEL_CHANGE`는 LOCKED의 필수 PASS 조건이 아니다. **보조 증거(role SUPPORTING)만**. 동적 LOCKED 완료 = 구조 QA(45) + 필요한 Direction Review(46) | 45 `checks[].role` (PIXEL_CHANGE는 SUPPORTING 강제) |
 | D13 | `omitted_locked_ids`는 Planner 값을 믿지 않는다. **시스템이** 승인 contract의 effective must_preserve와 실제 lineage coverage(주장 ∩ 실제 구현)를 비교해 계산 → 42 `system_coverage`(computed_by=check_lineage). 45가 **독립 재계산**하고 일치 여부를 기록 | 42 `system_coverage`, 45 receipt `effective_must_preserve`·`omitted`·`lineage_coverage_agrees` |
@@ -40,8 +41,16 @@
 
 | # | 결정 | 반영 위치 |
 |---|---|---|
-| D14 | **스키마 통합 = A.** `visual_direction`·`visual_timeline`은 checkpoint와 `visual_timeline_compiler`가 upstream `validate_artifact`(registry 없음)로 검증한다. 따라서 이 둘의 shipped 1.2 스키마는 **self-contained**: 외부 `$ref`·registry 요구 없음. 공통 정의는 손으로 복제하지 않고 authoring source(`direction_common`)에서 각 스키마의 `$defs`로 **materialize**(사용하는 정의의 전이 폐포, `#/$defs/<name>`로 재작성). 두 스키마의 공유 정의가 서로·원본과 동일한지 regression test로 고정. v1.0 문서는 그대로 유효, 1.2 필드는 additive + `version` 조건부 (1.2: `contract` 필수, 모델 정의 금지 / 1.0: 1.2 필드 금지) | `derive_v12_schemas.py`, `schemas/base/`, 2절·14절 |
+| D14 | **스키마 통합 = A.** `visual_direction`·`visual_timeline`은 checkpoint와 `visual_timeline_compiler`가 upstream `validate_artifact`(registry 없음)로 검증한다. 따라서 이 둘의 shipped 1.2 스키마는 **self-contained**: 외부 `$ref`·registry 요구 없음. 공통 정의는 손으로 복제하지 않고 authoring source(`direction_common`)에서 각 스키마의 `$defs`로 **materialize**(사용하는 정의의 전이 폐포, `#/$defs/<name>`로 재작성). 두 스키마의 공유 정의가 서로·원본과 동일한지 regression test로 고정. v1.0 문서는 그대로 유효, 1.2 필드는 additive + `version` 조건부 (1.2: `contract` 필수, 모델 정의 금지 / 1.0: 1.2 필드 금지) | `schemas/direction_contract/generate_artifact_schemas.py`, `schemas/direction_contract/base/`, 2절·14절 |
 | D15 | **Script canonicalization = `SCRIPT_SECTIONS_TEXT_V1`.** script artifact(`schemas/artifacts/script`)의 `sections` 현재 배열 순서, 각 `sections[i].text`만, CRLF/CR → LF, Unicode NFC, section 사이 정확히 `\n` 하나, trim 없음 → `canonical_script_text`. UTF-8(BOM 없음) bytes의 SHA-256 = `script_sha256`. 앵커 `source_span`은 canonical text의 Unicode code-point offset (`char_start` inclusive, `char_end` exclusive)이고 `canonical_script_text[char_start:char_end] == exact_text`를 반드시 검사. 40 `authority.canonicalization_id`에 규칙 ID를 기록(LOCKED 필수). narration authority(`narration_ref`·`narration_sha256` = 오디오 bytes)는 script hash와 별개의 독립 authority로 유지 | 40 `authority`, common `anchor`·`script_canonicalization`, 6절 |
+
+### 정정 결정 (2026-10-03, 개정 5)
+
+| # | 결정 | 반영 위치 |
+|---|---|---|
+| D16 | **43은 binding-centric** (원문 §18). canonical 단위는 `bindings[]`: 한 production scene × 한 runtime layer. 각 binding = `production_scene_id` · `layer` · `runtime` · `consumes{action_ids, event_ids, state_ids}` · `locator` · `status`. `locator`는 `kind`로 구분되는 union: **CODE** (`implementation_path`, `component_or_block`, `refs[{file, line?, symbol, via}]` — line 선택) · **ASSET** (`cut_id`, `source_asset_ref`, `via` — line 없음) · **RUNTIME_OUTPUT** (`runtime_output_ref`, `via`). 43은 또 렌더된 production scene 창 `scene_windows[]`(edit_decisions의 primary cut을 순서대로 누적한 program time, video_compose와 같은 방식)를 가진다 — ACTIVE_AT_SCENE_END·LAST_FRAME·minimum_hold의 장면 끝은 이것이다. action 중심 `actions[].layer_bindings`는 폐지: action·state·event의 bound 여부는 bindings에서 **파생** (잠긴 id는 그것을 `consumes`로 선언한 모든 layer의 binding이 bound여야 bound). 개정 4까지는 state(예: 정적 증거 SC010/S0)를 binding할 자리가 없었다 | 43 schema, 10절·11절 |
+| D17 | **SOURCE_EVIDENCE** = contract 객체의 `source_asset`과 실제 edit_decisions cut source의 identity 대조 (`SOURCE_IDENTITY_V1`, 6-1절). **LAST_FRAME**: cut이 장면 끝을 덮는다는 것은 `ACTIVE_AT_SCENE_END` 증거일 뿐 그 자체로 PASS가 아니다. `last_frame_contract`의 선언된 요구 (required_state, visible/hidden objects, object_states, persistent_states, visible_text, camera_state, motion_state, minimum_hold) **전부**가 충족돼야 PASS. 구조로 판정할 수 없는 요구(visible_text, camera_state, …)가 있으면 UNVERIFIED. SC010처럼 단순한 정적 증거 계약은 구조 검증만으로 PASS 가능 | 6-1절, 9절 |
+| D18 | 40–46 canonical runtime 스키마 = 포크 소유 **`schemas/direction_contract/`** (`registry()`·`validator(name)` 제공, `base/`, 생성기, 예시 검증기). self-contained 생성물 `visual_direction`·`visual_timeline`은 기존대로 `schemas/artifacts/`. `docs/design/visual-direction-v1.2/`에는 README와 examples만 | 14절 |
 
 ## 1. 흐름
 
@@ -73,14 +82,14 @@ Production Complete
 | 42 | `direction_lineage` | Planner (`system_coverage`는 시스템) | scene_plan | production scene별 consumed ID(must_preserve 모든 범주), typed transformations. coverage는 시스템 계산 |
 | — | `visual_direction` 1.2 | Planner | scene_plan | beat(모델 연산 1개) + `action_id` `state_after_id` `contract_event_id` `anchor_id` `sync_group` |
 | — | `visual_timeline` 1.2 | `compile_timeline` | edit | event에 같은 ID + `anchor_resolution` |
-| 43 | `execution_binding` | `bind()` | compose | action → 장면·초 + **선언된 runtime layer마다** 구현 코드 위치 (`layer_bindings`) |
+| 43 | `execution_binding` | `bind()` | compose | `bindings[]`: production scene × layer마다 소비한 잠긴 id + locator (CODE / ASSET / RUNTIME_OUTPUT) (D16) |
 | 44 | `direction_deviations` | 작업자 기록, **사용자 결정** | 어느 단계든 | 구현 불가 시 중단 |
 | 45 | `direction_qa_report` | QA (자동) | compose | 구조 검사 + locked lineage receipt |
 | 46 | `direction_review` | 사람 | compose 후 | 화면이 메커니즘을 실제로 보여주는가 |
 
 - 모든 하위 artifact는 `contract_ref {artifact, artifact_id, revision, fingerprint}`를 가진다. 40/41이 바뀌면 stale → 게이트 실패.
 - **Fingerprint**: `sha256` over canonical JSON `{"contract": 40 − lifecycle, "pvm": 41}` (key 정렬, 공백 없음, UTF-8). `lifecycle`(revision·status·잠금 메타)만 바뀌면 지문 불변.
-- 40–46은 upstream 로더(`validate_artifact`)를 거치지 않는다. 교차 `$ref` 때문에 `direction_contract`가 자체 registry로 검증.
+- 40–46은 upstream 로더(`validate_artifact`)를 거치지 않는다. 교차 `$ref` 때문에 `schemas/direction_contract`의 registry로 검증 (D18).
 - **`visual_direction`·`visual_timeline`은 예외** (개정 4에서 정정: 개정 3의 "v1.2 artifact는 upstream 로더를 거치지 않는다"는 이 둘에 대해 틀렸다). checkpoint `_validate_artifacts_for_stage`와 `visual_timeline_compiler`가 `validate_artifact`로 검증하므로, 이 둘의 1.2 스키마는 self-contained로 생성되어 `schemas/artifacts/visual_direction.schema.json`·`visual_timeline.schema.json`(포크 소유 파일)을 대체한다 (D14). `validate_artifact` 자체(upstream 파일)는 그대로 → **upstream 0줄** 유지.
 
 ## 3. 원문 대조표 (§별 반영 결과)
@@ -105,7 +114,7 @@ Production Complete
 | §15 must_preserve | 11개 키 + `cross_scene` | **D1**: core(states/actions/invariants) 자동 포함 |
 | §16 allowed_freedom | 부여된 자유만 enum 배열로 | false 항목(causal_order, action_removal, action_merge, state_removal, narration_anchor_change)은 **LOCKED에서 절대 부여 불가**로 고정 (NEVER_FREE) |
 | §17 prohibited_simplification | 9종 그대로 | |
-| §18 Runtime stack | 40 `runtime_stack` 9개 층 {runtime, purpose, consumes} | 43 `layer_bindings`가 **consumes를 선언한 모든 layer**를 검사 (D10). 엔진에 실행 경로가 없는 layer는 `not_executed_by_engine` = 잠긴 ID에 대해 unbound |
+| §18 Runtime stack | 40 `runtime_stack` 9개 층 {runtime, purpose, consumes} | 43 `bindings`가 **consumes를 선언한 모든 layer**를 production scene별로 검사 (D10·D16). 엔진에 실행 경로가 없는 layer는 `not_executed_by_engine` = 잠긴 ID에 대해 unbound |
 | §19 Atelier boundary | `allowed_freedom` + NEVER_FREE + must_preserve로 표현 | 별도 필드 없음 |
 | §20 Visual identity | 40 `visual_identity.mechanism_compatibility` (true 고정) | |
 | §21 Truth | `truth_class` (object, truth_requirements) | |
@@ -113,7 +122,7 @@ Production Complete
 | §23 Last frame | `required_state_id, end_anchor, visible/hidden_objects, object_states, persistent_states, visible_text, camera_state, motion_state, minimum_hold_seconds, handoff_objects, handoff_to_scene, next_scene_seed` | |
 | §24 Output contract | 40 `output_contract` | `embedded_lineage_metadata`는 43이 담당 |
 | §25 Scene plan 역할 | **42 lineage + 43 binding**이 담당 (P3) | upstream scene_plan 무변경 |
-| §26 Anchor resolution | timeline 1.2 `anchor_resolution{resolved_anchors[status EXACT/REVERSIBLE_NORMALIZATION/FUZZY, same_span], unresolved_anchors}` + `action_timing_binding`은 43 action의 start/end | |
+| §26 Anchor resolution | timeline 1.2 `anchor_resolution{resolved_anchors[status EXACT/REVERSIBLE_NORMALIZATION/FUZZY, same_span], unresolved_anchors}` + `action_timing_binding`은 43 binding의 `timeline_event_ids`·start/end | |
 | §27 Downstream lineage | 42 {contract_ref, consumed(beat/state/action/event/anchor/invariant/object/**causal_chain**/pvm), typed transformations, added_implementation_fields, **system_coverage**} | `omitted_locked_ids`는 Planner가 쓰지 않고 시스템이 계산 (D13). 원문 `transformed` = typed transformations (D11) |
 | §28 Deviation | 44 {deviation_id, scene_id, affected_contract_ids, reason(+OTHER), semantic_impact NONE/MINOR/MATERIAL, proposed_change, approval_required, status PROPOSED/APPROVED/REJECTED/WITHDRAWN, decision} | MATERIAL → approval_required=true (스키마 강제). 잠긴 must_preserve에 닿으면 impact와 무관하게 승인 필요 |
 | §29 Approval scope | 40 `approval_scope` (top + scene override). `locked_direction_mutation: false` 고정, semantic_fallback·causal_contract_change = requires_new_approval | 실행 승인 ≠ 연출 변경 승인 |
@@ -142,6 +151,19 @@ Production Complete
 - NEVER_FREE 항목이 allowed_freedom에 없음 (스키마 enum에 아예 없음).
 - sync_group: 같은 그룹 action은 같은 start_anchor.
 - runtime_stack: 잠긴 action·event·state는 적어도 한 layer의 `consumes`에 있어야 한다 (binding 대상이 없으면 contract 오류).
+
+## 6-1. 출처 identity · 마지막 화면 (D17)
+- **`SOURCE_IDENTITY_V1`**: 두 참조를 `\` → `/`, 앞의 `./` 제거, Unicode NFC로 정규화한다. contract `source_asset`과 cut `source`가 같거나, cut source의 경로 segment 끝이 contract `source_asset`의 segment 전체와 같으면 같은 출처. (asset-manifest id처럼 `/`가 없으면 사실상 동일 문자열 비교.)
+- **SOURCE_EVIDENCE** (truth_class SOURCE 객체마다): 그 객체가 보이는 잠긴 state를 `consumes`로 선언한 layer의 binding이 bound ASSET이고 `source_asset_ref`가 identity 일치 → PASS. ASSET binding이 없거나 다른 출처 → FAIL. 객체에 `source_asset`이 없으면 UNVERIFIED.
+- **ACTIVE_AT_SCENE_END**: ASSET binding의 cut 구간이 contract 장면 창(42가 대응시킨 production scene들)의 끝을 덮는다. 증거 하나일 뿐이다.
+- **LAST_FRAME** (장면 끝 시점, 선언된 요구마다 판정 → 하나라도 FAIL이면 FAIL, 판정 불가가 있으면 UNVERIFIED, 전부 충족일 때만 PASS):
+  - `required_state_id`: 모델 state면 replay 상태가 assertion을 만족, 모델 밖 state면 그 `visible_objects`가 전부 보임(아래)
+  - `visible_objects` / `hidden_objects`: 모델 객체는 replay의 `elements.<id>.visible`, 출처 객체는 identity가 맞는 ASSET binding이 ACTIVE_AT_SCENE_END (hidden 출처 객체는 UNVERIFIED)
+  - `object_states` · `persistent_states`: replay assertion
+  - `motion_state`: HOLD = required state 도달 뒤 장면 끝까지 그 장면 모델 연산 없음. SETTLING/CONTINUOUS는 UNVERIFIED
+  - `minimum_hold_seconds`: 장면 끝 − required state 도달 시각(모델: 마지막 연산 종료, 출처: cut 시작과 장면 시작 중 늦은 쪽) ≥ 값
+  - `visible_text` · `camera_state`: 렌더가 필요 → UNVERIFIED (Phase 2)
+  - `handoff_to_scene` · `handoff_objects` · `next_scene_seed`: 마지막 화면 요구가 아니라 장면 간 연결 → PERSISTENT_STATE에서 판정
 
 ## 6. 앵커 (D7, D15)
 - **canonical script text (`SCRIPT_SECTIONS_TEXT_V1`)**: `"\n".join(NFC(sections[i].text with CRLF/CR → LF) for i in array order)`, trim 없음. `script_sha256 = sha256(utf8(canonical_script_text))`, BOM 없음. 다른 필드(id·시간)는 hash에 들어가지 않는다. 규칙이 바뀌면 새 ID를 만들고 기존 contract는 기록된 ID로 재현한다.
@@ -175,7 +197,7 @@ Production Complete
 | 유형 | 45 (구조) | 46 (사람) | 기타 |
 |---|---|---|---|
 | LOCKED · 동적 (causal / action / PVM 전이 / static_replacement_valid=false) | receipt PASS (REQUIRED 검사만; PIXEL_CHANGE 제외) | **PASS 필요** | 43: 선언한 모든 layer bound 또는 승인된 deviation |
-| LOCKED · 정적 증거 | receipt PASS (SOURCE_EVIDENCE·LAST_FRAME은 렌더 후) | 불필요 | 출처 일치 |
+| LOCKED · 정적 증거 | receipt PASS: SOURCE_EVIDENCE(출처 identity) · LAST_FRAME(선언 요구 전부, D17) · 43 binding | 불필요 | 단순 계약이면 구조 검증만으로 PASS |
 | REQUIRED_FLEX | requirements·truth·참조 무결성, 참조한 PVM 전이만 | 불필요 | |
 | DISCRETIONARY | 없음 | 불필요 | |
 
@@ -183,7 +205,7 @@ Production Complete
 40이 있을 때만. 
 - **scene_plan 완료**: 40 `LOCKED` · `validate_contract` 오류 0 · 42/visual_direction 1.2의 contract_ref 일치 · `check_lineage`가 계산한 `system_coverage.omitted_locked_ids`가 비었거나 전부 deviation으로 덮임 (PROPOSED면 통과는 하되 compose에서 막힘). Planner가 써 넣은 coverage 값은 무시하고 덮어쓴다
 - **edit 완료**: timeline 1.2 · 잠긴 앵커 unresolved 0 · same_span=false는 deviation 존재 · `check_states` 위반 0
-- **compose 완료**: 43 잠긴 action 전부 bound/deviated(APPROVED), 선언한 모든 layer 기준 · 45 verdict PASS (LOCKED receipt PASS, 독립 재계산 `omitted`가 비고 `lineage_coverage_agrees=true`) · 46 필요한 장면 전부 PASS (같은 render sha256·contract revision) · PROPOSED/REJECTED deviation 0
+- **compose 완료**: 43에서 잠긴 action·event·state마다 그것을 선언한 모든 layer의 binding이 bound 또는 deviated(APPROVED) (D16) · 45 verdict PASS (LOCKED receipt PASS, 독립 재계산 `omitted`가 비고 `lineage_coverage_agrees=true`) · 46 필요한 장면 전부 PASS (같은 render sha256·contract revision) · PROPOSED/REJECTED deviation 0
 
 ## 11. API (시그니처 확정안 — 구현 전)
 
@@ -195,22 +217,25 @@ Production Complete
 | `check_lineage(contract, lineage, visual_direction, scene_plan)` | +42, scene_plan | 42 `system_coverage` (effective must_preserve vs 주장∩실제 타임라인, `claimed_but_not_implemented`) + transformation 규칙 위반 | **lineage, scene_plan 추가 · coverage는 반환값, Planner 값 불신 (D13)** |
 | `compile_timeline(direction, alignment, *, models=None, contract=None, ...)` | +41 models, +contract(앵커) | timeline 1.2 (ID 복사, anchor_resolution) | **키워드 인자 추가만** (v1.0 호출 불변) |
 | `check_states(contract, timeline, lineage, scene_windows)` | +42, 장면 시간 창 | violations (state·invariant·sync·order·last frame) | **lineage, scene_windows 추가** |
-| `bind(contract, timeline, edit_decisions, traces)` | +edit_decisions(컷별 런타임·창), `traces`: **layer별** raw trace | 43 (`layer_bindings` per declaring layer) | **edit_decisions 추가 · traces를 layer 단위로 (D10)** |
+| `bind(contract, timeline, edit_decisions, traces)` | +edit_decisions(컷별 런타임·창·source), `traces`: **layer별** raw trace | 43 `bindings[]` (CODE는 trace에서, ASSET은 edit_decisions cut에서, RUNTIME_OUTPUT은 runtime 산출물에서; D16) | **edit_decisions 추가 · traces를 layer 단위로 (D10)** |
 | `record_deviation(project_dir, contract, deviation)` / `open_deviations(project_dir)` | 44 | 갱신된 44 / 미결 목록 | contract 추가 (contract_ref 기록) |
 | `qa_report(contract, lineage, visual_direction, timeline, binding, pixel_qa=None)` | 원 artifact (이전 단계 결과값이 아니라) | **45**: coverage **독립 재계산** 후 42 `system_coverage`와 비교, `pixel_qa`는 SUPPORTING으로만 | **신규 필요** (D12·D13) |
 | `review_packet(contract, timeline, render)` | evidence_states 시각(state_at) | 46 초안 + 프레임 | 신규(선택) |
 | `completion_gate(stage, status, artifacts, pipeline_type)` | 40–46 by name | 통과 / CheckpointValidationError | `validate_stage`와 같은 모양 |
 
-## 12. 검증 결과 (개정 4)
+## 12. 검증 결과 (개정 5)
 
-`python docs/design/visual-direction-v1.2/validate_examples.py`
+`python -m schemas.direction_contract.validate_examples`
 - 스키마: 40 · 41 · 42 (Planner 작성본 / good·as_produced system coverage 포함본) · visual_direction 1.2 (good / as_produced) · 43 · 44 · 45 (good / as_produced) — **11/11 통과**
 - 생성 스키마(`visual_direction`/`visual_timeline` 1.2): 최신, **외부 `$ref` 0**, 공유 정의(contract_ref · fingerprint · qualified_id)가 두 스키마와 `direction_common`에서 동일. 1.2 예시는 registry 없이 plain jsonschema로 검증
 - script authority: `script.txt` = `canonical_script_text(script.json)`, 40 `canonicalization_id = SCRIPT_SECTIONS_TEXT_V1`·`script_sha256` 일치, **앵커 9개 전부 `canonical[char_start:char_end] == exact_text`**, span 1 이동은 검출, CR/CRLF → LF
 - 하위 예시 전부 같은 contract fingerprint
+- 43 예시: SC010/S0 정적 증거가 `sc18/factual_source` ASSET binding으로 기록되고 출처 identity가 contract `source_asset`과 일치
 - **legacy v1.0 fixture** (`tests/fixtures/visual_direction/release_plan/visual_direction.json`) 1.2 스키마에서 그대로 유효
 - **42 `system_coverage` = 45 독립 재계산** (good 0개 · as_produced 6개 일치)
-- 스키마만으로 거부되어야 할 입력 **23/23 거부** (개정 4 추가: LOCKED인데 canonicalization_id 없음 · 알 수 없는 canonicalization · 앵커 source_span 없음 · 1.2인데 contract 없음 · v1.0인데 contract · v1.0 beat에 action_id). 기존: causal 장면 review=not_required · static_replacement_valid=false인데 not_required · motion 장면 actions 없음 · causal_explanation인데 causal contract 없음 · LOCKED must_preserve 없음 · locked_direction_mutation=true · LOCKED인데 script_sha256 없음 · 비정규 action ID · **42 의미 변경 transformation** · **system_coverage를 check_lineage 아닌 주체가 작성** · **PIXEL_CHANGE를 REQUIRED로** · **receipt에 effective_must_preserve 없음** · **binding action에 layer_bindings 없음** · 1.2가 모델 정의 · MATERIAL deviation 승인 불요 · APPROVED에 decision 없음 · LOCKED 장면 receipt 없음
+- 스키마만으로 거부되어야 할 입력 **30/30 거부** (개정 5 추가: bound binding에 locator 없음 · 아무 id도 소비하지 않는 binding · CODE locator에 implementation_path 없음 · ASSET locator에 cut 없음 · 알 수 없는 locator kind · deviated에 deviation_id 없음 · 옛 action 중심 43. 개정 4 추가: LOCKED인데 canonicalization_id 없음 · 알 수 없는 canonicalization · 앵커 source_span 없음 · 1.2인데 contract 없음 · v1.0인데 contract · v1.0 beat에 action_id). 기존: causal 장면 review=not_required · static_replacement_valid=false인데 not_required · motion 장면 actions 없음 · causal_explanation인데 causal contract 없음 · LOCKED must_preserve 없음 · locked_direction_mutation=true · LOCKED인데 script_sha256 없음 · 비정규 action ID · **42 의미 변경 transformation** · **system_coverage를 check_lineage 아닌 주체가 작성** · **PIXEL_CHANGE를 REQUIRED로** · **receipt에 effective_must_preserve 없음** · 1.2가 모델 정의 · MATERIAL deviation 승인 불요 · APPROVED에 decision 없음 · LOCKED 장면 receipt 없음
+
+아래 표와 45 예시는 개정 3의 프로토타입 출력이다 (binding 이전이라 SC010이 UNVERIFIED). Phase 1에서 `qa_report`가 D16·D17로 다시 생성한다.
 
 의미 검사 프로토타입 (저장소 밖, 버리는 코드. 기존 `compile_timeline` + `replay_model_states`만 사용. 42 system coverage와 45 예시가 이 출력):
 
@@ -233,24 +258,27 @@ Production Complete
 
 ## 14. 파일
 ```
-README.md                                  이 문서
-director-pvm-grammar.md                    D9: Director용 41 작성 문법
-schemas/
-  direction_common.schema.json             ID · contract_ref · anchor · assertion · numeric_target · enum
-  visual_direction_contract.schema.json    40
-  persistent_visual_models.schema.json     41 (모델 정의는 기존 visual_model을 $ref)
-  direction_lineage.schema.json            42 (typed transformations, system_coverage)
-  execution_binding.schema.json            43 (layer_bindings)
-  direction_deviations.schema.json         44
-  direction_qa_report.schema.json          45 (locked lineage receipt 포함)
-  direction_review.schema.json             46
-  base/visual_direction.v1.0.schema.json   v1.0 원본 (생성 입력, 고정)
-  base/visual_timeline.v1.0.schema.json    v1.0 원본 (생성 입력, 고정)
-  (생성물은 이 폴더에 두지 않는다: derive_v12_schemas.py가 schemas/artifacts/visual_direction.schema.json ·
-   visual_timeline.schema.json을 self-contained로 직접 생성. 손으로 고치지 않는다)
-examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40, 41, 42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced, 43 good, 44, 45 good/as_produced
-derive_v12_schemas.py                      v1.0 → 1.2 변경분 정의 + common 정의 materialize + 생성
-validate_examples.py                       스키마·생성물·canonical script/span·fingerprint·legacy·부정 사례 검증
+docs/design/visual-direction-v1.2/
+  README.md                                  이 문서
+  director-pvm-grammar.md                    D9: Director용 41 작성 문법 (문서)
+  examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40, 41,
+                                             42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced,
+                                             43 good, 44, 45 good/as_produced
+schemas/direction_contract/                  canonical runtime 스키마 (D18) — runtime은 여기만 읽는다
+  __init__.py                                registry() · validator(name) · validate(name, doc)
+  direction_common.schema.json               ID · contract_ref · anchor · script_canonicalization · assertion · enum
+  visual_direction_contract.schema.json      40
+  persistent_visual_models.schema.json       41 (모델 정의는 v1.0 visual_model을 $ref)
+  direction_lineage.schema.json              42 (typed transformations, system_coverage)
+  execution_binding.schema.json              43 (bindings[] + CODE/ASSET/RUNTIME_OUTPUT locator)
+  direction_deviations.schema.json           44
+  direction_qa_report.schema.json            45 (locked lineage receipt 포함)
+  direction_review.schema.json               46
+  base/visual_direction.v1.0.schema.json     v1.0 원본 (생성 입력, 고정)
+  base/visual_timeline.v1.0.schema.json      v1.0 원본 (생성 입력, 고정)
+  generate_artifact_schemas.py               v1.0 → 1.2 변경분 + common 정의 materialize → schemas/artifacts/visual_{direction,timeline}.schema.json
+  validate_examples.py                       스키마·생성물·canonical script/span·출처 identity·fingerprint·legacy·부정 사례 검증
+schemas/artifacts/visual_direction.schema.json · visual_timeline.schema.json   생성물 (self-contained, 손으로 고치지 않는다)
 ```
 
 이번 단계에서 하지 않은 것: API 구현, 런타임 스키마 등록, 게이트 연결, Director 프롬프트 변경, 렌더 경로 변경. 프로토타입 코드는 저장소에 넣지 않았다.

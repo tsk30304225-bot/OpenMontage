@@ -1,13 +1,14 @@
 """Visual Direction v1.2 — shipped schema integration (D14) and script authority (D15).
 
 D14: schemas/artifacts/visual_direction.schema.json and visual_timeline.schema.json are
-generated self-contained by docs/design/visual-direction-v1.2/derive_v12_schemas.py, so the
+generated self-contained by schemas/direction_contract/generate_artifact_schemas.py, so the
 plain upstream validate_artifact validates v1.0 and v1.2 documents with no registry.
 D15: SCRIPT_SECTIONS_TEXT_V1 — the acceptance fixture's script hash and anchor spans.
+D16: 43 is binding-centric. D18: 40–46 canonical runtime schemas live in schemas/direction_contract;
+docs/design holds only the README and examples, and runtime code never reads docs/.
 """
 
 import hashlib
-import importlib.util
 import json
 import unicodedata
 from pathlib import Path
@@ -16,9 +17,12 @@ import jsonschema
 import pytest
 
 from schemas.artifacts import validate_artifact
+from schemas.direction_contract import SCHEMA_DIR, SCHEMAS, validator
+from schemas.direction_contract import generate_artifact_schemas as generator
 
 REPO = Path(__file__).resolve().parents[2]
 DESIGN = REPO / "docs" / "design" / "visual-direction-v1.2"
+EXAMPLE = DESIGN / "examples" / "capital-competition"
 FIX = REPO / "tests" / "fixtures" / "direction_v1_2" / "capital_competition"
 LEGACY = REPO / "tests" / "fixtures" / "visual_direction" / "release_plan"
 SHIPPED = ("visual_direction", "visual_timeline")
@@ -26,13 +30,6 @@ SHIPPED = ("visual_direction", "visual_timeline")
 
 def _load(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _derive():
-    spec = importlib.util.spec_from_file_location("derive_v12_schemas", DESIGN / "derive_v12_schemas.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def _shipped(name: str) -> dict:
@@ -56,7 +53,7 @@ def _refs(node, found):
 
 @pytest.mark.parametrize("name", SHIPPED)
 def test_shipped_schema_is_the_generator_output(name) -> None:
-    assert _shipped(name) == _derive().GENERATED[f"{name}.schema.json"]()
+    assert _shipped(name) == generator.GENERATED[f"{name}.schema.json"]()
 
 
 @pytest.mark.parametrize("name", SHIPPED)
@@ -65,7 +62,7 @@ def test_shipped_schema_has_no_external_ref(name) -> None:
 
 
 def test_shared_definitions_are_identical_and_equal_to_direction_common() -> None:
-    common = _load(DESIGN / "schemas" / "direction_common.schema.json")["$defs"]
+    common = _load(SCHEMA_DIR / "direction_common.schema.json")["$defs"]
     vd, vt = (_shipped(n)["$defs"] for n in SHIPPED)
     shared = set(vd) & set(vt) & set(common)
     assert {"qualified_id", "contract_ref", "fingerprint"} <= shared
@@ -139,7 +136,7 @@ def test_fixture_anchor_spans_are_exact() -> None:
 
 
 def test_fixture_matches_the_design_example() -> None:
-    example = DESIGN / "examples" / "capital-competition"
+    example = EXAMPLE
     for name in ("40_visual_direction_contract.json", "41_persistent_visual_models.json", "42_direction_lineage.json",
                  "44_direction_deviations.json", "visual_direction.good.json", "visual_direction.as_produced.json",
                  "script.json"):
@@ -150,6 +147,47 @@ def test_design_examples_validate() -> None:
     import os
     import subprocess
     import sys
-    run = subprocess.run([sys.executable, str(DESIGN / "validate_examples.py")], capture_output=True, text=True,
+    run = subprocess.run([sys.executable, "-m", "schemas.direction_contract.validate_examples"], capture_output=True, text=True,
                          encoding="utf-8", cwd=REPO, env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     assert run.returncode == 0, run.stdout[-3000:] + run.stderr[-2000:]
+
+
+# --- D18: one canonical schema location; docs/design is documentation only -----------------------------
+
+def test_design_folder_holds_only_documentation_and_examples() -> None:
+    files = sorted(p.relative_to(DESIGN).as_posix() for p in DESIGN.rglob("*") if p.is_file())
+    assert all(f.endswith(".md") or f.startswith("examples/") for f in files), files
+    assert not any(f.endswith((".py", ".schema.json")) for f in files)
+
+
+def test_runtime_code_never_reads_docs_design() -> None:
+    offenders = [p.relative_to(REPO).as_posix() for root in ("lib", "tools", "schemas")
+                 for p in (REPO / root).rglob("*.py")
+                 if "docs/design" in p.read_text(encoding="utf-8", errors="ignore").replace("\\", "/")
+                 or "visual-direction-v1.2" in p.read_text(encoding="utf-8", errors="ignore")]
+    assert offenders == ["schemas/direction_contract/validate_examples.py"]  # the example checker, not runtime
+
+
+@pytest.mark.parametrize("name", sorted(SCHEMAS))
+def test_canonical_schemas_are_valid_and_resolvable(name) -> None:
+    v = validator(name)
+    v.check_schema(v.schema)
+
+
+# --- D16: binding-centric 43 ---------------------------------------------------------------------------
+
+def test_43_example_is_binding_centric_and_records_the_static_evidence_state() -> None:
+    binding = _load(EXAMPLE / "43_execution_binding.good.json")
+    errors = list(validator("execution_binding").iter_errors(binding))
+    assert errors == []
+    sc18 = next(b for b in binding["bindings"] if b["production_scene_id"] == "sc18")
+    assert sc18["consumes"] == {"state_ids": ["SC010/S0"]}
+    assert sc18["locator"]["kind"] == "ASSET" and "line" not in sc18["locator"]
+
+
+def test_43_code_ref_line_is_optional_and_asset_locator_has_no_line() -> None:
+    binding = _load(EXAMPLE / "43_execution_binding.good.json")
+    binding["bindings"][0]["locator"]["refs"][0].pop("line")
+    assert list(validator("execution_binding").iter_errors(binding)) == []
+    binding["bindings"][3]["locator"]["line"] = 1
+    assert list(validator("execution_binding").iter_errors(binding)) != []

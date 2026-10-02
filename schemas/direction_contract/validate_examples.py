@@ -1,6 +1,9 @@
 """Validate the v1.2 design examples against the draft schemas.
 
-    python docs/design/visual-direction-v1.2/validate_examples.py [--stamp]
+    python -m schemas.direction_contract.validate_examples [--stamp]
+
+Examples live in docs/design/visual-direction-v1.2/examples/; the schemas they are
+checked against are the canonical runtime schemas in this package.
 
 Design check only:
 - every example validates against its draft schema (40–46: cross-file $refs
@@ -29,14 +32,13 @@ import unicodedata
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
-from referencing import Registry, Resource
 
-import derive_v12_schemas as derive
+from schemas.direction_contract import SCHEMA_DIR, URN
+from schemas.direction_contract import generate_artifact_schemas as derive
+from schemas.direction_contract import registry as runtime_registry
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[2]
-EX = HERE / "examples" / "capital-competition"
-URN = "urn:openmontage:schema:"
+ROOT = SCHEMA_DIR.parents[1]
+EX = ROOT / "docs" / "design" / "visual-direction-v1.2" / "examples" / "capital-competition"
 LEGACY_VD = ROOT / "tests" / "fixtures" / "visual_direction" / "release_plan" / "visual_direction.json"
 
 CASES = [
@@ -72,16 +74,22 @@ def script_sha256(script: dict) -> str:
     return hashlib.sha256(canonical_script_text(script).encode("utf-8")).hexdigest()
 
 
-def registry() -> Registry:
-    schemas = [load(p) for p in (HERE / "schemas").glob("*.schema.json")]
-    # 41 reuses the v1.0 visual_model definition; register the frozen v1.0 base under the id 41 references.
-    v10 = load(HERE / "schemas" / "base" / "visual_direction.v1.0.schema.json")
-    v10["$id"] = URN + "visual_direction"
-    schemas.append(v10)
-    return Registry().with_resources((s["$id"], Resource.from_contents(s)) for s in schemas)
+def _segments(ref: str) -> list[str]:
+    ref = unicodedata.normalize("NFC", ref.replace("\\", "/"))
+    return [s for s in ref.split("/") if s not in ("", ".")]
 
 
-def validator(reg: Registry, kind: str) -> Draft202012Validator:
+def source_identical(contract_asset: str, cut_source: str) -> bool:
+    """SOURCE_IDENTITY_V1 (README 6-1): equal, or the cut path ends with every segment of the contract reference."""
+    want, have = _segments(contract_asset), _segments(cut_source)
+    return bool(want) and have[-len(want):] == want
+
+
+def registry():
+    return runtime_registry()
+
+
+def validator(reg, kind: str) -> Draft202012Validator:
     if kind in GENERATED_KIND:  # self-contained: no registry, like validate_artifact
         return Draft202012Validator(load(GENERATED_KIND[kind]))
     return Draft202012Validator(reg.get_or_retrieve(URN + kind).value.contents, registry=reg)
@@ -155,6 +163,19 @@ def main() -> int:
     failures += report("\r" not in canonical_script_text(crlf) and script_sha256(crlf) != script_sha256(script),
                        "CR/CRLF canonicalize to LF; a changed section text changes script_sha256")
 
+    # D17: the 43 ASSET binding of the static evidence state names the contract's source asset
+    sources = {o["object_id"]: o["source_asset"] for s in contract["scenes"] for o in s.get("objects", []) if o.get("source_asset")}
+    states = {st["state_id"]: st for s in contract["scenes"] for st in s.get("states", [])}
+    asset_bindings = [b for b in load(EX / "43_execution_binding.good.json")["bindings"] if b["locator"]["kind"] == "ASSET"]
+    identity_ok = bool(asset_bindings) and all(
+        source_identical(sources[obj], b["locator"]["source_asset_ref"])
+        for b in asset_bindings for sid in b["consumes"].get("state_ids", [])
+        for obj in states[sid].get("visible_objects", []) if obj in sources)
+    failures += report(identity_ok, f"43 ASSET bindings match the contract source_asset (SOURCE_IDENTITY_V1, {len(asset_bindings)} binding)")
+    failures += report(not source_identical("kb_rate_table_capture.png", "assets/evidence/other_table.png")
+                       and not source_identical("rate.png", "assets/kb_rate.png"),
+                       "SOURCE_IDENTITY_V1 rejects a different file and a partial file-name match")
+
     fp = fingerprint(contract, load(EX / "41_persistent_visual_models.json"))
     stale = [n for n in DOWNSTREAM if load(EX / n)["contract"]["fingerprint"] != fp]
     failures += report(not stale, f"downstream examples carry the contract fingerprint {fp[:19]}…"
@@ -203,8 +224,20 @@ def main() -> int:
          lambda d: next(c for c in d["scenes"][0]["checks"] if c["type"] == "PIXEL_CHANGE").update(role="REQUIRED")),
         ("locked receipt without effective_must_preserve", "direction_qa_report", "45_direction_qa_report.good.json",
          lambda d: d["scenes"][0]["receipt"].pop("effective_must_preserve")),
-        ("binding action without per-layer bindings", "execution_binding", "43_execution_binding.good.json",
-         lambda d: d["actions"][0].pop("layer_bindings")),
+        ("bound binding without a locator", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["bindings"][0].pop("locator")),
+        ("binding that consumes no contract id", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["bindings"][0].update(consumes={})),
+        ("CODE locator without implementation_path", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["bindings"][0]["locator"].pop("implementation_path")),
+        ("ASSET locator without a cut", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["bindings"][3]["locator"].pop("cut_id")),
+        ("locator of unknown kind", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["bindings"][3]["locator"].update(kind="SCREENSHOT")),
+        ("deviated binding without a deviation_id", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d["bindings"][0].update(status="deviated")),
+        ("legacy action-centric 43 (actions[] instead of bindings[])", "execution_binding", "43_execution_binding.good.json",
+         lambda d: d.update(actions=[])),
         ("1.2 visual_direction defining its own models", "visual_direction_v1_2", "visual_direction.good.json",
          lambda d: d.update(visual_models=[])),
         ("1.2 visual_direction without a contract", "visual_direction_v1_2", "visual_direction.good.json",

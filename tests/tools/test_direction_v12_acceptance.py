@@ -10,7 +10,7 @@ Scenarios (all must hold once Phase 1 lands):
   SC009 A02 replaced by a card          -> FAIL
   allocation total 120 / transient 80   -> invariant FAIL
   actions reordered                     -> FAIL
-  SC010 static evidence                 -> decided by source/binding, no human review
+  SC010 static evidence                 -> decided by source identity + 43 ASSET binding, no human review (D16, D17)
   SC014 flex                            -> PASS
   legacy v1.0                           -> unchanged (tests/tools/test_direction_v12_legacy.py)
 Principles: 40/41 are the authority; 42/45 coverage is derived and recomputed
@@ -69,14 +69,18 @@ def _reordered():
     return vd
 
 
-def _run(visual_direction, atelier="atelier_good", lineage=None, pixel_qa=None):
+def _run(visual_direction, atelier="atelier_good", lineage=None, pixel_qa=None, edit=None, contract_path=None):
     h = _api()
-    contract = h.load_contract(FIX / "40_visual_direction_contract.json", FIX / "41_persistent_visual_models.json")
+    contract = h.load_contract(contract_path or FIX / "40_visual_direction_contract.json", FIX / "41_persistent_visual_models.json")
     script = _load("script.json")
     scene_plan = _load("scene_plan.json")
-    edit = _load("edit_decisions.json")
+    edit = edit or _load("edit_decisions.json")
+    lineage = lineage or _load("42_direction_lineage.json")
+    if contract_path:  # a revised contract: downstream artifacts name the new fingerprint
+        for doc in (visual_direction, lineage):
+            doc["contract"]["fingerprint"] = h.contract_fingerprint(contract)
     validation = h.validate_contract(contract, script)
-    lineage = h.check_lineage(contract, lineage or _load("42_direction_lineage.json"), visual_direction, scene_plan)
+    lineage = h.check_lineage(contract, lineage, visual_direction, scene_plan)
     pvm = _load("41_persistent_visual_models.json")
     timeline = h.compile_timeline(visual_direction, _load("alignment.json"),
                                   models=[m["definition"] for m in pvm["models"]], contract=contract)
@@ -167,11 +171,51 @@ def test_sc009_reordered_actions_fail() -> None:
 
 # --- SC010 / SC014 ---------------------------------------------------------------------------------
 
+def _check(scene, check_type):
+    return [c for c in scene["checks"] if c["type"] == check_type and c["role"] == "REQUIRED"]
+
+
 def test_sc010_static_evidence_needs_no_review_and_is_decided_by_source_and_binding() -> None:
-    sc = _scene(_run(_good())["qa"], "SC010")
+    run = _run(_good())
+    sc = _scene(run["qa"], "SC010")
     assert sc["review_required"] is False
-    assert any(c["type"] == "SOURCE_EVIDENCE" for c in sc["checks"])
+    assert [c["result"] for c in _check(sc, "SOURCE_EVIDENCE")] == ["PASS"]
+    assert [c["result"] for c in _check(sc, "LAST_FRAME")] == ["PASS"]
+    assert sc["result"] == "PASS" and sc["receipt"]["verdict"] == "PASS"
     assert not any(c["type"] in ("STATE_TRANSITION", "INVARIANT") and c["target_ids"] == ["SC010/S0"] for c in sc["checks"])
+    # the evidence is a 43 ASSET binding of the declaring layer (D16), not a code reference
+    sc18 = next(b for b in run["binding"]["bindings"] if b["production_scene_id"] == "sc18")
+    assert (sc18["layer"], sc18["status"], sc18["consumes"]["state_ids"]) == ("factual_source", "bound", ["SC010/S0"])
+    assert sc18["locator"]["kind"] == "ASSET" and sc18["locator"]["cut_id"] == "c-sc18"
+
+
+def test_sc010_wrong_source_fails_source_evidence() -> None:
+    edit = _load("edit_decisions.json")
+    next(c for c in edit["cuts"] if c["scene_id"] == "sc18")["source"] = "assets/evidence/other_bank_table.png"
+    sc = _scene(_run(_good(), edit=edit)["qa"], "SC010")
+    assert [c["result"] for c in _check(sc, "SOURCE_EVIDENCE")] == ["FAIL"]
+    assert sc["result"] == "FAIL"
+
+
+def test_cut_covering_scene_end_alone_is_not_a_last_frame_pass(tmp_path) -> None:
+    contract = _load("40_visual_direction_contract.json")
+    sc010 = next(s for s in contract["scenes"] if s["id"] == "SC010")
+    sc010["last_frame_contract"]["visible_text"] = ["5년 고정 4.12%"]  # needs the render to judge
+    path = tmp_path / "40_visual_direction_contract.json"
+    path.write_text(json.dumps(contract, ensure_ascii=False), encoding="utf-8")
+    sc = _scene(_run(_good(), contract_path=path)["qa"], "SC010")
+    assert [c["result"] for c in _check(sc, "SOURCE_EVIDENCE")] == ["PASS"]
+    assert [c["result"] for c in _check(sc, "LAST_FRAME")] == ["UNVERIFIED"]
+    assert sc["result"] != "PASS"
+
+
+def test_bindings_are_per_production_scene_and_layer() -> None:
+    good = {b["binding_id"]: b for b in _run(_good())["binding"]["bindings"]}
+    for sid, action in (("sc15", "SC009/A01"), ("sc16", "SC009/A02"), ("sc17", "SC009/A03")):
+        b = good[f"{sid}/deterministic_graphics"]
+        assert b["status"] == "bound" and action in b["consumes"]["action_ids"] and b["locator"]["kind"] == "CODE"
+    card = {b["binding_id"]: b for b in _run(_card(), atelier="atelier_card")["binding"]["bindings"]}
+    assert card["sc16/deterministic_graphics"]["status"] == "unbound"
 
 
 def test_sc014_flex_passes() -> None:

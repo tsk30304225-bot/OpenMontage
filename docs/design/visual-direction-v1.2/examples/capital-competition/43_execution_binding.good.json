@@ -7,20 +7,58 @@
     "fingerprint": "sha256:7047616a43079b6e2e2403cfcefec81cc83ac13c3266091655b901c3ecd52421"
   },
   "timeline_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-  "actions": [
+  "scene_windows": [
     {
-      "action_id": "SC009/A01",
-      "status": "bound",
       "production_scene_id": "sc15",
-      "event_ids": [
-        "ev-sc15-b1",
-        "ev-sc15-b2"
-      ],
-      "start_seconds": 4.46,
-      "end_seconds": 5.66,
-      "from_state_id": "SC009/S0",
-      "to_state_id": "SC009/S1",
+      "start_seconds": 0.0,
+      "end_seconds": 7.56,
+      "cut_ids": [
+        "c-sc15"
+      ]
+    },
+    {
+      "production_scene_id": "sc16",
+      "start_seconds": 7.56,
+      "end_seconds": 11.72,
+      "cut_ids": [
+        "c-sc16"
+      ]
+    },
+    {
+      "production_scene_id": "sc17",
+      "start_seconds": 11.72,
+      "end_seconds": 15.46,
+      "cut_ids": [
+        "c-sc17"
+      ]
+    },
+    {
+      "production_scene_id": "sc18",
+      "start_seconds": 15.46,
+      "end_seconds": 19.2,
+      "cut_ids": [
+        "c-sc18"
+      ]
+    },
+    {
+      "production_scene_id": "sc19",
+      "start_seconds": 19.2,
+      "end_seconds": 22.6,
+      "cut_ids": [
+        "c-sc19"
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "binding_id": "sc15/deterministic_graphics",
+      "production_scene_id": "sc15",
+      "layer": "deterministic_graphics",
+      "runtime": "remotion_atelier",
       "consumes": {
+        "action_ids": [
+          "SC009/A01"
+        ],
         "event_ids": [
           "SC009/E01"
         ],
@@ -29,39 +67,76 @@
           "SC009/S1"
         ]
       },
-      "produces": [
+      "locator": {
+        "kind": "CODE",
+        "implementation_path": "projects/ai-capital-flow/remotion",
+        "component_or_block": "CapitalFlow.addSupply",
+        "refs": [
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 41,
+            "symbol": "CapitalFlow.addSupply",
+            "via": "useEventProgress"
+          },
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 47,
+            "symbol": "CapitalFlow.addSupply",
+            "via": "useEventProgress"
+          }
+        ]
+      },
+      "status": "bound",
+      "timeline_event_ids": [
         "ev-sc15-b1",
         "ev-sc15-b2"
       ],
-      "layer_bindings": [
-        {
-          "layer": "deterministic_graphics",
-          "runtime": "remotion_atelier",
-          "status": "bound",
-          "implementation_path": "projects/ai-capital-flow/remotion",
-          "component_or_block": "CapitalFlow.addSupply",
-          "implementation_refs": [
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 41,
-              "symbol": "CapitalFlow.addSupply",
-              "via": "useEventProgress"
-            },
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 47,
-              "symbol": "CapitalFlow.addSupply",
-              "via": "useEventProgress"
-            }
-          ]
-        }
-      ]
+      "start_seconds": 4.46,
+      "end_seconds": 5.66
     },
     {
-      "action_id": "SC009/A02",
-      "status": "bound",
+      "binding_id": "sc16/deterministic_graphics",
       "production_scene_id": "sc16",
-      "event_ids": [
+      "layer": "deterministic_graphics",
+      "runtime": "remotion_atelier",
+      "consumes": {
+        "action_ids": [
+          "SC009/A02"
+        ],
+        "event_ids": [
+          "SC009/E02"
+        ],
+        "state_ids": [
+          "SC009/S2"
+        ]
+      },
+      "locator": {
+        "kind": "CODE",
+        "implementation_path": "projects/ai-capital-flow/remotion",
+        "component_or_block": "CapitalFlow.allocate",
+        "refs": [
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 63,
+            "symbol": "CapitalFlow.allocate",
+            "via": "useEventProgress"
+          },
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 70,
+            "symbol": "CapitalFlow.allocate",
+            "via": "useEventProgress"
+          },
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 82,
+            "symbol": "CapitalFlow.allocate",
+            "via": "useEventProgress"
+          }
+        ]
+      },
+      "status": "bound",
+      "timeline_event_ids": [
         "ev-sc16-b1",
         "ev-sc16-b2",
         "ev-sc16-b3",
@@ -69,108 +144,78 @@
         "ev-sc16-b5"
       ],
       "start_seconds": 7.16,
-      "end_seconds": 10.88,
-      "from_state_id": "SC009/S1",
-      "to_state_id": "SC009/S2",
-      "consumes": {
-        "event_ids": [
-          "SC009/E02"
-        ],
-        "state_ids": [
-          "SC009/S1",
-          "SC009/S2"
-        ]
-      },
-      "produces": [
-        "ev-sc16-b1",
-        "ev-sc16-b2",
-        "ev-sc16-b3",
-        "ev-sc16-b4",
-        "ev-sc16-b5"
-      ],
-      "layer_bindings": [
-        {
-          "layer": "deterministic_graphics",
-          "runtime": "remotion_atelier",
-          "status": "bound",
-          "implementation_path": "projects/ai-capital-flow/remotion",
-          "component_or_block": "CapitalFlow.allocate",
-          "implementation_refs": [
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 63,
-              "symbol": "CapitalFlow.allocate",
-              "via": "useEventProgress"
-            },
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 70,
-              "symbol": "CapitalFlow.allocate",
-              "via": "useEventProgress"
-            },
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 82,
-              "symbol": "CapitalFlow.allocate",
-              "via": "useEventProgress"
-            }
-          ]
-        }
-      ]
+      "end_seconds": 10.88
     },
     {
-      "action_id": "SC009/A03",
-      "status": "bound",
+      "binding_id": "sc17/deterministic_graphics",
       "production_scene_id": "sc17",
-      "event_ids": [
-        "ev-sc17-b1",
-        "ev-sc17-b2"
-      ],
-      "start_seconds": 11.96,
-      "end_seconds": 13.26,
-      "from_state_id": "SC009/S2",
-      "to_state_id": "SC009/S3",
+      "layer": "deterministic_graphics",
+      "runtime": "remotion_atelier",
       "consumes": {
+        "action_ids": [
+          "SC009/A03"
+        ],
         "event_ids": [
           "SC009/E03"
         ],
         "state_ids": [
-          "SC009/S2",
           "SC009/S3"
         ]
       },
-      "produces": [
+      "locator": {
+        "kind": "CODE",
+        "implementation_path": "projects/ai-capital-flow/remotion",
+        "component_or_block": "CapitalFlow.raiseYield",
+        "refs": [
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 101,
+            "symbol": "CapitalFlow.raiseYield",
+            "via": "useEventProgress"
+          },
+          {
+            "file": "CapitalFlow.tsx",
+            "line": 108,
+            "symbol": "CapitalFlow.raiseYield",
+            "via": "useEventProgress"
+          }
+        ]
+      },
+      "status": "bound",
+      "timeline_event_ids": [
         "ev-sc17-b1",
         "ev-sc17-b2"
       ],
-      "layer_bindings": [
-        {
-          "layer": "deterministic_graphics",
-          "runtime": "remotion_atelier",
-          "status": "bound",
-          "implementation_path": "projects/ai-capital-flow/remotion",
-          "component_or_block": "CapitalFlow.raiseYield",
-          "implementation_refs": [
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 101,
-              "symbol": "CapitalFlow.raiseYield",
-              "via": "useEventProgress"
-            },
-            {
-              "file": "CapitalFlow.tsx",
-              "line": 108,
-              "symbol": "CapitalFlow.raiseYield",
-              "via": "useEventProgress"
-            }
-          ]
-        }
-      ]
+      "start_seconds": 11.96,
+      "end_seconds": 13.26
+    },
+    {
+      "binding_id": "sc18/factual_source",
+      "production_scene_id": "sc18",
+      "layer": "factual_source",
+      "runtime": "remotion_atelier",
+      "consumes": {
+        "state_ids": [
+          "SC010/S0"
+        ]
+      },
+      "locator": {
+        "kind": "ASSET",
+        "cut_id": "c-sc18",
+        "source_asset_ref": "assets/evidence/kb_rate_table_capture.png",
+        "via": "edit_decisions.cut",
+        "in_seconds": 15.46,
+        "out_seconds": 19.2
+      },
+      "status": "bound",
+      "start_seconds": 15.46,
+      "end_seconds": 19.2
     }
   ],
   "events": [
     {
       "event_id": "ev-sc15-b1",
+      "production_scene_id": "sc15",
       "action_id": "SC009/A01",
       "contract_event_id": "SC009/E01",
       "layer": "deterministic_graphics",
@@ -187,6 +232,7 @@
     },
     {
       "event_id": "ev-sc15-b2",
+      "production_scene_id": "sc15",
       "action_id": "SC009/A01",
       "contract_event_id": "SC009/E01",
       "layer": "deterministic_graphics",
@@ -203,6 +249,7 @@
     },
     {
       "event_id": "ev-sc16-b1",
+      "production_scene_id": "sc16",
       "action_id": "SC009/A02",
       "contract_event_id": "SC009/E02",
       "layer": "deterministic_graphics",
@@ -219,6 +266,7 @@
     },
     {
       "event_id": "ev-sc16-b2",
+      "production_scene_id": "sc16",
       "action_id": "SC009/A02",
       "contract_event_id": "SC009/E02",
       "layer": "deterministic_graphics",
@@ -235,6 +283,7 @@
     },
     {
       "event_id": "ev-sc16-b3",
+      "production_scene_id": "sc16",
       "action_id": "SC009/A02",
       "contract_event_id": "SC009/E02",
       "layer": "deterministic_graphics",
@@ -251,6 +300,7 @@
     },
     {
       "event_id": "ev-sc16-b4",
+      "production_scene_id": "sc16",
       "action_id": "SC009/A02",
       "contract_event_id": "SC009/E02",
       "layer": "deterministic_graphics",
@@ -267,6 +317,7 @@
     },
     {
       "event_id": "ev-sc16-b5",
+      "production_scene_id": "sc16",
       "action_id": "SC009/A02",
       "contract_event_id": "SC009/E02",
       "layer": "deterministic_graphics",
@@ -283,6 +334,7 @@
     },
     {
       "event_id": "ev-sc17-b1",
+      "production_scene_id": "sc17",
       "action_id": "SC009/A03",
       "contract_event_id": "SC009/E03",
       "layer": "deterministic_graphics",
@@ -299,6 +351,7 @@
     },
     {
       "event_id": "ev-sc17-b2",
+      "production_scene_id": "sc17",
       "action_id": "SC009/A03",
       "contract_event_id": "SC009/E03",
       "layer": "deterministic_graphics",
@@ -316,8 +369,15 @@
   ],
   "trace_sources": [
     {
+      "layer": "deterministic_graphics",
       "runtime": "remotion_atelier",
       "source": "projects/ai-capital-flow/remotion",
+      "hard_failures": []
+    },
+    {
+      "layer": "factual_source",
+      "runtime": "remotion_atelier",
+      "source": "edit_decisions",
       "hard_failures": []
     }
   ]

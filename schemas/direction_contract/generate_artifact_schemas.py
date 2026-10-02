@@ -1,6 +1,6 @@
 """Generate the self-contained v1.2 schemas of visual_direction and visual_timeline.
 
-    python docs/design/visual-direction-v1.2/derive_v12_schemas.py
+    python -m schemas.direction_contract.generate_artifact_schemas
 
 Authoring sources (edit these, never the generated files):
 - schemas/base/visual_direction.v1.0.schema.json, schemas/base/visual_timeline.v1.0.schema.json:
@@ -39,9 +39,8 @@ import copy
 import json
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-SCHEMAS = HERE / "schemas"
-SHIPPED = HERE.parents[2] / "schemas" / "artifacts"
+SCHEMAS = Path(__file__).resolve().parent          # schemas/direction_contract (authoring source)
+SHIPPED = SCHEMAS.parent / "artifacts"
 COMMON_URN = "urn:openmontage:schema:direction_common#/$defs/"
 
 
