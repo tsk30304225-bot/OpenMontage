@@ -3,6 +3,7 @@
 상태: **설계 문서.** 이 폴더에는 README·예시(와 Director용 문법 가이드)만 있다. 40–46 canonical runtime 스키마와 생성·검증 스크립트는 포크 소유 `schemas/direction_contract/`에 있고 (D18), `visual_direction`/`visual_timeline` 1.2는 거기서 **self-contained로 생성**되어 `schemas/artifacts/`의 shipped 스키마가 된다 (D14). runtime은 이 폴더를 읽지 않는다. Phase 1 runtime: `lib/direction_contract/` (authority · contract_v12 · evaluate · lineage · states · binding/execution · qa · deviations · gate).
 개정 4 (2026-10-02, Phase 1 착수 중 발견한 결함 정정): D14 스키마 통합, D15 script canonicalization.
 개정 5 (2026-10-03): D16 43 binding-centric (원문 §18), D17 SOURCE_EVIDENCE·LAST_FRAME 판정, D18 스키마 위치.
+Phase 1 이후 (2026-10-03): contract-conformance 정정 X1(transitions)·X2(handoff), Director authoring guide (정정 기록 참고).
 기준 코드: 포크 `origin/main` 4a9aed4 (Phase 0 병합 후).
 기준 문서: 사용자 원문 「연출안 형식 설계.txt」 **전체 (§0–§35, v1.1→v1.2 표)** + 2026-10-02 확정 결정 D1–D13.
 
@@ -31,7 +32,7 @@
 | D6 | 사람 리뷰(46)는 **조건부**: causal contract · action/state 시퀀스 · PVM 전이 · `static_replacement_valid=false`. 정적 증거 LOCKED는 45 + 출처 검증으로 완료 | 40 `qa_contract.review: auto`, 9절 |
 | D7 | 앵커 = **script digest + canonical script text의 exact span** (D15로 정밀화: `source_span` 필수, `occurrence_index` 폐지). fuzzy는 alignment(timeline)에서만. 잠긴 앵커가 다른 구간으로 resolve되면 deviation | 40 `anchors`, timeline `anchor_resolution`, 6절 |
 | D8 | 번호: **40** contract · **41** PVM · **42** lineage · **43** execution_binding · **44** deviations · **45** direction_qa_report · **46** direction_review | 2절 |
-| D9 | Director용 41 작성 문법 가이드 (새 엔진 아님, 기존 replay 모델의 표준 문법) | `director-pvm-grammar.md` |
+| D9 | Director용 41 작성 문법 가이드 (새 엔진 아님, 기존 replay 모델의 표준 문법). 40 전체의 사람용 문법·40/41 매핑·Bridge 정규화 규칙은 authoring guide | `director-pvm-grammar.md`, `director-authoring-guide.md` |
 | D10 | binding은 deterministic_graphics 전용이 아니다. 40 `runtime_stack`에서 **잠긴 요구를 `consumes`로 선언한 모든 layer**를 검사. 엔진은 primary runtime 중심이어도 스키마는 multi-runtime 유지 | 43 `bindings[]` (개정 5, D16으로 대체: 옛 `actions[].layer_bindings[]`) |
 | D11 | 42 `transformed`(자유 문장) → **typed `transformations[]`**: SPLIT · MERGE · TIMING_RESOLUTION · ASSET_BINDING · RUNTIME_BINDING · IMPLEMENTATION_DETAIL. 의미 변경 타입은 없다 → LOCKED 의미 변경은 deviation + 새 승인 revision | 42 schema |
 | D12 | `PIXEL_CHANGE`는 LOCKED의 필수 PASS 조건이 아니다. **보조 증거(role SUPPORTING)만**. 동적 LOCKED 완료 = 구조 QA(45) + 필요한 Direction Review(46) | 45 `checks[].role` (PIXEL_CHANGE는 SUPPORTING 강제) |
@@ -118,8 +119,8 @@ Production Complete
 | §19 Atelier boundary | `allowed_freedom` + NEVER_FREE + must_preserve로 표현 | 별도 필드 없음 |
 | §20 Visual identity | 40 `visual_identity.mechanism_compatibility` (true 고정) | |
 | §21 Truth | `truth_class` (object, truth_requirements) | |
-| §22 PVM | 41: definition(=components), `semantic_role`, named_states, transitions, handoffs, persistence{first/last_scene, default_visibility VISIBLE/HIDDEN_BUT_ACTIVE} | `current_state/state_history`는 **replay로 파생**, 작성하지 않음 |
-| §23 Last frame | `required_state_id, end_anchor, visible/hidden_objects, object_states, persistent_states, visible_text, camera_state, motion_state, minimum_hold_seconds, handoff_objects, handoff_to_scene, next_scene_seed` | |
+| §22 PVM | 41: definition(=components), `semantic_role`, named_states, transitions, handoffs, persistence{first/last_scene, default_visibility VISIBLE/HIDDEN_BUT_ACTIVE} | `current_state/state_history`는 **replay로 파생**, 작성하지 않음. transitions 없음/빈 목록 = 제한 없음 (X1). handoff = from_scene 끝 상태 + to_scene이 이어받음 (X2) |
+| §23 Last frame | `required_state_id, end_anchor, visible/hidden_objects, object_states, persistent_states, visible_text, camera_state, motion_state, minimum_hold_seconds, handoff_objects, handoff_to_scene, next_scene_seed` | `handoff_to_scene`·`handoff_objects`·`next_scene_seed` = 장면 간 편집 연결 기록 (PVM 상속은 41 handoff) |
 | §24 Output contract | 40 `output_contract` | `embedded_lineage_metadata`는 43이 담당 |
 | §25 Scene plan 역할 | **42 lineage + 43 binding**이 담당 (P3) | upstream scene_plan 무변경 |
 | §26 Anchor resolution | timeline 1.2 `anchor_resolution{resolved_anchors[status EXACT/REVERSIBLE_NORMALIZATION/FUZZY, same_span], unresolved_anchors}` + `action_timing_binding`은 43 binding의 `timeline_event_ids`·start/end | |
@@ -129,15 +130,15 @@ Production Complete
 | §30 Direction QA | 45 `checks[]` {type: ACTION_EXISTENCE, ORDER, STATE_TRANSITION, INVARIANT, CAUSAL_CHAIN, ANCHOR_TIMING, PERSISTENT_STATE, LAST_FRAME, PROHIBITED_SIMPLIFICATION (+BINDING, SOURCE_EVIDENCE, PIXEL_CHANGE), **role REQUIRED/SUPPORTING**} result PASS/FAIL/UNVERIFIED | 기존 `direction_qa` 픽셀 검사 = `PIXEL_CHANGE`, **항상 SUPPORTING** (D12) |
 | §31 Locked lineage receipt | 45 `scenes[].receipt` (LOCKED 필수) | `effective_must_preserve`, 독립 재계산 `omitted`, `lineage_coverage_agrees`, `deviated` 추가 |
 | §32 완료 조건 | `completion_gate` (10절) | |
-| §34 사람용 템플릿 | `40_*.md` view. 문법 가이드 7절이 매핑 | |
+| §34 사람용 템플릿 | `40_*.md` view = `director-authoring-guide.md`의 사람용 문법. 필드 매핑은 그 문서 7절, 결정적 변환(Director Authoring Bridge)은 8절 | 원문 §34 텍스트는 이 저장소에 없어 원문과의 문자 대조는 하지 않았다 |
 | §35 최종 Scene 필드 | 전부 대응 (`layers/assets/source_pixels/camera/text/sound/readability/transition_*` → `presentation`, `approval_scope/downstream_contract/fallback_contract/output_contract` 각 필드) | |
 
 ## 4. 정규화 (`load_contract`가 하는 일)
 
 1. 40·41 스키마 검증 (공통 registry).
 2. **effective must_preserve** = 작성된 must_preserve ∪ (LOCKED면) 모든 state·action·invariant ID. (D1)
-3. execution_graph 파생: BEAT→ACTION(linked_actions), STATE→ACTION(from), ACTION→STATE(to), EVENT→ACTION. 작성본이 있으면 동일성 검사, 비순환·미해결 의존 검사.
-4. 기본값: `completion_state_id = to_state_id`, `must_execute = true`, `review = auto`.
+3. execution_graph: 파생 규칙 = BEAT→ACTION(linked_actions), STATE→ACTION(from), ACTION→STATE(to), EVENT→ACTION. **현재 runtime은 이 그래프를 파생하거나 작성본과 비교하지 않는다** (정정 기록). Director Authoring Bridge가 이 규칙으로 생성한다 (authoring guide N8).
+4. 기본값: `review = auto`는 runtime이 적용. `completion_state_id = to_state_id`, `must_execute = true`는 스키마상 기본값이며 runtime이 따로 채우지 않는다.
 5. **review 해석** (D6): `auto` → causal contract 있음 · action 있음 · `pvm_transitions` 있음 · `static_replacement_valid=false` 중 하나면 required, 아니면 not_required. 그 경우 `not_required`를 쓰면 contract 오류.
 6. fingerprint 계산, ID 색인 생성.
 
@@ -146,7 +147,8 @@ Production Complete
 - ID 유일성, 접두어 = 장면 ID (`SC009/…`는 SC009에만).
 - 참조 해석: beat.anchor, action.start/end_anchor, from/to state, dependency, event.actions, invariant.order/during, causal link, last_frame, must_preserve, object.model_id+element_id(41에 존재), pvm_state(41 named_states에 존재).
 - 앵커 (D15): `canonicalization_id`가 알려진 규칙, `sha256(canonical_script_text(script))` = `script_sha256`, 모든 앵커에서 `canonical_script_text[char_start:char_end] == exact_text`, narration_span 안에 beat·action 앵커가 문서 순서대로(span 순서).
-- 상태 사슬: action `from → to`가 41 `transitions`에 허용, initial_state가 enter_state(또는 handoff) assertion을 만족(41 initial_state로 계산), `entered_by/exited_by`가 action과 일치.
+- 상태 사슬: 41 `transitions`가 하나라도 있으면 action `from → to`가 그 목록에 있어야 한다 (없거나 빈 목록 = 제한 없음, X1). 모델의 첫 장면이면 initial_state가 41 initial_state에서 성립. `entered_by/exited_by`가 action과 일치.
+- handoff (X2): to_scene이 from_scene 뒤, state는 named state, persistence first/last_scene이 from..to를 포함, to_scene이 모델을 `models`에 선언 (화면 밖이면 HIDDEN_BUT_ACTIVE, `survives_hidden: false`면 불가), to_scene의 `enter_state`와 모델 initial_state는 handoff 상태.
 - causal: cause·intermediate·effect 상태가 action 순서와 일치, final_proof_state 존재.
 - NEVER_FREE 항목이 allowed_freedom에 없음 (스키마 enum에 아예 없음).
 - sync_group: 같은 그룹 action은 같은 start_anchor.
@@ -163,7 +165,7 @@ Production Complete
   - `motion_state`: HOLD = required state 도달 뒤 장면 끝까지 그 장면 모델 연산 없음. SETTLING/CONTINUOUS는 UNVERIFIED
   - `minimum_hold_seconds`: 장면 끝 − required state 도달 시각(모델: 마지막 연산 종료, 출처: cut 시작과 장면 시작 중 늦은 쪽) ≥ 값
   - `visible_text` · `camera_state`: 렌더가 필요 → UNVERIFIED (Phase 2)
-  - `handoff_to_scene` · `handoff_objects` · `next_scene_seed`: 마지막 화면 요구가 아니라 장면 간 연결 → PERSISTENT_STATE에서 판정
+  - `handoff_to_scene` · `handoff_objects` · `next_scene_seed`: 마지막 화면 요구가 아니라 장면 간 편집 연결 기록이고 판정하지 않는다. 모델 상태 상속은 41 handoff → PERSISTENT_STATE (from_scene 끝 + to_scene의 ENTRY_SIGNATURE, X2)
 
 ## 6. 앵커 (D7, D15)
 - **canonical script text (`SCRIPT_SECTIONS_TEXT_V1`)**: `"\n".join(NFC(sections[i].text with CRLF/CR → LF) for i in array order)`, trim 없음. `script_sha256 = sha256(utf8(canonical_script_text))`, BOM 없음. 다른 필드(id·시간)는 hash에 들어가지 않는다. 규칙이 바뀌면 새 ID를 만들고 기존 contract는 기록된 ID로 재현한다.
@@ -260,6 +262,10 @@ Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_sta
 ### 정정 기록 (2026-10-03, 개정 5 이후)
 - **fixture 문장 간격 0.8 s → 1.2 s.** 개정 5 커밋(7eb0476) 메시지는 "0.8 s 간격이면 SC009가 마지막 화면을 1.5 s 유지한다"고 적었으나 계산 실수였다: 0.8 s에서 SC009 마지막 연산(`ev-sc17-b2`, AN04 + 0.5 s, EXPAND 1.2 s) 종료 후 sc17 끝까지는 1.2 s로 `minimum_hold_seconds` 1.5 s에 못 미친다. Phase 1 runtime 커밋(e230e30)에서 간격을 1.2 s로 바꿔 유지 시간이 1.6 s가 됐다. contract·스키마는 바뀌지 않았고, 커밋 이력은 고치지 않는다.
 - **`lineage_coverage_agrees` 정의.** 45 스키마 설명의 "불일치 = 42 stale/조작"을 "plan-derived와 execution-derived coverage의 일치 여부"로 정정 (필드·타입·필수 여부는 그대로).
+- **X1: 41 `transitions` 없음/빈 목록 = 제한 없음.** 스키마는 그렇게 정의했지만 `validate_contract`는 빈 허용 목록으로 취급해 같은 모델 안의 모든 이동을 거부했다. runtime을 스키마에 맞췄다 (스키마 무변경). regression 4종 (`tests/tools/test_direction_v12_conformance.py`).
+- **X2: handoff = 장면 간 연속성 계약 (양 끝 검사).** 이전 runtime은 from_scene 끝 상태만 검사했고 to_scene, `models[].enter_state/visibility`, persistence를 읽지 않았다. 이제 5절 규칙을 `validate_contract`가 검사하고, 45는 handoff를 받는 장면(중요도 무관)에 PERSISTENT_STATE를 추가한다: 판정 대상은 **ENTRY_SIGNATURE** = 그 장면 자신의 첫 연산 적용 전 replay 상태 (첫 앵커에서 바로 시작하는 action은 진입 상태에 들어가지 않는다). `default_visibility`는 검사하지 않는다 (범위 밖).
+- **예시 SC009 → SC010 PVM handoff 삭제.** SC010은 금리표 증거 장면이고 CAPITAL_FLOW를 쓰지 않으며 이후 장면도 모델을 다시 쓰지 않는다. 41 handoff 삭제(`last_scene: SC009` 유지), SC010의 `REPLACE_PVM_WITH_UNRELATED_BROLL` 삭제, SC009 `handoff_to_scene: SC010`은 편집상 연결로 유지. fingerprint 재계산 (`sha256:2649e346…`), 42/43/45 예시 재생성: 내용 변화는 SC009의 handoff PERSISTENT_STATE 행이 빠진 것뿐. 이전 45 예시의 `inputs.lineage_sha256`은 함께 실린 42 예시와 맞지 않았다(시각을 고정하지 않은 lineage의 hash) — 재생성으로 일치.
+- **4절 서술 정정.** "execution_graph 파생·동일성 검사"와 "completion_state_id/must_execute 기본값 채움"은 runtime에 구현된 적이 없다. 서술을 실제 동작에 맞췄다. execution_graph는 Director Authoring Bridge가 생성한다 (런타임 동일성 검사는 미구현으로 남음).
 - **`visual_timeline_compiler` 1.2 production path.** 1.2 연출안은 LOCKED 40/41을 함께 받아야 하고 (없으면 legacy fallback 없이 실패), revision/fingerprint를 확인한 뒤 `compile_timeline(..., models=41, contract=40)`으로 컴파일하며 `anchor_resolution`을 timeline과 결과에 보존한다.
 
 ## 13. 남은 질문
@@ -269,6 +275,7 @@ Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_sta
 ```
 docs/design/visual-direction-v1.2/
   README.md                                  이 문서
+  director-authoring-guide.md                Director 사람용 문법 전체, 40/41 매핑, Bridge 정규화 규칙
   director-pvm-grammar.md                    D9: Director용 41 작성 문법 (문서)
   examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40, 41,
                                              42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced,
