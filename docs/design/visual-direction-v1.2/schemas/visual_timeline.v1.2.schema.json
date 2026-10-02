@@ -146,10 +146,24 @@
             }
           },
           "action_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "description": "v1.2: contract action this operation implements (an action may span several operations)."
           },
           "state_after_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "description": "v1.2: contract state that must hold once this operation's sync group has applied."
+          },
+          "contract_event_id": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "description": "v1.2: contract event (time group) this belongs to."
+          },
+          "anchor_id": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "description": "v1.2: contract anchor whose exact text this beat uses as narration_anchor."
+          },
+          "sync_group": {
+            "type": "string",
+            "description": "v1.2: operations forming one change: same resolved start and duration; invariants are checked after the whole group."
           }
         }
       }
@@ -213,8 +227,84 @@
     "metadata": {
       "type": "object"
     },
-    "contract_fingerprint": {
-      "$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint"
+    "contract": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"
+    },
+    "anchor_resolution": {
+      "type": "object",
+      "required": [
+        "resolved_anchors",
+        "unresolved_anchors"
+      ],
+      "additionalProperties": false,
+      "description": "v1.2 (original §26): every contract anchor resolved against the forced alignment.",
+      "properties": {
+        "source_word_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resolved_anchors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "anchor_id",
+              "status",
+              "start_time",
+              "end_time"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "anchor_id": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+              },
+              "source_text": {
+                "type": "string"
+              },
+              "word_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "start_time": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end_time": {
+                "type": "number",
+                "minimum": 0
+              },
+              "start_frame": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_frame": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "enum": [
+                  "EXACT",
+                  "REVERSIBLE_NORMALIZATION",
+                  "FUZZY"
+                ]
+              },
+              "same_span": {
+                "type": "boolean",
+                "description": "false = resolved to different words than the contract span: a deviation for a locked anchor"
+              }
+            }
+          }
+        },
+        "unresolved_anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+          }
+        }
+      }
     }
   }
 }

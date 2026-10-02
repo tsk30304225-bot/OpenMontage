@@ -175,9 +175,9 @@
     "metadata": {
       "type": "object"
     },
-    "contract_fingerprint": {
-      "$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint",
-      "description": "v1.2: the approved 40+41 this direction was compiled from."
+    "contract": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref",
+      "description": "v1.2: the locked 40+41 revision this direction implements."
     }
   },
   "$defs": {
@@ -464,11 +464,23 @@
         },
         "action_id": {
           "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-          "description": "v1.2: the contract action this beat (one model operation) implements. An action may span several beats."
+          "description": "v1.2: contract action this operation implements (an action may span several operations)."
         },
         "state_after_id": {
           "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-          "description": "v1.2: the contract state that must hold after this beat (checked by replay)."
+          "description": "v1.2: contract state that must hold once this operation's sync group has applied."
+        },
+        "contract_event_id": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+          "description": "v1.2: contract event (time group) this belongs to."
+        },
+        "anchor_id": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+          "description": "v1.2: contract anchor whose exact text this beat uses as narration_anchor."
+        },
+        "sync_group": {
+          "type": "string",
+          "description": "v1.2: operations forming one change: same resolved start and duration; invariants are checked after the whole group."
         }
       }
     },
@@ -539,7 +551,7 @@
       },
       "then": {
         "required": [
-          "contract_fingerprint"
+          "contract"
         ],
         "not": {
           "required": [

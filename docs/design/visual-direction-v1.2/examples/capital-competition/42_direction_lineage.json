@@ -1,0 +1,185 @@
+{
+  "version": "1.2",
+  "contract": {
+    "artifact": "visual_direction_contract",
+    "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
+    "revision": 1,
+    "fingerprint": "sha256:fa8f0b3738928fc23da1b3d05fb1012c8f1fc6eeb6a532e87d3f1e9fe13f4c2d"
+  },
+  "production_scenes": [
+    {
+      "scene_id": "sc15",
+      "source_scene_ids": [
+        "SC009"
+      ],
+      "split": {
+        "part": 1,
+        "of": 3
+      },
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC009/B01",
+          "SC009/B02"
+        ],
+        "state_ids": [
+          "SC009/S0",
+          "SC009/S1"
+        ],
+        "action_ids": [
+          "SC009/A01"
+        ],
+        "event_ids": [
+          "SC009/E01"
+        ],
+        "anchor_ids": [
+          "SC009/AN01",
+          "SC009/AN02"
+        ],
+        "invariant_ids": [
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03"
+        ],
+        "object_ids": [
+          "SC009/POOL",
+          "SC009/META",
+          "SC009/AMZN"
+        ],
+        "pvm_ids": [
+          "CAPITAL_FLOW"
+        ]
+      },
+      "added_implementation_fields": [
+        "runtime",
+        "resolved_anchors"
+      ]
+    },
+    {
+      "scene_id": "sc16",
+      "source_scene_ids": [
+        "SC009"
+      ],
+      "split": {
+        "part": 2,
+        "of": 3
+      },
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC009/B03"
+        ],
+        "state_ids": [
+          "SC009/S2"
+        ],
+        "action_ids": [
+          "SC009/A02"
+        ],
+        "event_ids": [
+          "SC009/E02"
+        ],
+        "anchor_ids": [
+          "SC009/AN03"
+        ],
+        "invariant_ids": [
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03"
+        ],
+        "object_ids": [
+          "SC009/ALLOC_UST",
+          "SC009/ALLOC_META",
+          "SC009/ALLOC_AMZN"
+        ],
+        "pvm_ids": [
+          "CAPITAL_FLOW"
+        ]
+      },
+      "transformed": [
+        {
+          "id": "SC009/A02",
+          "change": "split into REVEAL x2 then a synchronized EXPAND x3 (sync_group sc16-realloc)"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc17",
+      "source_scene_ids": [
+        "SC009"
+      ],
+      "split": {
+        "part": 3,
+        "of": 3
+      },
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC009/B04"
+        ],
+        "state_ids": [
+          "SC009/S3"
+        ],
+        "action_ids": [
+          "SC009/A03"
+        ],
+        "event_ids": [
+          "SC009/E03"
+        ],
+        "anchor_ids": [
+          "SC009/AN04",
+          "SC009/AN05"
+        ],
+        "invariant_ids": [
+          "SC009/INV01",
+          "SC009/INV02",
+          "SC009/INV03"
+        ],
+        "object_ids": [
+          "SC009/YIELD_META"
+        ],
+        "pvm_ids": [
+          "CAPITAL_FLOW"
+        ]
+      }
+    },
+    {
+      "scene_id": "sc18",
+      "source_scene_ids": [
+        "SC010"
+      ],
+      "runtime": "remotion",
+      "consumed": {
+        "beat_ids": [
+          "SC010/B01"
+        ],
+        "state_ids": [
+          "SC010/S0"
+        ],
+        "anchor_ids": [
+          "SC010/AN01",
+          "SC010/AN02"
+        ],
+        "object_ids": [
+          "SC010/RATE_TABLE"
+        ]
+      }
+    },
+    {
+      "scene_id": "sc19",
+      "source_scene_ids": [
+        "SC014"
+      ],
+      "runtime": "footage",
+      "consumed": {
+        "beat_ids": [
+          "SC014/B01"
+        ],
+        "anchor_ids": [
+          "SC014/AN01",
+          "SC014/AN02"
+        ]
+      }
+    }
+  ],
+  "omitted_locked_ids": []
+}

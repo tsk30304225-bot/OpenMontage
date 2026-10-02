@@ -1,0 +1,306 @@
+{
+  "version": "1.2",
+  "contract": {
+    "artifact": "visual_direction_contract",
+    "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
+    "revision": 1,
+    "fingerprint": "sha256:fa8f0b3738928fc23da1b3d05fb1012c8f1fc6eeb6a532e87d3f1e9fe13f4c2d"
+  },
+  "inputs": {
+    "timeline_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "scenes": [
+    {
+      "scene_id": "SC009",
+      "importance": "REQUIRED_LOCKED",
+      "checks": [
+        {
+          "check_id": "SC009/Q01",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC009/AN01"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC009/Q02",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC009/AN02"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC009/Q03",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC009/AN03"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC009/Q04",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC009/AN04"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC009/Q05",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC009/AN05"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC009/Q06",
+          "type": "ACTION_EXISTENCE",
+          "target_ids": [
+            "SC009/A01"
+          ],
+          "result": "PASS",
+          "detail": "lineage ['sc15'], beats in ['sc15']"
+        },
+        {
+          "check_id": "SC009/Q07",
+          "type": "ACTION_EXISTENCE",
+          "target_ids": [
+            "SC009/A02"
+          ],
+          "result": "PASS",
+          "detail": "lineage ['sc16'], beats in ['sc16']"
+        },
+        {
+          "check_id": "SC009/Q08",
+          "type": "ACTION_EXISTENCE",
+          "target_ids": [
+            "SC009/A03"
+          ],
+          "result": "PASS",
+          "detail": "lineage ['sc17'], beats in ['sc17']"
+        },
+        {
+          "check_id": "SC009/Q09",
+          "type": "STATE_TRANSITION",
+          "target_ids": [
+            "SC009/S0"
+          ],
+          "result": "PASS",
+          "detail": "reached by replay"
+        },
+        {
+          "check_id": "SC009/Q10",
+          "type": "STATE_TRANSITION",
+          "target_ids": [
+            "SC009/S1"
+          ],
+          "result": "PASS",
+          "detail": "reached by replay"
+        },
+        {
+          "check_id": "SC009/Q11",
+          "type": "STATE_TRANSITION",
+          "target_ids": [
+            "SC009/S2"
+          ],
+          "result": "PASS",
+          "detail": "reached by replay"
+        },
+        {
+          "check_id": "SC009/Q12",
+          "type": "STATE_TRANSITION",
+          "target_ids": [
+            "SC009/S3"
+          ],
+          "result": "PASS",
+          "detail": "reached by replay"
+        },
+        {
+          "check_id": "SC009/Q13",
+          "type": "INVARIANT",
+          "target_ids": [
+            "SC009/INV01",
+            "SC009/INV02"
+          ],
+          "result": "PASS",
+          "detail": "violations []"
+        },
+        {
+          "check_id": "SC009/Q14",
+          "type": "ORDER",
+          "target_ids": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ],
+          "result": "PASS",
+          "detail": "starts [4.46, 7.16, 11.96]"
+        },
+        {
+          "check_id": "SC009/Q15",
+          "type": "CAUSAL_CHAIN",
+          "target_ids": [
+            "SC009/CC01"
+          ],
+          "result": "PASS",
+          "detail": "states ['SC009/S1', 'SC009/S2', 'SC009/S3']"
+        },
+        {
+          "check_id": "SC009/Q16",
+          "type": "LAST_FRAME",
+          "target_ids": [
+            "SC009/S3"
+          ],
+          "result": "PASS"
+        }
+      ],
+      "review_required": true,
+      "result": "UNVERIFIED",
+      "receipt": {
+        "expected": {
+          "actions": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ],
+          "states": [
+            "SC009/S0",
+            "SC009/S1",
+            "SC009/S2",
+            "SC009/S3"
+          ]
+        },
+        "implemented": {
+          "actions": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ],
+          "states": [
+            "SC009/S0",
+            "SC009/S1",
+            "SC009/S2",
+            "SC009/S3"
+          ]
+        },
+        "omitted": [],
+        "merged": [],
+        "reordered": [],
+        "unresolved_anchors": [],
+        "invariant_checks": "PASS",
+        "causal_contract": "PASS",
+        "last_frame": "PASS",
+        "binding": "UNVERIFIED",
+        "verdict": "UNVERIFIED"
+      }
+    },
+    {
+      "scene_id": "SC010",
+      "importance": "REQUIRED_LOCKED",
+      "checks": [
+        {
+          "check_id": "SC010/Q01",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC010/AN01"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC010/Q02",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC010/AN02"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC010/Q03",
+          "type": "SOURCE_EVIDENCE",
+          "target_ids": [
+            "SC010/S0"
+          ],
+          "result": "UNVERIFIED",
+          "detail": "non-model state: decided by binding + source check after render"
+        },
+        {
+          "check_id": "SC010/Q04",
+          "type": "ORDER",
+          "target_ids": [],
+          "result": "PASS",
+          "detail": "starts []"
+        },
+        {
+          "check_id": "SC010/Q05",
+          "type": "LAST_FRAME",
+          "target_ids": [
+            "SC010/S0"
+          ],
+          "result": "UNVERIFIED",
+          "detail": "evidence frame: checked on the render"
+        }
+      ],
+      "review_required": false,
+      "result": "UNVERIFIED",
+      "receipt": {
+        "expected": {
+          "actions": [],
+          "states": [
+            "SC010/S0"
+          ]
+        },
+        "implemented": {
+          "actions": [],
+          "states": [
+            "SC010/S0"
+          ]
+        },
+        "omitted": [],
+        "merged": [],
+        "reordered": [],
+        "unresolved_anchors": [],
+        "invariant_checks": "PASS",
+        "causal_contract": "PASS",
+        "last_frame": "UNVERIFIED",
+        "binding": "UNVERIFIED",
+        "verdict": "UNVERIFIED"
+      }
+    },
+    {
+      "scene_id": "SC014",
+      "importance": "REQUIRED_FLEX",
+      "checks": [
+        {
+          "check_id": "SC014/Q01",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC014/AN01"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        },
+        {
+          "check_id": "SC014/Q02",
+          "type": "ANCHOR_TIMING",
+          "target_ids": [
+            "SC014/AN02"
+          ],
+          "result": "PASS",
+          "detail": "exact text in authority script"
+        }
+      ],
+      "review_required": false,
+      "result": "PASS"
+    }
+  ],
+  "verdict": "UNVERIFIED"
+}

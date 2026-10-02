@@ -1,0 +1,28 @@
+{
+  "version": "1.2",
+  "contract": {
+    "artifact": "visual_direction_contract",
+    "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
+    "revision": 1,
+    "fingerprint": "sha256:fa8f0b3738928fc23da1b3d05fb1012c8f1fc6eeb6a532e87d3f1e9fe13f4c2d"
+  },
+  "deviations": [
+    {
+      "deviation_id": "DEV001",
+      "scene_id": "SC009",
+      "affected_contract_ids": [
+        "SC009/A02",
+        "SC009/S2"
+      ],
+      "reason": "CAPABILITY_UNAVAILABLE",
+      "semantic_impact": "MATERIAL",
+      "detail": "The generic Remotion renderer has no flow_network model; the reallocation cannot be shown as moving allocations in the templated path.",
+      "stage": "scene_plan",
+      "raised_by": "scene-director",
+      "raised_at": "2026-10-02T13:10:00+09:00",
+      "proposed_change": "Render SC009 in atelier with the CAPITAL_FLOW model (renderer: bespoke) — or, if not approved, replace A02 by a comparison card (would violate REPLACE_CAUSAL_MODEL_WITH_TEXT).",
+      "approval_required": true,
+      "status": "PROPOSED"
+    }
+  ]
+}

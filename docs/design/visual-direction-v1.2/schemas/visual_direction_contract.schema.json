@@ -2,319 +2,1678 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:openmontage:schema:visual_direction_contract",
   "title": "Visual Direction Contract (40) — v1.2",
-  "description": "Director authority input. Decides WHAT changes on screen, in which order and under which invariants, scene by scene, against the approved script. Downstream stages split, time and implement it; they never summarize, re-decide or regenerate it. JSON is the execution authority; 40_visual_direction_contract.md is only a human view. Persistent visual models are defined in persistent_visual_models (41) and referenced here by id.",
+  "description": "OpenMontage Visual Direction Schema v1.2, canonical execution contract. Director authority input: decides WHAT changes on screen, in which order and under which invariants, against the approved script. Downstream stages keep these ids and only add implementation data; they never summarize, re-decide or regenerate the direction. JSON is the execution authority; 40_visual_direction_contract.md is a human view. Persistent visual models are defined only in 41 and referenced here by id.",
   "type": "object",
-  "required": ["contract_version", "contract_id", "approval", "narration_authority", "scenes"],
+  "required": [
+    "schema_name",
+    "schema_version",
+    "artifact_role",
+    "artifact_id",
+    "lifecycle",
+    "authority",
+    "scenes"
+  ],
   "additionalProperties": false,
   "properties": {
-    "contract_version": {"const": "1.2"},
-    "contract_id": {"type": "string", "minLength": 1},
-    "title": {"type": "string"},
-    "approval": {
+    "schema_name": {
+      "const": "OpenMontage_Visual_Direction"
+    },
+    "schema_version": {
+      "const": "1.2"
+    },
+    "artifact_role": {
+      "const": "CANONICAL_EXECUTION_CONTRACT"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "lifecycle": {
       "type": "object",
-      "required": ["status", "revision"],
+      "required": [
+        "revision",
+        "status"
+      ],
       "additionalProperties": false,
-      "description": "Excluded from contract_fingerprint(). Downstream artifacts record the fingerprint of the approved revision; a changed contract makes them stale.",
+      "description": "Excluded from the fingerprint. Downstream artifacts record artifact + revision + fingerprint; a new revision makes them stale.",
       "properties": {
-        "status": {"enum": ["draft", "approved", "superseded"]},
-        "revision": {"type": "integer", "minimum": 1},
-        "approved_by": {"type": "string"},
-        "approved_at": {"type": "string", "format": "date-time"},
-        "supersedes_fingerprint": {"$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint"}
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "enum": [
+            "DRAFT",
+            "LOCKED",
+            "SUPERSEDED"
+          ],
+          "description": "Only a LOCKED contract can pass a gate."
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "locked_by": {
+          "type": "string"
+        },
+        "locked_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "supersedes_fingerprint": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "LOCKED"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "locked_by",
+              "locked_at"
+            ]
+          }
+        }
+      ]
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "script_ref",
+        "pvm_ref"
+      ],
+      "additionalProperties": false,
+      "description": "What the contract is bound to. Every anchor is exact (normalized) text of script_ref.",
+      "properties": {
+        "script_ref": {
+          "type": "string",
+          "description": "script artifact path or id"
+        },
+        "script_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        },
+        "script_normalization": {
+          "const": "NFC_WHITESPACE",
+          "default": "NFC_WHITESPACE"
+        },
+        "narration_ref": {
+          "type": "string",
+          "description": "TTS narration audio once it exists"
+        },
+        "narration_sha256": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+        },
+        "plan_lock_ref": {
+          "type": "string"
+        },
+        "pvm_ref": {
+          "type": "object",
+          "required": [
+            "artifact"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "artifact": {
+              "const": "persistent_visual_models"
+            },
+            "sha256": {
+              "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+            }
+          }
+        }
       }
     },
-    "narration_authority": {
+    "priority_policy": {
       "type": "object",
-      "required": ["script_artifact"],
       "additionalProperties": false,
-      "description": "Every narration anchor in this contract must be exact words of this script.",
+      "description": "Fixed order when requirements conflict: script/facts > meaning > causal/state contract > must_preserve > anchors > runtime > visual identity > implementation taste.",
       "properties": {
-        "script_artifact": {"const": "script"},
-        "script_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "language": {"type": "string"}
+        "mechanism_over_style": {
+          "const": true
+        },
+        "meaning_over_aesthetics": {
+          "const": true
+        },
+        "contract_over_runtime_convenience": {
+          "const": true
+        },
+        "if_conflict": {
+          "const": "preserve_higher_authority"
+        }
       }
     },
-    "pvm_authority": {
+    "approval_scope": {
+      "$ref": "#/$defs/approval_scope"
+    },
+    "visual_identity": {
       "type": "object",
-      "required": ["artifact"],
       "additionalProperties": false,
       "properties": {
-        "artifact": {"const": "persistent_visual_models"},
-        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "ref": {
+          "type": "string",
+          "description": "art direction / playbook"
+        },
+        "mechanism_compatibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "style_must_not_reduce_state_visibility": {
+              "const": true
+            },
+            "style_must_not_hide_causal_motion": {
+              "const": true
+            }
+          }
+        }
       }
     },
     "viewer_journey": {
       "type": "array",
-      "description": "Same meaning as visual_direction v1.0 viewer_journey, in Director scene ids.",
       "items": {
         "type": "object",
-        "required": ["id", "scene_ids", "viewer_goal"],
+        "required": [
+          "id",
+          "scene_ids",
+          "viewer_goal"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": {"type": "string"},
-          "scene_ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"}, "minItems": 1},
-          "viewer_goal": {"type": "string"},
-          "feeling": {"type": "string"}
+          "id": {
+            "type": "string"
+          },
+          "scene_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+            },
+            "minItems": 1
+          },
+          "viewer_goal": {
+            "type": "string"
+          },
+          "feeling": {
+            "type": "string"
+          }
         }
       }
     },
     "scenes": {
       "type": "array",
       "minItems": 1,
-      "items": {"$ref": "#/$defs/scene"}
+      "items": {
+        "$ref": "#/$defs/scene"
+      }
     },
-    "metadata": {"type": "object"}
+    "metadata": {
+      "type": "object"
+    }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lifecycle": {
+            "properties": {
+              "status": {
+                "const": "LOCKED"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "authority": {
+            "required": [
+              "script_ref",
+              "script_sha256",
+              "pvm_ref"
+            ]
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
+    "id": {
+      "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+    },
+    "ids": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+      }
+    },
+    "approval_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Approving the run is not approving a change of direction. full_run pre-authorization never covers locked_direction_mutation.",
+      "properties": {
+        "continue_pipeline": {
+          "type": "boolean"
+        },
+        "generated_media": {
+          "type": "boolean"
+        },
+        "cost_tools": {
+          "type": "boolean"
+        },
+        "locked_direction_mutation": {
+          "const": false
+        },
+        "semantic_fallback": {
+          "const": "requires_new_approval"
+        },
+        "causal_contract_change": {
+          "const": "requires_new_approval"
+        }
+      }
+    },
     "scene": {
       "type": "object",
-      "required": ["id", "importance", "role", "narration_span", "meaning_contract"],
+      "required": [
+        "id",
+        "importance",
+        "role",
+        "narration_span",
+        "anchors",
+        "meaning_contract"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"},
+        "id": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+        },
         "importance": {
-          "enum": ["REQUIRED_LOCKED", "REQUIRED_FLEX", "DISCRETIONARY"],
-          "description": "REQUIRED_LOCKED: the viewer's understanding depends on these exact state changes — meaning, states, actions, order, invariants and last frame are locked. REQUIRED_FLEX: WHAT is fixed, shot/crop/spacing/motion detail are free. DISCRETIONARY: b-roll, mood, breathers — production decides."
+          "enum": [
+            "REQUIRED_LOCKED",
+            "REQUIRED_FLEX",
+            "DISCRETIONARY"
+          ],
+          "description": "REQUIRED_LOCKED: understanding depends on these state changes; implementation freedom only, no re-interpretation. REQUIRED_FLEX: what must be shown is fixed; shot, crop and micro motion are free. DISCRETIONARY: b-roll, grounding, breathing room."
         },
         "role": {
-          "enum": ["establish_context", "introduce_subject", "build_tension", "deliver_payload", "transition", "emotional_beat", "evidence", "comparison", "resolution", "call_to_action", "immersion", "explanation", "breather", "closure"],
+          "enum": [
+            "establish_context",
+            "introduce_subject",
+            "build_tension",
+            "deliver_payload",
+            "transition",
+            "emotional_beat",
+            "evidence",
+            "comparison",
+            "resolution",
+            "call_to_action",
+            "immersion",
+            "explanation",
+            "breather",
+            "closure"
+          ],
           "description": "Same vocabulary as visual_direction narrative_role."
         },
-        "visual_mode": {"enum": ["reality", "model", "evidence", "text"], "description": "Same vocabulary as visual_direction visual_mode."},
-        "narration_span": {
-          "type": "object",
-          "required": ["start_anchor", "end_anchor"],
-          "additionalProperties": false,
-          "properties": {
-            "start_anchor": {"$ref": "urn:openmontage:schema:direction_common#/$defs/narration_anchor"},
-            "end_anchor": {"$ref": "urn:openmontage:schema:direction_common#/$defs/narration_anchor"}
+        "visual_mode": {
+          "enum": [
+            "reality",
+            "model",
+            "evidence",
+            "text"
+          ]
+        },
+        "anchors": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Every narration point this scene refers to. Beats, actions, events and the span reference anchors by id.",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/anchor"
           }
         },
-        "meaning_contract": {"type": "string", "minLength": 1, "description": "What the viewer must understand when this scene ends."},
-        "viewer_question": {"type": "string"},
-        "motion_reason": {"type": "string", "description": "Why this must move instead of being a still or a card."},
+        "narration_span": {
+          "type": "object",
+          "required": [
+            "start_anchor",
+            "end_anchor"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "start_anchor": {
+              "$ref": "#/$defs/id"
+            },
+            "end_anchor": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        "meaning_contract": {
+          "type": "object",
+          "required": [
+            "after"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "before": {
+              "type": "string",
+              "description": "what the viewer understands before"
+            },
+            "change": {
+              "type": "string"
+            },
+            "after": {
+              "type": "string",
+              "minLength": 1,
+              "description": "what the viewer must understand when the scene ends"
+            }
+          }
+        },
+        "viewer_question": {
+          "type": "string"
+        },
+        "motion_reason": {
+          "type": "object",
+          "required": [
+            "motion_required",
+            "static_replacement_valid"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "motion_required": {
+              "type": "boolean"
+            },
+            "understanding_dependency": {
+              "type": "string",
+              "description": "what the viewer would fail to understand without the motion"
+            },
+            "temporal_logic": {
+              "type": "string",
+              "description": "why this order"
+            },
+            "causal_explanation": {
+              "type": "boolean",
+              "default": false,
+              "description": "the order itself is the causal argument; requires causal_motion_contracts"
+            },
+            "static_replacement_valid": {
+              "type": "boolean"
+            },
+            "decorative_motion_allowed": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
         "beats": {
           "type": "array",
-          "description": "Shifts of narration meaning, in order. Actions attach to beats.",
           "items": {
-            "type": "object",
-            "required": ["id", "narration_anchor", "meaning"],
-            "additionalProperties": false,
-            "properties": {
-              "id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-              "narration_anchor": {"$ref": "urn:openmontage:schema:direction_common#/$defs/narration_anchor"},
-              "meaning": {"type": "string"}
-            }
+            "$ref": "#/$defs/beat"
           }
         },
         "models": {
           "type": "array",
-          "description": "Persistent visual models used in this scene and the state each must be in when the scene starts (defaults: the handoff state, else the model's initial state).",
+          "description": "Persistent visual models used here and the state each is in when the scene starts (default: the 41 handoff state, else the model's initial state).",
           "items": {
             "type": "object",
-            "required": ["model_id"],
+            "required": [
+              "model_id"
+            ],
             "additionalProperties": false,
             "properties": {
-              "model_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"},
-              "enter_state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"}
+              "model_id": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"
+              },
+              "enter_state": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"
+              },
+              "visibility": {
+                "enum": [
+                  "VISIBLE",
+                  "HIDDEN_BUT_ACTIVE"
+                ],
+                "default": "VISIBLE"
+              }
             }
           }
         },
         "objects": {
           "type": "array",
-          "description": "What the scene manipulates: elements of a model, or scene-local things outside any model.",
           "items": {
-            "type": "object",
-            "required": ["id", "role"],
-            "additionalProperties": false,
-            "properties": {
-              "id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-              "role": {"type": "string"},
-              "model_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"},
-              "element_id": {"type": "string", "description": "element of model_id this object is"}
-            }
+            "$ref": "#/$defs/object"
           }
         },
-        "initial_state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id", "description": "states[].id the scene starts in"},
+        "initial_state": {
+          "$ref": "#/$defs/id"
+        },
         "states": {
           "type": "array",
-          "description": "Screen states the viewer must see, including every intermediate state. Each is checkable by replay.",
-          "items": {"$ref": "#/$defs/state"}
+          "items": {
+            "$ref": "#/$defs/state"
+          }
         },
         "actions": {
           "type": "array",
-          "description": "STATE -> ACTION -> STATE. Each action moves one model from one state to the next.",
-          "items": {"$ref": "#/$defs/action"}
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          }
+        },
+        "execution_graph": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Optional. Normalization derives the BEAT/STATE/ACTION/EVENT graph from the fields above; an authored graph must equal it and be acyclic with no unresolved dependency.",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "type"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "type": {
+                    "enum": [
+                      "BEAT",
+                      "STATE",
+                      "ACTION",
+                      "EVENT"
+                    ]
+                  }
+                }
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "from": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "to": {
+                    "$ref": "#/$defs/id"
+                  }
+                }
+              }
+            }
+          }
         },
         "invariants": {
           "type": "array",
-          "items": {"$ref": "#/$defs/invariant"}
+          "items": {
+            "$ref": "#/$defs/invariant"
+          }
         },
-        "causal_motion_contract": {
-          "type": "object",
-          "required": ["cause", "intermediate", "effect", "final_proof_state"],
-          "additionalProperties": false,
-          "description": "Cause, the intermediate reaction and the effect must each be a visible state change, in this order.",
-          "properties": {
-            "cause": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "minItems": 1},
-            "intermediate": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "minItems": 1},
-            "effect": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "minItems": 1},
-            "final_proof_state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}
+        "causal_motion_contracts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/causal_motion_contract"
           }
         },
         "must_preserve": {
           "type": "object",
           "additionalProperties": false,
-          "description": "In a REQUIRED_LOCKED scene every state, action, invariant and causal chain is preserved by default. List here only what is not part of that graph.",
+          "description": "Preservation lineage. In a REQUIRED_LOCKED scene normalization adds every state, action and invariant automatically; author here only what must ALSO be preserved (beats, objects, events, causal chains, ordering, anchors, models, last-frame elements, cross-scene items). Authoring a core id again is allowed and harmless.",
           "properties": {
-            "narration_anchors": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/narration_anchor"}},
-            "last_frame_elements": {"type": "array", "items": {"type": "string"}},
-            "persistent_models": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"}}
+            "beats": {
+              "$ref": "#/$defs/ids"
+            },
+            "objects": {
+              "$ref": "#/$defs/ids"
+            },
+            "actions": {
+              "$ref": "#/$defs/ids"
+            },
+            "events": {
+              "$ref": "#/$defs/ids"
+            },
+            "states": {
+              "$ref": "#/$defs/ids"
+            },
+            "causal_chains": {
+              "$ref": "#/$defs/ids"
+            },
+            "ordering": {
+              "$ref": "#/$defs/ids",
+              "description": "ids that must happen in this order"
+            },
+            "invariants": {
+              "$ref": "#/$defs/ids"
+            },
+            "narration_anchors": {
+              "$ref": "#/$defs/ids"
+            },
+            "persistent_models": {
+              "type": "array",
+              "items": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"
+              }
+            },
+            "last_frame_elements": {
+              "$ref": "#/$defs/ids"
+            },
+            "cross_scene": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "ids of other scenes this scene must keep intact (handoffs)"
+            }
           }
         },
-        "allowed_freedom": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/freedom"}, "uniqueItems": true},
-        "prohibited_simplification": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/prohibited_simplification"}, "uniqueItems": true},
-        "last_frame_contract": {
+        "allowed_freedom": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/freedom"
+          },
+          "uniqueItems": true
+        },
+        "prohibited_simplification": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/prohibited_simplification"
+          },
+          "uniqueItems": true
+        },
+        "runtime_stack": {
           "type": "object",
-          "required": ["state"],
           "additionalProperties": false,
+          "description": "Which runtime carries which layer. Guidance for planning; execution_binding (43) records what really ran.",
           "properties": {
-            "state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id", "description": "states[].id that must hold when the scene ends"},
-            "min_hold_seconds": {"type": "number", "minimum": 0},
-            "visible_text": {"type": "array", "items": {"type": "string"}},
-            "handoff": {
-              "type": "object",
-              "required": ["to_scene"],
-              "additionalProperties": false,
-              "properties": {
-                "to_scene": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"},
-                "models": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"}},
-                "next_scene_seed": {"type": "string"}
-              }
+            "base_visual": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "factual_source": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "deterministic_graphics": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "generated_media": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "character": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "captions": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "sound": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "postprocess": {
+              "$ref": "#/$defs/runtime_layer"
+            },
+            "master_composite": {
+              "$ref": "#/$defs/runtime_layer"
             }
           }
         },
         "presentation": {
           "type": "object",
           "additionalProperties": false,
-          "description": "Human direction notes. Guidance, not checked by machine.",
+          "description": "Human direction notes (v1.1 vocabulary). Guidance, not machine-checked.",
           "properties": {
-            "runtime_hint": {"enum": ["remotion", "hyperframes", "footage", "any"]},
-            "camera": {"type": "string"},
-            "text": {"type": "string"},
-            "sound": {"type": "string"},
-            "readability": {"type": "string"},
-            "transition_in": {"type": "string"},
-            "transition_out": {"type": "string"},
-            "assets": {"type": "array", "items": {"type": "string"}},
-            "source_pixels": {"type": "string"}
+            "layers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "assets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "source_pixels": {
+              "type": "string"
+            },
+            "camera": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "sound": {
+              "type": "string"
+            },
+            "readability": {
+              "type": "string"
+            },
+            "transition_in": {
+              "type": "string"
+            },
+            "transition_out": {
+              "type": "string"
+            }
+          }
+        },
+        "last_frame_contract": {
+          "$ref": "#/$defs/last_frame_contract"
+        },
+        "output_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "expected_media_type": {
+              "type": "string"
+            },
+            "resolution": {
+              "type": "string"
+            },
+            "fps": {
+              "type": "number"
+            },
+            "duration_source": {
+              "enum": [
+                "narration",
+                "fixed",
+                "asset"
+              ]
+            },
+            "first_frame_contract": {
+              "type": "string"
+            },
+            "downstream_consumer": {
+              "type": "string"
+            }
           }
         },
         "fallback_contract": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "allowed_fallbacks": {"type": "array", "items": {"type": "string"}, "description": "Pre-approved substitutes. Anything else needs a deviation."},
-            "on_failure": {"const": "DIRECTION_DEVIATION"}
+            "allowed_fallbacks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Pre-approved substitutes; anything else is a deviation (44)."
+            },
+            "on_failure": {
+              "const": "DIRECTION_DEVIATION"
+            }
+          }
+        },
+        "approval_scope": {
+          "$ref": "#/$defs/approval_scope"
+        },
+        "downstream_contract": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "consumers": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "direction_lineage",
+                  "visual_direction",
+                  "visual_timeline",
+                  "execution_binding",
+                  "direction_qa_report",
+                  "direction_review"
+                ]
+              }
+            }
           }
         },
         "qa_contract": {
-          "type": "object",
-          "required": ["review"],
-          "additionalProperties": false,
-          "properties": {
-            "review": {"enum": ["required", "optional"], "description": "required = completion needs a human Direction Review PASS for this scene."},
-            "review_questions": {"type": "array", "items": {"type": "string"}},
-            "evidence_states": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "description": "States whose frames are extracted for the reviewer."}
+          "$ref": "#/$defs/qa_contract"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "REQUIRED_FLEX: what must be visible (e.g. 'wide', 'scale of the facility is felt')."
+        },
+        "truth_requirements": {
+          "type": "array",
+          "description": "Facts the picture must carry and their source. Checked for presence and source reference.",
+          "items": {
+            "type": "object",
+            "required": [
+              "statement",
+              "truth_class"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "statement": {
+                "type": "string"
+              },
+              "truth_class": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/truth_class"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
           }
+        },
+        "pvm_transitions": {
+          "type": "array",
+          "description": "REQUIRED_FLEX / DISCRETIONARY: PVM transitions this scene must still perform. Only these are checked in a non-locked scene.",
+          "items": {
+            "type": "object",
+            "required": [
+              "model_id",
+              "to"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "model_id": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"
+              },
+              "from": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"
+              },
+              "to": {
+                "$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"
+              }
+            }
+          }
+        },
+        "runtime_hint": {
+          "enum": [
+            "remotion",
+            "hyperframes",
+            "footage",
+            "any"
+          ]
         }
       },
       "allOf": [
         {
-          "if": {"properties": {"importance": {"const": "REQUIRED_LOCKED"}}},
-          "then": {
-            "required": ["visual_mode", "motion_reason", "beats", "models", "initial_state", "states", "actions", "prohibited_simplification", "allowed_freedom", "last_frame_contract", "qa_contract"],
+          "if": {
             "properties": {
-              "beats": {"minItems": 1},
-              "states": {"minItems": 2},
-              "actions": {"minItems": 1},
-              "models": {"minItems": 1},
-              "qa_contract": {"properties": {"review": {"const": "required"}}}
+              "importance": {
+                "const": "REQUIRED_LOCKED"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "visual_mode",
+              "motion_reason",
+              "beats",
+              "initial_state",
+              "states",
+              "objects",
+              "must_preserve",
+              "allowed_freedom",
+              "prohibited_simplification",
+              "last_frame_contract",
+              "qa_contract"
+            ],
+            "properties": {
+              "beats": {
+                "minItems": 1
+              },
+              "states": {
+                "minItems": 1
+              },
+              "objects": {
+                "minItems": 1
+              }
             }
           }
         },
         {
-          "if": {"properties": {"importance": {"const": "REQUIRED_FLEX"}}},
-          "then": {"required": ["visual_mode", "beats"]}
-        }
-      ]
-    },
-    "state": {
-      "type": "object",
-      "required": ["id"],
-      "additionalProperties": false,
-      "description": "Either a named PVM state (pvm_state) or inline assertions (checks). With both, both must hold.",
-      "properties": {
-        "id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-        "description": {"type": "string"},
-        "pvm_state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"},
-        "checks": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/state_assertion"}, "minItems": 1},
-        "visible_to_viewer": {"type": "boolean", "default": true, "description": "false only for bookkeeping states that need not be on screen (never for intermediate states of a causal chain)."}
-      },
-      "anyOf": [{"required": ["pvm_state"]}, {"required": ["checks"]}]
-    },
-    "action": {
-      "type": "object",
-      "required": ["id", "semantic_role", "model_id", "from_state", "to_state", "beat"],
-      "additionalProperties": false,
-      "properties": {
-        "id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-        "semantic_role": {"type": "string", "minLength": 1, "description": "What the change means, e.g. 'existing long-term capital is reallocated across more bonds'."},
-        "model_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"},
-        "targets": {"type": "array", "items": {"type": "string"}, "description": "element ids of model_id that move"},
-        "from_state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-        "to_state": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-        "beat": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id", "description": "beats[].id the action starts on"},
-        "end_anchor": {"$ref": "urn:openmontage:schema:direction_common#/$defs/narration_anchor", "description": "words by which to_state must hold (default: the next beat)"},
-        "depends_on": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["action", "on"],
-            "additionalProperties": false,
+          "if": {
             "properties": {
-              "action": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-              "on": {"enum": ["start", "complete"]}
+              "importance": {
+                "const": "REQUIRED_LOCKED"
+              },
+              "motion_reason": {
+                "properties": {
+                  "motion_required": {
+                    "const": true
+                  }
+                }
+              }
+            },
+            "required": [
+              "importance",
+              "motion_reason"
+            ]
+          },
+          "then": {
+            "required": [
+              "actions",
+              "events"
+            ],
+            "properties": {
+              "states": {
+                "minItems": 2
+              },
+              "actions": {
+                "minItems": 1
+              },
+              "events": {
+                "minItems": 1
+              }
             }
           }
         },
-        "min_duration_seconds": {"type": "number", "minimum": 0, "description": "Shorter than this reads as a cut, not a change."},
-        "implementation_freedom": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/freedom"}, "uniqueItems": true}
+        {
+          "if": {
+            "properties": {
+              "motion_reason": {
+                "properties": {
+                  "causal_explanation": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "causal_explanation"
+                ]
+              }
+            },
+            "required": [
+              "motion_reason"
+            ]
+          },
+          "then": {
+            "required": [
+              "causal_motion_contracts"
+            ],
+            "properties": {
+              "causal_motion_contracts": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "causal_motion_contracts"
+            ],
+            "properties": {
+              "causal_motion_contracts": {
+                "minItems": 1
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "qa_contract": {
+                "properties": {
+                  "review": {
+                    "not": {
+                      "const": "not_required"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "motion_reason": {
+                "properties": {
+                  "static_replacement_valid": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "static_replacement_valid"
+                ]
+              }
+            },
+            "required": [
+              "motion_reason"
+            ]
+          },
+          "then": {
+            "properties": {
+              "qa_contract": {
+                "properties": {
+                  "review": {
+                    "not": {
+                      "const": "not_required"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "importance": {
+                "const": "REQUIRED_FLEX"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "visual_mode"
+            ]
+          }
+        }
+      ]
+    },
+    "beat": {
+      "type": "object",
+      "required": [
+        "beat_id",
+        "anchor"
+      ],
+      "additionalProperties": false,
+      "description": "A unit of change in meaning or screen state (not a sentence). REQUIRED_LOCKED: at least one beat or event anchor per meaningful state change.",
+      "properties": {
+        "beat_id": {
+          "$ref": "#/$defs/id"
+        },
+        "anchor": {
+          "$ref": "#/$defs/id",
+          "description": "anchors[].anchor_id"
+        },
+        "narrative_function": {
+          "type": "string"
+        },
+        "meaning_before": {
+          "type": "string"
+        },
+        "new_information": {
+          "type": "string"
+        },
+        "meaning_after": {
+          "type": "string"
+        },
+        "visual_state_before": {
+          "$ref": "#/$defs/id"
+        },
+        "required_change": {
+          "type": "string"
+        },
+        "visual_state_after": {
+          "$ref": "#/$defs/id"
+        },
+        "linked_actions": {
+          "$ref": "#/$defs/ids"
+        }
+      }
+    },
+    "object": {
+      "type": "object",
+      "required": [
+        "object_id",
+        "semantic_role"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "$ref": "#/$defs/id"
+        },
+        "object_type": {
+          "type": "string"
+        },
+        "semantic_role": {
+          "type": "string"
+        },
+        "truth_class": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/truth_class"
+        },
+        "model_id": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"
+        },
+        "element_id": {
+          "type": "string",
+          "description": "the 41 element this object is; required with model_id"
+        },
+        "layer_id": {
+          "type": "string"
+        },
+        "source_asset": {
+          "type": "string"
+        },
+        "parent_object": {
+          "$ref": "#/$defs/id"
+        },
+        "persistence": {
+          "enum": [
+            "SCENE",
+            "CROSS_SCENE",
+            "PVM"
+          ]
+        },
+        "semantic_necessity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "required_for_meaning": {
+              "type": "boolean",
+              "default": true
+            },
+            "removable": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      },
+      "dependentRequired": {
+        "model_id": [
+          "element_id"
+        ],
+        "element_id": [
+          "model_id"
+        ]
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "state_id",
+        "semantic_meaning"
+      ],
+      "additionalProperties": false,
+      "description": "First-class screen state. Machine meaning: a named 41 state (pvm_state), inline assertions (object_states), and/or non-model objects that must be visible; all given parts must hold.",
+      "properties": {
+        "state_id": {
+          "$ref": "#/$defs/id"
+        },
+        "semantic_meaning": {
+          "type": "string"
+        },
+        "pvm_state": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"
+        },
+        "object_states": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/state_assertion"
+          },
+          "minItems": 1
+        },
+        "invariants": {
+          "$ref": "#/$defs/ids",
+          "description": "invariants that must hold while in this state"
+        },
+        "entered_by": {
+          "$ref": "#/$defs/id",
+          "description": "action id (checked against actions[].to_state_id)"
+        },
+        "exited_by": {
+          "$ref": "#/$defs/id"
+        },
+        "must_be_visible": {
+          "type": "boolean",
+          "default": true,
+          "description": "false only for bookkeeping states; never for a causal intermediate"
+        },
+        "valid_until": {
+          "$ref": "#/$defs/id",
+          "description": "action or anchor after which the state may end"
+        },
+        "visible_objects": {
+          "$ref": "#/$defs/ids",
+          "description": "objects outside any model that must be on screen (evidence, footage). Checked by binding + source evidence, not by replay."
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "pvm_state"
+          ]
+        },
+        {
+          "required": [
+            "object_states"
+          ]
+        },
+        {
+          "required": [
+            "visible_objects"
+          ]
+        }
+      ]
+    },
+    "action": {
+      "type": "object",
+      "required": [
+        "action_id",
+        "semantic_role",
+        "target_objects",
+        "start_anchor",
+        "from_state_id",
+        "to_state_id"
+      ],
+      "additionalProperties": false,
+      "description": "STATE -> ACTION -> STATE. Implemented downstream by one or more beats (single model operations) carrying this action_id.",
+      "properties": {
+        "action_id": {
+          "$ref": "#/$defs/id"
+        },
+        "semantic_role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "why this action exists, in viewer terms"
+        },
+        "action_type": {
+          "type": "string",
+          "description": "free label, e.g. ADD, REALLOCATE, RAISE"
+        },
+        "model_id": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/model_ref"
+        },
+        "target_objects": {
+          "$ref": "#/$defs/ids"
+        },
+        "start_anchor": {
+          "$ref": "#/$defs/id"
+        },
+        "end_anchor": {
+          "$ref": "#/$defs/id"
+        },
+        "from_state_id": {
+          "$ref": "#/$defs/id"
+        },
+        "to_state_id": {
+          "$ref": "#/$defs/id"
+        },
+        "path": {
+          "type": "string"
+        },
+        "easing": {
+          "type": "string"
+        },
+        "dependency": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "after": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "action",
+                  "on"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "on": {
+                    "enum": [
+                      "start",
+                      "complete"
+                    ]
+                  }
+                }
+              }
+            },
+            "before": {
+              "$ref": "#/$defs/ids"
+            },
+            "with": {
+              "$ref": "#/$defs/ids",
+              "description": "actions that run at the same time"
+            },
+            "wait_until": {
+              "$ref": "#/$defs/id",
+              "description": "state id"
+            },
+            "sync_group": {
+              "type": "string",
+              "description": "actions (and their operations) that form one change: same start, same duration; invariants are evaluated only after the whole group"
+            }
+          }
+        },
+        "completion_condition": {
+          "type": "string"
+        },
+        "completion_state_id": {
+          "$ref": "#/$defs/id",
+          "description": "defaults to to_state_id"
+        },
+        "min_duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "implementation_freedom": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/freedom"
+          },
+          "uniqueItems": true
+        },
+        "must_execute": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "trigger_anchor",
+        "actions",
+        "resulting_state"
+      ],
+      "additionalProperties": false,
+      "description": "A time group of actions fired by one anchor. Not the same as a visual_timeline event, which is one model operation; timeline events carry contract_event_id.",
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/id"
+        },
+        "trigger_anchor": {
+          "$ref": "#/$defs/id"
+        },
+        "precondition_state": {
+          "$ref": "#/$defs/id"
+        },
+        "actions": {
+          "$ref": "#/$defs/ids"
+        },
+        "resulting_state": {
+          "$ref": "#/$defs/id"
+        },
+        "completion_condition": {
+          "type": "string"
+        },
+        "next_event_dependency": {
+          "$ref": "#/$defs/id"
+        }
       }
     },
     "invariant": {
       "type": "object",
-      "required": ["id", "description", "holds"],
+      "required": [
+        "invariant_id",
+        "kind"
+      ],
       "additionalProperties": false,
+      "description": "A condition that must not change while the scope runs. Evaluated by replay after each sync group (never between operations of one group), only inside the scope's time window.",
       "properties": {
-        "id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-        "description": {"type": "string"},
-        "holds": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/state_assertion"}, "minItems": 1},
+        "invariant_id": {
+          "$ref": "#/$defs/id"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "CONSTANT",
+            "ASSERT",
+            "ORDER"
+          ]
+        },
+        "target": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/numeric_target",
+          "description": "CONSTANT"
+        },
+        "value": {
+          "type": "number",
+          "description": "CONSTANT: expected value; omitted = the value at scope start"
+        },
+        "tolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "holds": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/state_assertion"
+          },
+          "minItems": 1,
+          "description": "ASSERT"
+        },
+        "order": {
+          "$ref": "#/$defs/ids",
+          "description": "ORDER: action / event / state ids in required order (e.g. SUPPLY -> REALLOCATION -> YIELD)"
+        },
         "during": {
-          "description": "'scene' = after every state change of the scene. Otherwise between two actions (inclusive).",
+          "default": "scene",
           "oneOf": [
-            {"const": "scene"},
+            {
+              "const": "scene"
+            },
             {
               "type": "object",
-              "required": ["from_action", "to_action"],
+              "required": [
+                "from",
+                "to"
+              ],
               "additionalProperties": false,
               "properties": {
-                "from_action": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
-                "to_action": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}
+                "from": {
+                  "$ref": "#/$defs/id"
+                },
+                "to": {
+                  "$ref": "#/$defs/id"
+                }
               }
             }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "CONSTANT"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "ASSERT"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "holds"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "ORDER"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "order"
+            ]
+          }
+        }
+      ]
+    },
+    "causal_link": {
+      "type": "object",
+      "required": [
+        "state_id",
+        "actions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "state_id": {
+          "$ref": "#/$defs/id"
+        },
+        "objects": {
+          "$ref": "#/$defs/ids"
+        },
+        "actions": {
+          "$ref": "#/$defs/ids"
+        },
+        "narration_anchor": {
+          "$ref": "#/$defs/id"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "causal_motion_contract": {
+      "type": "object",
+      "required": [
+        "causal_chain_id",
+        "proposition",
+        "cause",
+        "intermediate_reactions",
+        "effect",
+        "final_proof_state"
+      ],
+      "additionalProperties": false,
+      "description": "Not 'add motion': the state change between cause and effect must actually happen on screen.",
+      "properties": {
+        "causal_chain_id": {
+          "$ref": "#/$defs/id"
+        },
+        "proposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cause": {
+          "$ref": "#/$defs/causal_link"
+        },
+        "intermediate_reactions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/causal_link"
+          },
+          "minItems": 1
+        },
+        "effect": {
+          "$ref": "#/$defs/causal_link"
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "effect_after_cause": {
+              "const": true
+            },
+            "intermediate_required": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "visibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cause_visible": {
+              "type": "boolean",
+              "default": true
+            },
+            "intermediate_visible": {
+              "type": "boolean",
+              "default": true
+            },
+            "effect_visible": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "final_proof_state": {
+          "type": "object",
+          "required": [
+            "state_id"
           ],
-          "default": "scene"
+          "additionalProperties": false,
+          "properties": {
+            "state_id": {
+              "$ref": "#/$defs/id"
+            },
+            "viewer_can_observe": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "CAUSE",
+                  "INTERMEDIATE",
+                  "EFFECT"
+                ]
+              }
+            }
+          }
+        },
+        "prohibited_simplification": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/causal_prohibited_simplification"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "runtime_layer": {
+      "type": "object",
+      "required": [
+        "runtime"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "runtime": {
+          "enum": [
+            "remotion",
+            "hyperframes",
+            "footage",
+            "generated",
+            "audio",
+            "none"
+          ]
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "consumes": {
+          "$ref": "#/$defs/ids",
+          "description": "action / event / state ids this layer must implement"
+        }
+      }
+    },
+    "last_frame_contract": {
+      "type": "object",
+      "required": [
+        "required_state_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "required_state_id": {
+          "$ref": "#/$defs/id"
+        },
+        "end_anchor": {
+          "$ref": "#/$defs/id"
+        },
+        "visible_objects": {
+          "$ref": "#/$defs/ids"
+        },
+        "hidden_objects": {
+          "$ref": "#/$defs/ids"
+        },
+        "object_states": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/state_assertion"
+          }
+        },
+        "persistent_states": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:openmontage:schema:direction_common#/$defs/pvm_state_ref"
+          }
+        },
+        "visible_text": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "camera_state": {
+          "type": "string"
+        },
+        "motion_state": {
+          "enum": [
+            "HOLD",
+            "SETTLING",
+            "CONTINUOUS"
+          ]
+        },
+        "minimum_hold_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "handoff_objects": {
+          "$ref": "#/$defs/ids"
+        },
+        "handoff_to_scene": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"
+        },
+        "next_scene_seed": {
+          "type": "string"
+        }
+      }
+    },
+    "qa_contract": {
+      "type": "object",
+      "required": [
+        "review"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "review": {
+          "enum": [
+            "auto",
+            "required",
+            "not_required"
+          ],
+          "default": "auto",
+          "description": "Human Direction Review (46). auto: required when the scene has a causal_motion_contract, an action/state sequence, a PVM transition, or static_replacement_valid=false; otherwise structural QA (45) + source verification complete it. not_required is a contract error in those cases."
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ACTION_EXISTENCE",
+              "ORDER",
+              "STATE_TRANSITION",
+              "INVARIANT",
+              "CAUSAL_CHAIN",
+              "ANCHOR_TIMING",
+              "PERSISTENT_STATE",
+              "LAST_FRAME",
+              "PROHIBITED_SIMPLIFICATION",
+              "SOURCE_EVIDENCE"
+            ]
+          },
+          "uniqueItems": true,
+          "description": "Structural checks 45 must run; default = all that apply."
+        },
+        "review_questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_states": {
+          "$ref": "#/$defs/ids",
+          "description": "states whose frames are extracted for the reviewer"
         }
       }
     }

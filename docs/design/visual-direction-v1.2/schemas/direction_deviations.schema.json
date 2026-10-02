@@ -1,30 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:openmontage:schema:direction_deviations",
-  "title": "Direction Deviations — v1.2",
-  "description": "Append-only log of contract ids a stage could not implement. A worker that cannot implement a REQUIRED_LOCKED item records a deviation and stops; it never substitutes a similar-looking scene. Only the user (or the Director on their behalf) decides; an approved deviation exempts exactly its target ids from the completion gate, an open or rejected one blocks completion.",
+  "title": "Direction Deviations (44) — v1.2",
+  "description": "Deviation protocol. When a stage cannot implement the contract it records a deviation instead of quietly working around it. MATERIAL impact, or any affected id in the effective must_preserve set of a REQUIRED_LOCKED scene, stops the run at a human gate (approval_required=true). Only an APPROVED deviation exempts exactly its affected ids from the completion gate; PROPOSED or REJECTED ones block it. Approving a deviation is not a contract change: changing the direction itself means a new contract revision.",
   "type": "object",
-  "required": ["version", "contract_fingerprint", "deviations"],
+  "required": ["version", "contract", "deviations"],
   "additionalProperties": false,
   "properties": {
     "version": {"const": "1.2"},
-    "contract_fingerprint": {"$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint"},
+    "contract": {"$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"},
     "deviations": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "target_ids", "reason", "detail", "stage", "raised_by", "raised_at", "status"],
+        "required": ["deviation_id", "scene_id", "affected_contract_ids", "reason", "semantic_impact", "detail", "stage", "raised_by", "raised_at", "approval_required", "status"],
         "additionalProperties": false,
         "properties": {
-          "id": {"type": "string", "pattern": "^DEV[0-9]{3,}$"},
-          "target_ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "minItems": 1},
+          "deviation_id": {"type": "string", "pattern": "^DEV[0-9]{3,}$"},
+          "scene_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"},
+          "affected_contract_ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "minItems": 1},
           "reason": {"$ref": "urn:openmontage:schema:direction_common#/$defs/deviation_reason"},
+          "semantic_impact": {"enum": ["NONE", "MINOR", "MATERIAL"]},
           "detail": {"type": "string", "minLength": 1},
-          "stage": {"enum": ["scene_plan", "assets", "edit", "compose"]},
+          "stage": {"enum": ["scene_plan", "assets", "edit", "compose", "alignment"]},
           "raised_by": {"type": "string"},
           "raised_at": {"type": "string", "format": "date-time"},
-          "proposed_resolution": {"type": "string", "description": "What the worker proposes instead. Not applied before approval."},
-          "status": {"enum": ["open", "approved", "rejected", "withdrawn"]},
+          "proposed_change": {"type": "string", "description": "what the worker proposes instead; never applied before approval"},
+          "approval_required": {"type": "boolean"},
+          "status": {"enum": ["PROPOSED", "APPROVED", "REJECTED", "WITHDRAWN"]},
           "decision": {
             "type": "object",
             "required": ["by", "at"],
@@ -33,12 +36,13 @@
               "by": {"type": "string"},
               "at": {"type": "string", "format": "date-time"},
               "note": {"type": "string"},
-              "contract_revision": {"type": "integer", "minimum": 1, "description": "Set when the decision was to change the contract instead."}
+              "new_contract_revision": {"type": "integer", "minimum": 1, "description": "set when the resolution was a new contract revision instead"}
             }
           }
         },
         "allOf": [
-          {"if": {"properties": {"status": {"enum": ["approved", "rejected"]}}}, "then": {"required": ["decision"]}}
+          {"if": {"properties": {"semantic_impact": {"const": "MATERIAL"}}}, "then": {"properties": {"approval_required": {"const": true}}}},
+          {"if": {"properties": {"status": {"enum": ["APPROVED", "REJECTED"]}}}, "then": {"required": ["decision"]}}
         ]
       }
     }
