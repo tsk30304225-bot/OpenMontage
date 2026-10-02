@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmontage:schema:direction_common",
+  "title": "Direction contract v1.2 — shared definitions",
+  "description": "IDs, state assertions and invariant checks shared by the v1.2 direction artifacts. Assertions are evaluated against the existing model state signature (lib/direction_contract/contract.py: model_state_signature) produced by replaying the compiled visual_timeline — no pixels involved.",
+  "$defs": {
+    "scene_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]*$",
+      "description": "Director scene id, e.g. SC009. Production scene ids (scene_plan) are a different namespace."
+    },
+    "qualified_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]*/[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "Scene-qualified id of a beat, state, action, object or invariant: <scene_id>/<local id>, e.g. SC009/A02. Canonical everywhere downstream (beats, timeline events, lineage, binding, deviations)."
+    },
+    "model_ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "persistent_visual_models.models[].id"
+    },
+    "pvm_state_ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*\\.[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "<model_id>.<named state id> from persistent_visual_models."
+    },
+    "narration_anchor": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact words of the approved script. Resolved to seconds only after TTS + forced alignment (compile_timeline)."
+    },
+    "assertion": {
+      "description": "A check on the model state signature. 'path' is dot-separated into the signature: elements.<id>.visible, elements.<id>.attrs.<attr>, measures, active, view.<key> (element models); timeline_rail signatures use their own keys. An aggregate assertion combines several numeric paths.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["path", "op"],
+          "additionalProperties": false,
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "op": {"enum": ["eq", "ne", "gt", "gte", "lt", "lte", "in", "exists", "absent"]},
+            "value": {},
+            "tolerance": {"type": "number", "minimum": 0, "description": "numeric eq/ne only"}
+          }
+        },
+        {
+          "type": "object",
+          "required": ["aggregate", "paths", "op", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "aggregate": {"enum": ["sum", "min", "max", "count_true"]},
+            "paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+            "op": {"enum": ["eq", "ne", "gt", "gte", "lt", "lte"]},
+            "value": {"type": "number"},
+            "tolerance": {"type": "number", "minimum": 0}
+          }
+        }
+      ]
+    },
+    "state_assertion": {
+      "type": "object",
+      "required": ["model_id", "assert"],
+      "additionalProperties": false,
+      "properties": {
+        "model_id": {"$ref": "#/$defs/model_ref"},
+        "assert": {"type": "array", "items": {"$ref": "#/$defs/assertion"}, "minItems": 1}
+      }
+    },
+    "freedom": {
+      "enum": [
+        "COORDINATES",
+        "SPACING",
+        "COMPONENT_STRUCTURE",
+        "TYPOGRAPHY_SIZE",
+        "EASING",
+        "MICRO_MOTION",
+        "BACKGROUND_TEXTURE",
+        "PARTICLE_COUNT",
+        "CROP_MARGIN",
+        "TECHNICAL_OPTIMIZATION",
+        "SHOT_CHOICE",
+        "ASSET_CHOICE"
+      ],
+      "description": "Implementation decisions a worker may take without a deviation. Anything not listed for a REQUIRED_LOCKED scene is not free."
+    },
+    "prohibited_simplification": {
+      "enum": [
+        "REMOVE_REQUIRED_ACTION",
+        "MERGE_LOCKED_ACTIONS",
+        "REORDER_LOCKED_ACTIONS",
+        "REMOVE_INTERMEDIATE_STATE",
+        "REPLACE_MOTION_WITH_HIGHLIGHT",
+        "REPLACE_CAUSAL_MODEL_WITH_TEXT",
+        "REPLACE_PVM_WITH_UNRELATED_BROLL",
+        "COLLAPSE_MULTIPLE_BEATS_TO_SINGLE_REVEAL",
+        "ALTER_INVARIANT"
+      ]
+    },
+    "deviation_reason": {
+      "enum": ["CAPABILITY_UNAVAILABLE", "ASSET_UNAVAILABLE", "TECHNICAL_CONFLICT", "TIMING_CONFLICT"]
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "contract_fingerprint() of the approved 40 + 41 pair (canonical JSON, approval block excluded)."
+    }
+  }
+}

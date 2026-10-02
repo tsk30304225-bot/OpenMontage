@@ -1,0 +1,80 @@
+{
+  "contract_version": "1.2",
+  "contract_id": "ai-capital-flow-mortgage-ko",
+  "title": "AI 설비투자와 주담대 금리 — 자금 경쟁 장면 발췌",
+  "approval": {"status": "approved", "revision": 1, "approved_by": "user", "approved_at": "2026-10-02T12:00:00+09:00"},
+  "narration_authority": {"script_artifact": "script", "language": "ko"},
+  "pvm_authority": {"artifact": "persistent_visual_models"},
+  "scenes": [
+    {
+      "id": "SC009",
+      "importance": "REQUIRED_LOCKED",
+      "role": "explanation",
+      "visual_mode": "model",
+      "narration_span": {
+        "start_anchor": "투자할 수 있는 장기 자금은 정해져 있습니다",
+        "end_anchor": "더 높은 금리를 약속해야 했습니다"
+      },
+      "meaning_contract": "자금 총량은 그대로인데 채권 선택지가 늘어 같은 돈이 나뉘고, 그 결과 발행자의 요구수익률이 오른다.",
+      "viewer_question": "빅테크가 채권을 많이 찍으면 왜 금리가 오르나?",
+      "motion_reason": "총량 고정 → 선택지 증가 → 재배분 → 수익률 상승이 순서대로 일어나는 인과이므로 정적 비교로는 전달되지 않는다.",
+      "beats": [
+        {"id": "SC009/B01", "narration_anchor": "투자할 수 있는 장기 자금은 정해져 있습니다", "meaning": "자금 총량 100 제시"},
+        {"id": "SC009/B02", "narration_anchor": "메타와 아마존이 채권을 쏟아내기 시작했습니다", "meaning": "공급 증가"},
+        {"id": "SC009/B03", "narration_anchor": "같은 돈이 더 많은 채권 사이로 나뉘어 흘러갑니다", "meaning": "자금 재배분"},
+        {"id": "SC009/B04", "narration_anchor": "더 높은 금리를 약속해야 했습니다", "meaning": "요구수익률 상승"}
+      ],
+      "models": [{"model_id": "CAPITAL_FLOW", "enter_state": "CAPITAL_FLOW.BASE"}],
+      "objects": [
+        {"id": "SC009/POOL", "role": "고정된 장기자금", "model_id": "CAPITAL_FLOW", "element_id": "POOL"},
+        {"id": "SC009/NEW_BONDS", "role": "새 채권 공급(메타·아마존)", "model_id": "CAPITAL_FLOW", "element_id": "META"}
+      ],
+      "initial_state": "SC009/S0",
+      "states": [
+        {"id": "SC009/S0", "pvm_state": "CAPITAL_FLOW.BASE"},
+        {"id": "SC009/S1", "pvm_state": "CAPITAL_FLOW.MORE_SUPPLY"},
+        {"id": "SC009/S2", "pvm_state": "CAPITAL_FLOW.REALLOCATED"},
+        {"id": "SC009/S3", "pvm_state": "CAPITAL_FLOW.YIELD_PRESSURE",
+         "description": "공급 증가 → 자금 재배분 → 수익률 압력이 한 화면에서 확인됨",
+         "checks": [{"model_id": "CAPITAL_FLOW", "assert": [{"path": "elements.ALLOC_META.visible", "op": "eq", "value": true}]}]}
+      ],
+      "actions": [
+        {"id": "SC009/A01", "semantic_role": "메타·아마존 채권이 선택지에 추가된다", "model_id": "CAPITAL_FLOW",
+         "targets": ["META", "AMZN"], "from_state": "SC009/S0", "to_state": "SC009/S1", "beat": "SC009/B02",
+         "min_duration_seconds": 0.6},
+        {"id": "SC009/A02", "semantic_role": "같은 장기자금이 더 많은 채권 사이로 실제로 재배분된다", "model_id": "CAPITAL_FLOW",
+         "targets": ["ALLOC_UST", "ALLOC_GOOG", "ALLOC_META", "ALLOC_AMZN"], "from_state": "SC009/S1", "to_state": "SC009/S2",
+         "beat": "SC009/B03", "depends_on": [{"action": "SC009/A01", "on": "complete"}], "min_duration_seconds": 1.0},
+        {"id": "SC009/A03", "semantic_role": "자금을 끌어오기 위해 요구수익률이 오른다", "model_id": "CAPITAL_FLOW",
+         "targets": ["YIELD_META"], "from_state": "SC009/S2", "to_state": "SC009/S3", "beat": "SC009/B04",
+         "depends_on": [{"action": "SC009/A02", "on": "complete"}], "min_duration_seconds": 0.6}
+      ],
+      "invariants": [
+        {"id": "SC009/INV01", "description": "투자 가능한 장기자금 총량은 100으로 유지된다",
+         "holds": [{"model_id": "CAPITAL_FLOW", "assert": [
+           {"aggregate": "sum", "paths": ["elements.ALLOC_UST.attrs.value", "elements.ALLOC_GOOG.attrs.value", "elements.ALLOC_META.attrs.value", "elements.ALLOC_AMZN.attrs.value"], "op": "eq", "value": 100},
+           {"path": "elements.POOL.attrs.value", "op": "eq", "value": 100}
+         ]}],
+         "during": "scene"}
+      ],
+      "causal_motion_contract": {
+        "cause": ["SC009/A01"],
+        "intermediate": ["SC009/A02"],
+        "effect": ["SC009/A03"],
+        "final_proof_state": "SC009/S3"
+      },
+      "must_preserve": {"persistent_models": ["CAPITAL_FLOW"], "last_frame_elements": ["POOL", "META", "AMZN", "YIELD_META"]},
+      "allowed_freedom": ["COORDINATES", "SPACING", "COMPONENT_STRUCTURE", "TYPOGRAPHY_SIZE", "EASING", "MICRO_MOTION", "PARTICLE_COUNT"],
+      "prohibited_simplification": [
+        "REMOVE_REQUIRED_ACTION", "MERGE_LOCKED_ACTIONS", "REORDER_LOCKED_ACTIONS", "REMOVE_INTERMEDIATE_STATE",
+        "REPLACE_CAUSAL_MODEL_WITH_TEXT", "REPLACE_PVM_WITH_UNRELATED_BROLL", "ALTER_INVARIANT"
+      ],
+      "last_frame_contract": {"state": "SC009/S3", "min_hold_seconds": 1.5},
+      "qa_contract": {
+        "review": "required",
+        "review_questions": ["자금 총량이 변하지 않은 채 배분이 바뀌는 과정이 화면에 보이는가?", "수익률 상승이 재배분 뒤에 일어나는가?"],
+        "evidence_states": ["SC009/S1", "SC009/S2", "SC009/S3"]
+      }
+    }
+  ]
+}

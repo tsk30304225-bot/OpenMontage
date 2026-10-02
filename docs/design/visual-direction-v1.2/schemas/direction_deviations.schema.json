@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmontage:schema:direction_deviations",
+  "title": "Direction Deviations — v1.2",
+  "description": "Append-only log of contract ids a stage could not implement. A worker that cannot implement a REQUIRED_LOCKED item records a deviation and stops; it never substitutes a similar-looking scene. Only the user (or the Director on their behalf) decides; an approved deviation exempts exactly its target ids from the completion gate, an open or rejected one blocks completion.",
+  "type": "object",
+  "required": ["version", "contract_fingerprint", "deviations"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": "1.2"},
+    "contract_fingerprint": {"$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint"},
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "target_ids", "reason", "detail", "stage", "raised_by", "raised_at", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^DEV[0-9]{3,}$"},
+          "target_ids": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"}, "minItems": 1},
+          "reason": {"$ref": "urn:openmontage:schema:direction_common#/$defs/deviation_reason"},
+          "detail": {"type": "string", "minLength": 1},
+          "stage": {"enum": ["scene_plan", "assets", "edit", "compose"]},
+          "raised_by": {"type": "string"},
+          "raised_at": {"type": "string", "format": "date-time"},
+          "proposed_resolution": {"type": "string", "description": "What the worker proposes instead. Not applied before approval."},
+          "status": {"enum": ["open", "approved", "rejected", "withdrawn"]},
+          "decision": {
+            "type": "object",
+            "required": ["by", "at"],
+            "additionalProperties": false,
+            "properties": {
+              "by": {"type": "string"},
+              "at": {"type": "string", "format": "date-time"},
+              "note": {"type": "string"},
+              "contract_revision": {"type": "integer", "minimum": 1, "description": "Set when the decision was to change the contract instead."}
+            }
+          }
+        },
+        "allOf": [
+          {"if": {"properties": {"status": {"enum": ["approved", "rejected"]}}}, "then": {"required": ["decision"]}}
+        ]
+      }
+    }
+  }
+}

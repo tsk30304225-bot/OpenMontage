@@ -1,0 +1,134 @@
+{
+  "version": "1.2",
+  "contract_fingerprint": "sha256:6412b7f27d9f32419dae67f2b7419be952926b7837a1cf804faaa8bede6b7b3f",
+  "viewer_journey": [
+    {
+      "id": "J3",
+      "scene_ids": [
+        "sc15",
+        "sc16",
+        "sc17"
+      ],
+      "viewer_goal": "같은 돈을 더 많은 채권이 나눠 가지니 금리를 올려야 한다"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "sc15",
+      "narrative_role": "explanation",
+      "visual_mode": "model",
+      "visual_model_id": "CAPITAL_FLOW",
+      "beats": [
+        {
+          "id": "sc15-b1",
+          "narration_anchor": "메타와 아마존이 채권을 쏟아내기 시작했습니다",
+          "operation": "REVEAL",
+          "target": "META",
+          "action_id": "SC009/A01",
+          "takeaway": "새 채권 등장"
+        },
+        {
+          "id": "sc15-b2",
+          "narration_anchor": "메타와 아마존이 채권을 쏟아내기 시작했습니다",
+          "offset_seconds": 0.4,
+          "operation": "REVEAL",
+          "target": "AMZN",
+          "action_id": "SC009/A01",
+          "state_after_id": "SC009/S1",
+          "takeaway": "선택지가 늘었다"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc16",
+      "narrative_role": "explanation",
+      "visual_mode": "model",
+      "visual_model_id": "CAPITAL_FLOW",
+      "beats": [
+        {
+          "id": "sc16-b1",
+          "narration_anchor": "같은 돈이 더 많은 채권 사이로 나뉘어 흘러갑니다",
+          "operation": "REVEAL",
+          "target": "ALLOC_META",
+          "action_id": "SC009/A02",
+          "takeaway": "새 흐름이 생긴다"
+        },
+        {
+          "id": "sc16-b2",
+          "narration_anchor": "같은 돈이 더 많은 채권 사이로 나뉘어 흘러갑니다",
+          "operation": "REVEAL",
+          "target": "ALLOC_AMZN",
+          "action_id": "SC009/A02",
+          "takeaway": "새 흐름이 생긴다"
+        },
+        {
+          "id": "sc16-b3",
+          "narration_anchor": "나뉘어 흘러갑니다",
+          "operation": "EXPAND",
+          "target": "ALLOC_UST",
+          "params": {
+            "attr": "value",
+            "to": 40
+          },
+          "action_id": "SC009/A02",
+          "takeaway": "국채로 가던 돈이 줄고"
+        },
+        {
+          "id": "sc16-b4",
+          "narration_anchor": "나뉘어 흘러갑니다",
+          "operation": "EXPAND",
+          "target": "ALLOC_META",
+          "params": {
+            "attr": "value",
+            "to": 10
+          },
+          "action_id": "SC009/A02",
+          "takeaway": "메타로 일부가"
+        },
+        {
+          "id": "sc16-b5",
+          "narration_anchor": "나뉘어 흘러갑니다",
+          "operation": "EXPAND",
+          "target": "ALLOC_AMZN",
+          "params": {
+            "attr": "value",
+            "to": 10
+          },
+          "action_id": "SC009/A02",
+          "state_after_id": "SC009/S2",
+          "takeaway": "아마존으로 일부가 — 총량은 그대로"
+        }
+      ]
+    },
+    {
+      "scene_id": "sc17",
+      "narrative_role": "explanation",
+      "visual_mode": "model",
+      "visual_model_id": "CAPITAL_FLOW",
+      "beats": [
+        {
+          "id": "sc17-b1",
+          "narration_anchor": "더 높은 금리를 약속해야 했습니다",
+          "operation": "REVEAL",
+          "target": "YIELD_META",
+          "action_id": "SC009/A03",
+          "takeaway": "요구수익률 표시"
+        },
+        {
+          "id": "sc17-b2",
+          "narration_anchor": "더 높은 금리를 약속해야 했습니다",
+          "offset_seconds": 0.5,
+          "operation": "EXPAND",
+          "target": "YIELD_META",
+          "params": {
+            "attr": "value",
+            "to": 5.2
+          },
+          "action_id": "SC009/A03",
+          "state_after_id": "SC009/S3",
+          "takeaway": "4.5% → 5.2%"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmontage:schema:direction_review",
+  "title": "Direction Review — v1.2",
+  "description": "Human Direction Review of the rendered video for scenes whose qa_contract.review is 'required' (every REQUIRED_LOCKED scene). Structure checks (lineage, states, invariants, order, binding) are automatic; this records the judgement they cannot make: does the picture actually show the mechanism. Bound to one render (sha256) and one contract fingerprint.",
+  "type": "object",
+  "required": ["version", "contract_fingerprint", "render", "scenes"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"const": "1.2"},
+    "contract_fingerprint": {"$ref": "urn:openmontage:schema:direction_common#/$defs/fingerprint"},
+    "render": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scene_id", "verdict", "reviewer"],
+        "additionalProperties": false,
+        "properties": {
+          "scene_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/scene_id"},
+          "verdict": {"enum": ["PASS", "FAIL", "NOT_REVIEWED"]},
+          "reviewer": {"type": "string"},
+          "reviewed_at": {"type": "string", "format": "date-time"},
+          "evidence_frames": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["state_id", "time_seconds", "path"],
+              "additionalProperties": false,
+              "properties": {
+                "state_id": {"$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"},
+                "time_seconds": {"type": "number", "minimum": 0},
+                "path": {"type": "string"}
+              }
+            }
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["question", "answer"],
+              "additionalProperties": false,
+              "properties": {"question": {"type": "string"}, "answer": {"type": "string"}}
+            }
+          },
+          "violations": {"type": "array", "items": {"$ref": "urn:openmontage:schema:direction_common#/$defs/prohibited_simplification"}},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}
