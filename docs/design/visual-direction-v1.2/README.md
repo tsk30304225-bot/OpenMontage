@@ -1,6 +1,7 @@
-# Visual Direction v1.2 — machine schema 설계 (개정 3, 설계 확정 후보)
+# Visual Direction v1.2 — machine schema 설계 (개정 4, 설계 정정)
 
-상태: **설계. 런타임 구현 없음.** 스키마는 이 폴더의 `schemas/`에만 있고 `schemas/artifacts/`, `lib/`, `tools/`는 바뀌지 않았다.
+상태: **설계. 런타임 구현 없음.** 40–46 스키마는 이 폴더의 `schemas/`에 있다. `visual_direction`/`visual_timeline` 1.2는 이 폴더의 authoring source에서 **self-contained로 생성**되고, 그 생성물이 `schemas/artifacts/`의 shipped 스키마를 대체한다 (D14).
+개정 4 (2026-10-02, Phase 1 착수 중 발견한 결함 정정): D14 스키마 통합, D15 script canonicalization.
 기준 코드: 포크 `origin/main` 4a9aed4 (Phase 0 병합 후).
 기준 문서: 사용자 원문 「연출안 형식 설계.txt」 **전체 (§0–§35, v1.1→v1.2 표)** + 2026-10-02 확정 결정 D1–D13.
 
@@ -27,13 +28,20 @@
 | D4 | visual_direction 1.2에서 모델 정의 금지. 모델 권위는 41 하나 | 1.2 delta |
 | D5 | REQUIRED_FLEX는 가볍게: meaning, 보여야 할 것(`requirements`), 사실·출처(`truth_requirements`), runtime/asset 참조 무결성. 참조한 PVM 전이(`pvm_transitions`)만 검사 | 40 scene, 9절 |
 | D6 | 사람 리뷰(46)는 **조건부**: causal contract · action/state 시퀀스 · PVM 전이 · `static_replacement_valid=false`. 정적 증거 LOCKED는 45 + 출처 검증으로 완료 | 40 `qa_contract.review: auto`, 9절 |
-| D7 | 앵커 = **script digest + 정규화(NFC·공백) exact text (+ script_span_id/char span)**. fuzzy는 alignment(timeline)에서만. 잠긴 앵커가 다른 구간으로 resolve되면 deviation | 40 `anchors`, timeline `anchor_resolution`, 8절 |
+| D7 | 앵커 = **script digest + canonical script text의 exact span** (D15로 정밀화: `source_span` 필수, `occurrence_index` 폐지). fuzzy는 alignment(timeline)에서만. 잠긴 앵커가 다른 구간으로 resolve되면 deviation | 40 `anchors`, timeline `anchor_resolution`, 6절 |
 | D8 | 번호: **40** contract · **41** PVM · **42** lineage · **43** execution_binding · **44** deviations · **45** direction_qa_report · **46** direction_review | 2절 |
 | D9 | Director용 41 작성 문법 가이드 (새 엔진 아님, 기존 replay 모델의 표준 문법) | `director-pvm-grammar.md` |
 | D10 | binding은 deterministic_graphics 전용이 아니다. 40 `runtime_stack`에서 **잠긴 요구를 `consumes`로 선언한 모든 layer**를 검사. 엔진은 primary runtime 중심이어도 스키마는 multi-runtime 유지 | 43 `actions[].layer_bindings[]` |
 | D11 | 42 `transformed`(자유 문장) → **typed `transformations[]`**: SPLIT · MERGE · TIMING_RESOLUTION · ASSET_BINDING · RUNTIME_BINDING · IMPLEMENTATION_DETAIL. 의미 변경 타입은 없다 → LOCKED 의미 변경은 deviation + 새 승인 revision | 42 schema |
 | D12 | `PIXEL_CHANGE`는 LOCKED의 필수 PASS 조건이 아니다. **보조 증거(role SUPPORTING)만**. 동적 LOCKED 완료 = 구조 QA(45) + 필요한 Direction Review(46) | 45 `checks[].role` (PIXEL_CHANGE는 SUPPORTING 강제) |
 | D13 | `omitted_locked_ids`는 Planner 값을 믿지 않는다. **시스템이** 승인 contract의 effective must_preserve와 실제 lineage coverage(주장 ∩ 실제 구현)를 비교해 계산 → 42 `system_coverage`(computed_by=check_lineage). 45가 **독립 재계산**하고 일치 여부를 기록 | 42 `system_coverage`, 45 receipt `effective_must_preserve`·`omitted`·`lineage_coverage_agrees` |
+
+### 정정 결정 (2026-10-02, 개정 4)
+
+| # | 결정 | 반영 위치 |
+|---|---|---|
+| D14 | **스키마 통합 = A.** `visual_direction`·`visual_timeline`은 checkpoint와 `visual_timeline_compiler`가 upstream `validate_artifact`(registry 없음)로 검증한다. 따라서 이 둘의 shipped 1.2 스키마는 **self-contained**: 외부 `$ref`·registry 요구 없음. 공통 정의는 손으로 복제하지 않고 authoring source(`direction_common`)에서 각 스키마의 `$defs`로 **materialize**(사용하는 정의의 전이 폐포, `#/$defs/<name>`로 재작성). 두 스키마의 공유 정의가 서로·원본과 동일한지 regression test로 고정. v1.0 문서는 그대로 유효, 1.2 필드는 additive + `version` 조건부 (1.2: `contract` 필수, 모델 정의 금지 / 1.0: 1.2 필드 금지) | `derive_v12_schemas.py`, `schemas/base/`, 2절·14절 |
+| D15 | **Script canonicalization = `SCRIPT_SECTIONS_TEXT_V1`.** script artifact(`schemas/artifacts/script`)의 `sections` 현재 배열 순서, 각 `sections[i].text`만, CRLF/CR → LF, Unicode NFC, section 사이 정확히 `\n` 하나, trim 없음 → `canonical_script_text`. UTF-8(BOM 없음) bytes의 SHA-256 = `script_sha256`. 앵커 `source_span`은 canonical text의 Unicode code-point offset (`char_start` inclusive, `char_end` exclusive)이고 `canonical_script_text[char_start:char_end] == exact_text`를 반드시 검사. 40 `authority.canonicalization_id`에 규칙 ID를 기록(LOCKED 필수). narration authority(`narration_ref`·`narration_sha256` = 오디오 bytes)는 script hash와 별개의 독립 authority로 유지 | 40 `authority`, common `anchor`·`script_canonicalization`, 6절 |
 
 ## 1. 흐름
 
@@ -72,18 +80,19 @@ Production Complete
 
 - 모든 하위 artifact는 `contract_ref {artifact, artifact_id, revision, fingerprint}`를 가진다. 40/41이 바뀌면 stale → 게이트 실패.
 - **Fingerprint**: `sha256` over canonical JSON `{"contract": 40 − lifecycle, "pvm": 41}` (key 정렬, 공백 없음, UTF-8). `lifecycle`(revision·status·잠금 메타)만 바뀌면 지문 불변.
-- v1.2 artifact는 upstream 로더(`validate_artifact`)를 거치지 않는다. 교차 `$ref` 때문에 `direction_contract`가 자체 registry로 검증 → **upstream 0줄**.
+- 40–46은 upstream 로더(`validate_artifact`)를 거치지 않는다. 교차 `$ref` 때문에 `direction_contract`가 자체 registry로 검증.
+- **`visual_direction`·`visual_timeline`은 예외** (개정 4에서 정정: 개정 3의 "v1.2 artifact는 upstream 로더를 거치지 않는다"는 이 둘에 대해 틀렸다). checkpoint `_validate_artifacts_for_stage`와 `visual_timeline_compiler`가 `validate_artifact`로 검증하므로, 이 둘의 1.2 스키마는 self-contained로 생성되어 `schemas/artifacts/visual_direction.schema.json`·`visual_timeline.schema.json`(포크 소유 파일)을 대체한다 (D14). `validate_artifact` 자체(upstream 파일)는 그대로 → **upstream 0줄** 유지.
 
 ## 3. 원문 대조표 (§별 반영 결과)
 
 | 원문 | 반영 | 비고 / 의도적 차이 |
 |---|---|---|
-| §0 지위·헤더 | 40 `schema_name` `schema_version` `artifact_role` `artifact_id` `project_id` `lifecycle{revision,status DRAFT/LOCKED/SUPERSEDED}` `authority{script_ref,script_sha256,narration_ref,narration_sha256,plan_lock_ref}` | 40↔41 결합을 위해 `authority.pvm_ref` 추가. LOCKED는 `script_sha256` 필수 |
+| §0 지위·헤더 | 40 `schema_name` `schema_version` `artifact_role` `artifact_id` `project_id` `lifecycle{revision,status DRAFT/LOCKED/SUPERSEDED}` `authority{script_ref,script_sha256,canonicalization_id,narration_ref,narration_sha256,plan_lock_ref}` | 40↔41 결합을 위해 `authority.pvm_ref` 추가. LOCKED는 `script_sha256`·`canonicalization_id` 필수 (D15) |
 | §1 파이프라인 / 재요약 금지 | 1절 흐름, 42 `transformed`(의미 변경 불가) | |
 | §2 우선순위 | 40 `priority_policy` (값 고정) | |
 | §3·§33 중요도 | `importance` + 조건부 필수 | FLEX = D5 |
 | §4 LOCKED 최소 | narration_span, meaning_contract, beats, motion_reason, initial_state, states, objects, must_preserve, prohibited_simplification, last_frame_contract, qa_contract 필수. **motion_required면** actions·events·states≥2 | **정적 증거 LOCKED**(motion_required=false)는 actions/events 면제 — D6과 일관. `dependencies`는 action.dependency로, `execution_graph`는 파생(아래) |
-| §5 Narration authority | 40 scene `anchors[]` {anchor_id, script_span_id, exact_text, source_span, occurrence_index, edge, offset_ms} | resolution(status·time·frame)은 **timeline 1.2 `anchor_resolution`**에 둔다 (40은 resolve 결과로 바뀌지 않음, D7) |
+| §5 Narration authority | 40 scene `anchors[]` {anchor_id, script_span_id, exact_text, **source_span (필수)**, edge, offset_ms} | resolution(status·time·frame)은 **timeline 1.2 `anchor_resolution`**에 둔다 (40은 resolve 결과로 바뀌지 않음, D7). 출현 위치는 검색이 아니라 span이 정한다 → `occurrence_index` 폐지 (D15) |
 | §6 Beat | `beat_id, anchor, narrative_function, meaning_before, new_information, meaning_after, visual_state_before/after, required_change, linked_actions` | `narration_span` → `anchor` 참조 |
 | §7 State 일급 | `state_id, semantic_meaning, pvm_state / object_states / visible_objects, invariants, entered_by, exited_by, must_be_visible, valid_until` | `object_states` = 기계 판정 가능한 assertion. 모델 밖 대상은 `visible_objects`(렌더 후 판정) |
 | §8 Invariant | `kind: CONSTANT`(target + value) · `ASSERT`(holds) · `ORDER`(order) + `during` | 원문 `CAUSAL_ORDER` = `ORDER` |
@@ -119,7 +128,7 @@ Production Complete
 1. 40·41 스키마 검증 (공통 registry).
 2. **effective must_preserve** = 작성된 must_preserve ∪ (LOCKED면) 모든 state·action·invariant ID. (D1)
 3. execution_graph 파생: BEAT→ACTION(linked_actions), STATE→ACTION(from), ACTION→STATE(to), EVENT→ACTION. 작성본이 있으면 동일성 검사, 비순환·미해결 의존 검사.
-4. 기본값: `completion_state_id = to_state_id`, `must_execute = true`, `occurrence_index = 0`, `review = auto`.
+4. 기본값: `completion_state_id = to_state_id`, `must_execute = true`, `review = auto`.
 5. **review 해석** (D6): `auto` → causal contract 있음 · action 있음 · `pvm_transitions` 있음 · `static_replacement_valid=false` 중 하나면 required, 아니면 not_required. 그 경우 `not_required`를 쓰면 contract 오류.
 6. fingerprint 계산, ID 색인 생성.
 
@@ -127,14 +136,17 @@ Production Complete
 
 - ID 유일성, 접두어 = 장면 ID (`SC009/…`는 SC009에만).
 - 참조 해석: beat.anchor, action.start/end_anchor, from/to state, dependency, event.actions, invariant.order/during, causal link, last_frame, must_preserve, object.model_id+element_id(41에 존재), pvm_state(41 named_states에 존재).
-- 앵커: script_sha256 일치, exact_text가 정규화 script의 `occurrence_index`번째 출현으로 존재, char span이 있으면 일치, narration_span 안에 beat·action 앵커가 문서 순서대로.
+- 앵커 (D15): `canonicalization_id`가 알려진 규칙, `sha256(canonical_script_text(script))` = `script_sha256`, 모든 앵커에서 `canonical_script_text[char_start:char_end] == exact_text`, narration_span 안에 beat·action 앵커가 문서 순서대로(span 순서).
 - 상태 사슬: action `from → to`가 41 `transitions`에 허용, initial_state가 enter_state(또는 handoff) assertion을 만족(41 initial_state로 계산), `entered_by/exited_by`가 action과 일치.
 - causal: cause·intermediate·effect 상태가 action 순서와 일치, final_proof_state 존재.
 - NEVER_FREE 항목이 allowed_freedom에 없음 (스키마 enum에 아예 없음).
 - sync_group: 같은 그룹 action은 같은 start_anchor.
 - runtime_stack: 잠긴 action·event·state는 적어도 한 layer의 `consumes`에 있어야 한다 (binding 대상이 없으면 contract 오류).
 
-## 6. 앵커 (D7)
+## 6. 앵커 (D7, D15)
+- **canonical script text (`SCRIPT_SECTIONS_TEXT_V1`)**: `"\n".join(NFC(sections[i].text with CRLF/CR → LF) for i in array order)`, trim 없음. `script_sha256 = sha256(utf8(canonical_script_text))`, BOM 없음. 다른 필드(id·시간)는 hash에 들어가지 않는다. 규칙이 바뀌면 새 ID를 만들고 기존 contract는 기록된 ID로 재현한다.
+- span = code-point offset, `[char_start, char_end)`. `exact_text`는 canonical text의 verbatim slice (공백 정규화 없음).
+- narration authority는 별개: `narration_sha256`은 TTS 오디오 bytes의 hash이고 script hash에서 파생되지 않는다. alignment가 script와 narration을 잇는다.
 - contract: exact authority reference. 바뀌지 않는다.
 - alignment(compile_timeline): EXACT → REVERSIBLE_NORMALIZATION → FUZZY 순으로 resolve하고 결과를 timeline `anchor_resolution`에 기록.
 - **잠긴 앵커가 FUZZY로, `same_span: false`로 resolve되면 경고가 아니라 deviation(44) 대상.** contract를 fuzzy 결과로 조용히 고치지 않는다.
@@ -178,7 +190,7 @@ Production Complete
 | API | 입력 | 출력 | 이전 표 대비 |
 |---|---|---|---|
 | `load_contract(path_40, path_41)` | 40, 41 | `Contract` (정규화본: effective must_preserve, 파생 graph, review 해석, fingerprint, ID 색인) | 정규화 포함 명시 |
-| `validate_contract(contract, script)` | Contract, script 원문 | `{errors, warnings}` | **script 추가** |
+| `validate_contract(contract, script)` | Contract, script artifact (`sections[]`) | `{errors, warnings}` (canonical hash·span 검사 포함, D15) | **script 추가** |
 | `contract_fingerprint(contract)` | 40, 41 | `sha256:…` | — |
 | `check_lineage(contract, lineage, visual_direction, scene_plan)` | +42, scene_plan | 42 `system_coverage` (effective must_preserve vs 주장∩실제 타임라인, `claimed_but_not_implemented`) + transformation 규칙 위반 | **lineage, scene_plan 추가 · coverage는 반환값, Planner 값 불신 (D13)** |
 | `compile_timeline(direction, alignment, *, models=None, contract=None, ...)` | +41 models, +contract(앵커) | timeline 1.2 (ID 복사, anchor_resolution) | **키워드 인자 추가만** (v1.0 호출 불변) |
@@ -189,14 +201,16 @@ Production Complete
 | `review_packet(contract, timeline, render)` | evidence_states 시각(state_at) | 46 초안 + 프레임 | 신규(선택) |
 | `completion_gate(stage, status, artifacts, pipeline_type)` | 40–46 by name | 통과 / CheckpointValidationError | `validate_stage`와 같은 모양 |
 
-## 12. 검증 결과 (개정 3)
+## 12. 검증 결과 (개정 4)
 
 `python docs/design/visual-direction-v1.2/validate_examples.py`
 - 스키마: 40 · 41 · 42 (Planner 작성본 / good·as_produced system coverage 포함본) · visual_direction 1.2 (good / as_produced) · 43 · 44 · 45 (good / as_produced) — **11/11 통과**
-- 40 `script_sha256` 일치, **앵커 9개 전부 정규화 script의 exact text**, 하위 예시 전부 같은 contract fingerprint
+- 생성 스키마(`visual_direction`/`visual_timeline` 1.2): 최신, **외부 `$ref` 0**, 공유 정의(contract_ref · fingerprint · qualified_id)가 두 스키마와 `direction_common`에서 동일. 1.2 예시는 registry 없이 plain jsonschema로 검증
+- script authority: `script.txt` = `canonical_script_text(script.json)`, 40 `canonicalization_id = SCRIPT_SECTIONS_TEXT_V1`·`script_sha256` 일치, **앵커 9개 전부 `canonical[char_start:char_end] == exact_text`**, span 1 이동은 검출, CR/CRLF → LF
+- 하위 예시 전부 같은 contract fingerprint
 - **legacy v1.0 fixture** (`tests/fixtures/visual_direction/release_plan/visual_direction.json`) 1.2 스키마에서 그대로 유효
 - **42 `system_coverage` = 45 독립 재계산** (good 0개 · as_produced 6개 일치)
-- 스키마만으로 거부되어야 할 입력 **17/17 거부**: causal 장면 review=not_required · static_replacement_valid=false인데 not_required · motion 장면 actions 없음 · causal_explanation인데 causal contract 없음 · LOCKED must_preserve 없음 · locked_direction_mutation=true · LOCKED인데 script_sha256 없음 · 비정규 action ID · **42 의미 변경 transformation** · **system_coverage를 check_lineage 아닌 주체가 작성** · **PIXEL_CHANGE를 REQUIRED로** · **receipt에 effective_must_preserve 없음** · **binding action에 layer_bindings 없음** · 1.2가 모델 정의 · MATERIAL deviation 승인 불요 · APPROVED에 decision 없음 · LOCKED 장면 receipt 없음
+- 스키마만으로 거부되어야 할 입력 **23/23 거부** (개정 4 추가: LOCKED인데 canonicalization_id 없음 · 알 수 없는 canonicalization · 앵커 source_span 없음 · 1.2인데 contract 없음 · v1.0인데 contract · v1.0 beat에 action_id). 기존: causal 장면 review=not_required · static_replacement_valid=false인데 not_required · motion 장면 actions 없음 · causal_explanation인데 causal contract 없음 · LOCKED must_preserve 없음 · locked_direction_mutation=true · LOCKED인데 script_sha256 없음 · 비정규 action ID · **42 의미 변경 transformation** · **system_coverage를 check_lineage 아닌 주체가 작성** · **PIXEL_CHANGE를 REQUIRED로** · **receipt에 effective_must_preserve 없음** · **binding action에 layer_bindings 없음** · 1.2가 모델 정의 · MATERIAL deviation 승인 불요 · APPROVED에 decision 없음 · LOCKED 장면 receipt 없음
 
 의미 검사 프로토타입 (저장소 밖, 버리는 코드. 기존 `compile_timeline` + `replay_model_states`만 사용. 42 system coverage와 45 예시가 이 출력):
 
@@ -230,11 +244,13 @@ schemas/
   direction_deviations.schema.json         44
   direction_qa_report.schema.json          45 (locked lineage receipt 포함)
   direction_review.schema.json             46
-  visual_direction.v1.2.schema.json        생성물 (derive_v12_schemas.py)
-  visual_timeline.v1.2.schema.json         생성물
-examples/capital-competition/              script.txt, 40, 41, 42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced, 43 good, 44, 45 good/as_produced
-derive_v12_schemas.py                      v1.0 → 1.2 변경분 정의 + 생성
-validate_examples.py                       스키마·앵커·fingerprint·legacy·부정 사례 검증
+  base/visual_direction.v1.0.schema.json   v1.0 원본 (생성 입력, 고정)
+  base/visual_timeline.v1.0.schema.json    v1.0 원본 (생성 입력, 고정)
+  visual_direction.v1.2.schema.json        생성물, self-contained (derive_v12_schemas.py) → schemas/artifacts로 ship
+  visual_timeline.v1.2.schema.json         생성물, self-contained
+examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40, 41, 42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced, 43 good, 44, 45 good/as_produced
+derive_v12_schemas.py                      v1.0 → 1.2 변경분 정의 + common 정의 materialize + 생성
+validate_examples.py                       스키마·생성물·canonical script/span·fingerprint·legacy·부정 사례 검증
 ```
 
 이번 단계에서 하지 않은 것: API 구현, 런타임 스키마 등록, 게이트 연결, Director 프롬프트 변경, 렌더 경로 변경. 프로토타입 코드는 저장소에 넣지 않았다.

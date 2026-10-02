@@ -92,25 +92,26 @@
         "pvm_ref"
       ],
       "additionalProperties": false,
-      "description": "What the contract is bound to. Every anchor is exact (normalized) text of script_ref.",
+      "description": "What the contract is bound to. script_ref is the script artifact (sections[].text); canonical_script_text is derived from it by canonicalization_id, script_sha256 hashes that text, and every anchor is a code-point span of it. Narration authority is separate: narration_ref/narration_sha256 identify the TTS audio by its own bytes and are never derived from the script hash.",
       "properties": {
         "script_ref": {
           "type": "string",
-          "description": "script artifact path or id"
+          "description": "script artifact (schemas/artifacts/script) path or id"
         },
         "script_sha256": {
-          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256",
+          "description": "SHA-256 of canonical_script_text (UTF-8, no BOM) under canonicalization_id."
         },
-        "script_normalization": {
-          "const": "NFC_WHITESPACE",
-          "default": "NFC_WHITESPACE"
+        "canonicalization_id": {
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/script_canonicalization"
         },
         "narration_ref": {
           "type": "string",
           "description": "TTS narration audio once it exists"
         },
         "narration_sha256": {
-          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256"
+          "$ref": "urn:openmontage:schema:direction_common#/$defs/sha256",
+          "description": "SHA-256 of the narration audio bytes; an independent authority, not derived from script_sha256."
         },
         "plan_lock_ref": {
           "type": "string"
@@ -236,6 +237,7 @@
             "required": [
               "script_ref",
               "script_sha256",
+              "canonicalization_id",
               "pvm_ref"
             ]
           }

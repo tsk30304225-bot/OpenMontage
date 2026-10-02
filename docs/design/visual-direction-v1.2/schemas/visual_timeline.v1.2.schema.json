@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:openmontage:schema:visual_timeline_v1_2",
+  "$id": "openmontage/artifacts/visual_timeline",
   "title": "Visual Timeline (v1.0 or v1.2)",
   "description": "Execution contract compiled from visual_direction and the forced-aligned narration: each beat becomes an event at a real time. Renderers execute these events; they do not reinterpret scene descriptions.",
   "type": "object",
@@ -146,19 +146,19 @@
             }
           },
           "action_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "$ref": "#/$defs/qualified_id",
             "description": "v1.2: contract action this operation implements (an action may span several operations)."
           },
           "state_after_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "$ref": "#/$defs/qualified_id",
             "description": "v1.2: contract state that must hold once this operation's sync group has applied."
           },
           "contract_event_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "$ref": "#/$defs/qualified_id",
             "description": "v1.2: contract event (time group) this belongs to."
           },
           "anchor_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
+            "$ref": "#/$defs/qualified_id",
             "description": "v1.2: contract anchor whose exact text this beat uses as narration_anchor."
           },
           "sync_group": {
@@ -228,7 +228,7 @@
       "type": "object"
     },
     "contract": {
-      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"
+      "$ref": "#/$defs/contract_ref"
     },
     "anchor_resolution": {
       "type": "object",
@@ -256,7 +256,7 @@
             "additionalProperties": false,
             "properties": {
               "anchor_id": {
-                "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+                "$ref": "#/$defs/qualified_id"
               },
               "source_text": {
                 "type": "string"
@@ -301,10 +301,130 @@
         "unresolved_anchors": {
           "type": "array",
           "items": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
+            "$ref": "#/$defs/qualified_id"
           }
         }
       }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": "1.2"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "then": {
+        "required": [
+          "contract",
+          "anchor_resolution"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": "1.0"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "contract"
+              ]
+            },
+            {
+              "required": [
+                "anchor_resolution"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "events": {
+            "items": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "action_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "state_after_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "contract_event_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "anchor_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "sync_group"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "qualified_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]*/[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "Scene-qualified id of an anchor, beat, state, object, action, event, invariant or causal chain: <scene_id>/<local id>, e.g. SC009/A02. Canonical everywhere downstream."
+    },
+    "contract_ref": {
+      "type": "object",
+      "required": [
+        "artifact",
+        "revision",
+        "fingerprint"
+      ],
+      "additionalProperties": false,
+      "description": "Every downstream artifact names the exact contract it consumed. Identity is artifact + revision + fingerprint, never a file name.",
+      "properties": {
+        "artifact": {
+          "const": "visual_direction_contract"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/fingerprint"
+        }
+      }
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "contract_fingerprint(): sha256 over canonical JSON of {contract: 40 without its lifecycle block, pvm: 41}."
     }
   }
 }
