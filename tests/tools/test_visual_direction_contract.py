@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from lib.visual_direction import (
+from lib.direction_contract.contract import (
     apply_rail_event,
     compile_timeline,
     flatten_alignment,

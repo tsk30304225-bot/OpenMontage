@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from lib.visual_direction import compile_timeline
+from lib.direction_contract.hooks import compile_timeline
 from tools.analysis.direction_qa import DirectionQA
 from tools.video import remotion_caption_burn as burn_module
 from tools.video.remotion_caption_burn import RemotionCaptionBurn

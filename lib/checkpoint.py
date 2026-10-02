@@ -161,7 +161,7 @@ def _validate_artifacts_for_stage(
 
 
 # Pipelines whose scene_plan stage must carry a visual_direction that passes
-# lib.visual_direction.validate_direction (errors block; warnings pass).
+# lib.direction_contract.hooks.validate_direction (errors block; warnings pass).
 DIRECTION_CONTRACT_PIPELINES = {"animated-explainer"}
 
 
@@ -187,7 +187,7 @@ def _validate_direction_contract(
             f"{pipeline_type} scene_plan must include the visual_direction artifact "
             "(skills/core/visual-direction.md)"
         )
-    from lib.visual_direction import validate_direction
+    from lib.direction_contract.hooks import validate_direction
 
     errors = validate_direction(direction).get("errors") or []
     if errors:

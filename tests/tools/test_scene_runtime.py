@@ -13,9 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from lib.scene_runtime import resolve_scene_runtimes, scene_events, trace_workspace, write_bridge
+from lib.direction_contract.binding.hyperframes import scene_events, trace_workspace, write_bridge
+from lib.scene_runtime import resolve_scene_runtimes
 from lib.tool_routing import creative_menu
-from lib.visual_direction import compile_timeline
+from lib.direction_contract.hooks import compile_timeline
 from schemas.artifacts import validate_artifact
 from tools.analysis.direction_qa import DirectionQA
 from tools.analysis.tool_router import ToolRouter

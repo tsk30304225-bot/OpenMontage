@@ -1225,7 +1225,7 @@ class VideoCompose(BaseTool):
         # Scene runtime overrides: HyperFrames scene cuts render to clips the
         # bespoke composition places from props.sceneClips.
         scene_clips = None
-        from lib.scene_runtime import hyperframes_cuts
+        from lib.direction_contract.hooks import hyperframes_cuts
         hf_cuts = hyperframes_cuts(edit_decisions)
         if hf_cuts:
             if not any("sceneClips" in f.read_text(encoding="utf-8", errors="ignore")
@@ -1354,10 +1354,9 @@ class VideoCompose(BaseTool):
         Returns {"props_path": merged props with visualTimeline, "trace": …} or
         {"error": …}. A project whose visual_direction declares models must ship
         a compiled visual_timeline; every event must be implemented through the
-        direction runtime (see lib/atelier_direction.py).
+        direction runtime (see lib/direction_contract/binding/remotion_source.py).
         """
-        from lib.atelier_direction import build_trace
-        from lib.scene_runtime import hyperframes_cuts, without_scene_events
+        from lib.direction_contract.hooks import build_trace, hyperframes_cuts, without_scene_events
 
         project_dir = entry_path.parent
 
@@ -2109,7 +2108,8 @@ class VideoCompose(BaseTool):
         visual_timeline events are written into the workspace (om-direction.js)
         and every one must be placed by the authored code before it renders.
         """
-        from lib.scene_runtime import approved_runtimes, scene_events, trace_workspace, write_bridge
+        from lib.direction_contract.hooks import scene_events, trace_workspace, write_bridge
+        from lib.scene_runtime import approved_runtimes
         from tools.video.hyperframes_compose import HyperFramesCompose
 
         approved = approved_runtimes(edit_decisions, "remotion")

@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-from lib.atelier_direction import build_trace
-from lib.visual_direction import (
+from lib.direction_contract.binding.remotion_source import build_trace
+from lib.direction_contract.contract import (
     apply_element_event,
     compile_timeline,
     element_initial_state,

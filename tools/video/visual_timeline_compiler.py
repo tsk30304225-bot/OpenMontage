@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from lib.visual_direction import (
+from lib.direction_contract.hooks import (
     compile_timeline,
     ineffective_events,
     is_rail,

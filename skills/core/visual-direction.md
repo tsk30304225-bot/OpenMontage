@@ -21,7 +21,7 @@ The contract is topic-agnostic. Core code knows model types, generic state, oper
 
 Schemas: `schemas/artifacts/visual_direction.schema.json`, `schemas/artifacts/visual_timeline.schema.json`.
 Tools: `visual_timeline_compiler` (validate / compile), `direction_qa` (post-render).
-Reference implementation: `lib/visual_direction.py` (Python mirror) and `remotion-composer/src/components/visual-models/` (renderer).
+Reference implementation: `lib/direction_contract/contract.py` (Python mirror; public entry points in `lib/direction_contract/hooks.py`) and `remotion-composer/src/components/visual-models/` (renderer).
 Reference fixture: `tests/fixtures/visual_direction/release_plan/`.
 
 ## 1. Viewer journey first
@@ -202,7 +202,7 @@ Atelier may redesign every pixel; it may not drop, re-time or re-decide a model,
 
 `video_compose` injects `props.visualTimeline` for atelier renders and **refuses to render** when the project declares models but no compiled `visual_timeline` exists, when anchors are unresolved, or when any event is not implemented.
 
-**Implementation trace** (`lib/atelier_direction.py`): the project source is scanned for those calls (string-literal ids); every event maps to `file:line Component (hook)` references, with the contract `state_before` / `state_after`. The trace is derived from code, not declared. HyperFrames workspaces are not traced yet (unsupported / unverified).
+**Implementation trace** (`lib/direction_contract/binding/remotion_source.py`): the project source is scanned for those calls (string-literal ids); every event maps to `file:line Component (hook)` references, with the contract `state_before` / `state_after`. The trace is derived from code, not declared. HyperFrames workspaces are not traced yet (unsupported / unverified).
 
 ## 6. Direction QA
 
