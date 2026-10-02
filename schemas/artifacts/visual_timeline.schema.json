@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "openmontage/artifacts/visual_timeline",
-  "title": "Visual Timeline",
+  "title": "Visual Timeline (v1.0 or v1.2)",
   "description": "Execution contract compiled from visual_direction and the forced-aligned narration: each beat becomes an event at a real time. Renderers execute these events; they do not reinterpret scene descriptions.",
   "type": "object",
   "required": [
@@ -14,7 +14,10 @@
   "properties": {
     "version": {
       "type": "string",
-      "const": "1.0"
+      "enum": [
+        "1.0",
+        "1.2"
+      ]
     },
     "source": {
       "type": "object",
@@ -25,7 +28,7 @@
     },
     "models": {
       "type": "array",
-      "description": "Model definitions copied verbatim from visual_direction.visual_models (validated there) so the renderer needs no other file.",
+      "description": "v1.0: copied from visual_direction.visual_models. v1.2: copied from persistent_visual_models (definition of every model the timeline uses).",
       "items": {
         "type": "object",
         "required": [
@@ -141,6 +144,26 @@
                 "maximum": 1
               }
             }
+          },
+          "action_id": {
+            "$ref": "#/$defs/qualified_id",
+            "description": "v1.2: contract action this operation implements (an action may span several operations)."
+          },
+          "state_after_id": {
+            "$ref": "#/$defs/qualified_id",
+            "description": "v1.2: contract state that must hold once this operation's sync group has applied."
+          },
+          "contract_event_id": {
+            "$ref": "#/$defs/qualified_id",
+            "description": "v1.2: contract event (time group) this belongs to."
+          },
+          "anchor_id": {
+            "$ref": "#/$defs/qualified_id",
+            "description": "v1.2: contract anchor whose exact text this beat uses as narration_anchor."
+          },
+          "sync_group": {
+            "type": "string",
+            "description": "v1.2: operations forming one change: same resolved start and duration; invariants are checked after the whole group."
           }
         }
       }
@@ -203,6 +226,205 @@
     },
     "metadata": {
       "type": "object"
+    },
+    "contract": {
+      "$ref": "#/$defs/contract_ref"
+    },
+    "anchor_resolution": {
+      "type": "object",
+      "required": [
+        "resolved_anchors",
+        "unresolved_anchors"
+      ],
+      "additionalProperties": false,
+      "description": "v1.2 (original §26): every contract anchor resolved against the forced alignment.",
+      "properties": {
+        "source_word_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resolved_anchors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "anchor_id",
+              "status",
+              "start_time",
+              "end_time"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "anchor_id": {
+                "$ref": "#/$defs/qualified_id"
+              },
+              "source_text": {
+                "type": "string"
+              },
+              "word_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "start_time": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end_time": {
+                "type": "number",
+                "minimum": 0
+              },
+              "start_frame": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_frame": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "status": {
+                "enum": [
+                  "EXACT",
+                  "REVERSIBLE_NORMALIZATION",
+                  "FUZZY"
+                ]
+              },
+              "same_span": {
+                "type": "boolean",
+                "description": "false = resolved to different words than the contract span: a deviation for a locked anchor"
+              }
+            }
+          }
+        },
+        "unresolved_anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/qualified_id"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": "1.2"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "then": {
+        "required": [
+          "contract",
+          "anchor_resolution"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "version": {
+            "const": "1.0"
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "contract"
+              ]
+            },
+            {
+              "required": [
+                "anchor_resolution"
+              ]
+            }
+          ]
+        },
+        "properties": {
+          "events": {
+            "items": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "action_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "state_after_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "contract_event_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "anchor_id"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "sync_group"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "qualified_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]*/[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "Scene-qualified id of an anchor, beat, state, object, action, event, invariant or causal chain: <scene_id>/<local id>, e.g. SC009/A02. Canonical everywhere downstream."
+    },
+    "contract_ref": {
+      "type": "object",
+      "required": [
+        "artifact",
+        "revision",
+        "fingerprint"
+      ],
+      "additionalProperties": false,
+      "description": "Every downstream artifact names the exact contract it consumed. Identity is artifact + revision + fingerprint, never a file name.",
+      "properties": {
+        "artifact": {
+          "const": "visual_direction_contract"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/fingerprint"
+        }
+      }
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "contract_fingerprint(): sha256 over canonical JSON of {contract: 40 without its lifecycle block, pvm: 41}."
     }
   }
 }

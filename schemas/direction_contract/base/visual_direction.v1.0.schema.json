@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:openmontage:schema:visual_direction_v1_2",
-  "title": "Visual Direction (v1.0 or v1.2)",
+  "$id": "openmontage/artifacts/visual_direction",
+  "title": "Visual Direction",
   "description": "Meaning contract written alongside scene_plan: the viewer journey, which scenes show reality versus a persistent visual model, and the narration-anchored state changes (beats) the model must perform. Contains no seconds — visual_timeline resolves anchors to real narration timing after TTS and forced alignment.",
   "type": "object",
   "required": [
@@ -13,10 +13,7 @@
   "properties": {
     "version": {
       "type": "string",
-      "enum": [
-        "1.0",
-        "1.2"
-      ]
+      "const": "1.0"
     },
     "viewer_journey": {
       "type": "array",
@@ -174,10 +171,6 @@
     },
     "metadata": {
       "type": "object"
-    },
-    "contract": {
-      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref",
-      "description": "v1.2: the locked 40+41 revision this direction implements."
     }
   },
   "$defs": {
@@ -461,26 +454,6 @@
         },
         "takeaway": {
           "type": "string"
-        },
-        "action_id": {
-          "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-          "description": "v1.2: contract action this operation implements (an action may span several operations)."
-        },
-        "state_after_id": {
-          "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-          "description": "v1.2: contract state that must hold once this operation's sync group has applied."
-        },
-        "contract_event_id": {
-          "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-          "description": "v1.2: contract event (time group) this belongs to."
-        },
-        "anchor_id": {
-          "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-          "description": "v1.2: contract anchor whose exact text this beat uses as narration_anchor."
-        },
-        "sync_group": {
-          "type": "string",
-          "description": "v1.2: operations forming one change: same resolved start and duration; invariants are checked after the whole group."
         }
       }
     },
@@ -536,29 +509,5 @@
         }
       }
     }
-  },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "version": {
-            "const": "1.2"
-          }
-        },
-        "required": [
-          "version"
-        ]
-      },
-      "then": {
-        "required": [
-          "contract"
-        ],
-        "not": {
-          "required": [
-            "visual_models"
-          ]
-        }
-      }
-    }
-  ]
+  }
 }

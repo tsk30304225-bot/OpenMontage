@@ -1,0 +1,202 @@
+{
+  "timeline": {
+    "events": [
+      {
+        "anchor": {
+          "end_seconds": 5.42,
+          "matched_text": "Four tasks, two days each,",
+          "score": 1.0,
+          "start_seconds": 3.56,
+          "text": "Four tasks, two days each"
+        },
+        "beat_id": "b1",
+        "duration_seconds": 1.0,
+        "id": "ev-b1",
+        "model_id": "release_plan",
+        "operation": "SHIFT",
+        "params": {
+          "show_actual": true
+        },
+        "scene_id": "sc2",
+        "takeaway": "reality follows the plan",
+        "target": "view",
+        "time_seconds": 3.56
+      },
+      {
+        "anchor": {
+          "end_seconds": 8.08,
+          "matched_text": "sits on day eight.",
+          "score": 1.0,
+          "start_seconds": 6.6,
+          "text": "sits on day eight"
+        },
+        "beat_id": "b2",
+        "duration_seconds": 1.0,
+        "id": "ev-b2",
+        "model_id": "release_plan",
+        "operation": "SHIFT",
+        "params": {
+          "deadline": 8
+        },
+        "scene_id": "sc2",
+        "takeaway": "the launch date is fixed",
+        "target": "view",
+        "time_seconds": 6.6
+      },
+      {
+        "anchor": {
+          "end_seconds": 10.58,
+          "matched_text": "testing takes five days",
+          "score": 1.0,
+          "start_seconds": 9.1,
+          "text": "testing takes five days"
+        },
+        "beat_id": "b3",
+        "duration_seconds": 1.2,
+        "id": "ev-b3",
+        "model_id": "release_plan",
+        "operation": "EXPAND",
+        "params": {
+          "propagate": "deferred",
+          "to": 5
+        },
+        "scene_id": "sc3",
+        "takeaway": "one estimate was wrong",
+        "target": "testing",
+        "time_seconds": 9.1
+      },
+      {
+        "anchor": {
+          "end_seconds": 12.86,
+          "matched_text": "Nothing moves yet.",
+          "score": 1.0,
+          "start_seconds": 11.76,
+          "text": "Nothing moves yet"
+        },
+        "beat_id": "b4",
+        "duration_seconds": 0.5,
+        "id": "ev-b4",
+        "model_id": "release_plan",
+        "operation": "MEASURE",
+        "params": {
+          "metric": "duration"
+        },
+        "scene_id": "sc3",
+        "takeaway": "the overrun is local for now",
+        "target": "testing",
+        "time_seconds": 11.76
+      },
+      {
+        "anchor": {
+          "end_seconds": 15.14,
+          "matched_text": "every task after it slides,",
+          "score": 1.0,
+          "start_seconds": 13.28,
+          "text": "every task after it slides"
+        },
+        "beat_id": "b5",
+        "duration_seconds": 1.4,
+        "id": "ev-b5",
+        "model_id": "release_plan",
+        "operation": "PROPAGATE",
+        "params": {},
+        "scene_id": "sc3",
+        "takeaway": "the delay propagates",
+        "target": "testing",
+        "time_seconds": 13.28
+      },
+      {
+        "anchor": {
+          "end_seconds": 18.56,
+          "matched_text": "misses its date by three days.",
+          "score": 1.0,
+          "start_seconds": 16.32,
+          "text": "misses its date by three days"
+        },
+        "beat_id": "b6",
+        "duration_seconds": 0.5,
+        "id": "ev-b6",
+        "model_id": "release_plan",
+        "operation": "MEASURE",
+        "params": {
+          "exclusive": true,
+          "metric": "overrun"
+        },
+        "scene_id": "sc3",
+        "takeaway": "launch is three days late",
+        "target": "all",
+        "time_seconds": 16.32
+      }
+    ],
+    "models": [
+      {
+        "grammar": {
+          "block_width": "task duration",
+          "delay_color": "days waiting on the previous task",
+          "x_axis": "working days"
+        },
+        "id": "release_plan",
+        "initial_state": {
+          "axis": {
+            "end": 12,
+            "format": "number",
+            "start": 0,
+            "tick": 2,
+            "unit_suffix": "d"
+          },
+          "items": [
+            {
+              "duration": 2,
+              "id": "design",
+              "label": "Design",
+              "slot": 0
+            },
+            {
+              "duration": 2,
+              "id": "testing",
+              "label": "Testing",
+              "slot": 1
+            },
+            {
+              "duration": 2,
+              "id": "docs",
+              "label": "Docs",
+              "slot": 2
+            },
+            {
+              "duration": 2,
+              "id": "ship",
+              "label": "Ship",
+              "slot": 3
+            }
+          ],
+          "show_actual": false,
+          "slot_interval": 2
+        },
+        "labels": {
+          "actual": "Reality",
+          "deadline": "Launch",
+          "overrun": "late",
+          "planned": "Plan",
+          "unit_suffix": "d",
+          "wait": "blocked"
+        },
+        "queue": {
+          "policy": "sequential"
+        },
+        "title": "Release plan",
+        "type": "timeline_rail"
+      }
+    ],
+    "source": {
+      "alignment": "alignment.json",
+      "visual_direction": "visual_direction.json"
+    },
+    "unmatched": [],
+    "version": "1.0"
+  },
+  "validate_direction": {
+    "errors": [],
+    "warnings": []
+  }
+}

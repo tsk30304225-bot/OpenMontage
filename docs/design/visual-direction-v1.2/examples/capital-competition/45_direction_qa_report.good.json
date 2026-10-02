@@ -4,10 +4,13 @@
     "artifact": "visual_direction_contract",
     "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
     "revision": 1,
-    "fingerprint": "sha256:65d58660737383838fcd56ea1ebdb5653161ff5924d811677b4f4e430cfcab21"
+    "fingerprint": "sha256:7047616a43079b6e2e2403cfcefec81cc83ac13c3266091655b901c3ecd52421"
   },
   "inputs": {
-    "timeline_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    "timeline_sha256": "4331fde20bd7b8d9ccfbc7a6fd4b36b60b176fb4f9b363cca181b05d137f3e16",
+    "lineage_sha256": "ca4648f1126a4a22b13ee4db37bf3a5c30001316bb6fce58b19f3315aca2f1c7",
+    "binding_sha256": "879ab770435a770d19640b5e99ccf04557198f1f910dbd7ab47d98ed308f8aee",
+    "visual_direction_sha256": "f929c81c55010331a77870603b88d98d1d795fada6106e407add3178c858d820"
   },
   "scenes": [
     {
@@ -22,7 +25,8 @@
             "SC009/AN01"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 0.5s",
+          "time_seconds": 0.5
         },
         {
           "check_id": "SC009/Q02",
@@ -32,7 +36,8 @@
             "SC009/AN02"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 5.06s",
+          "time_seconds": 5.06
         },
         {
           "check_id": "SC009/Q03",
@@ -42,7 +47,8 @@
             "SC009/AN03"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 8.36s",
+          "time_seconds": 8.36
         },
         {
           "check_id": "SC009/Q04",
@@ -52,7 +58,8 @@
             "SC009/AN04"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 13.76s",
+          "time_seconds": 13.76
         },
         {
           "check_id": "SC009/Q05",
@@ -62,7 +69,8 @@
             "SC009/AN05"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 13.76s",
+          "time_seconds": 13.76
         },
         {
           "check_id": "SC009/Q06",
@@ -72,7 +80,8 @@
             "SC009/A01"
           ],
           "result": "PASS",
-          "detail": "lineage ['sc15'], beats in ['sc15']"
+          "detail": "lineage ['sc15'], operations in ['sc15']",
+          "time_seconds": 5.06
         },
         {
           "check_id": "SC009/Q07",
@@ -82,7 +91,8 @@
             "SC009/A02"
           ],
           "result": "PASS",
-          "detail": "lineage ['sc16'], beats in ['sc16']"
+          "detail": "lineage ['sc16'], operations in ['sc16']",
+          "time_seconds": 8.36
         },
         {
           "check_id": "SC009/Q08",
@@ -92,7 +102,8 @@
             "SC009/A03"
           ],
           "result": "PASS",
-          "detail": "lineage ['sc17'], beats in ['sc17']"
+          "detail": "lineage ['sc17'], operations in ['sc17']",
+          "time_seconds": 13.76
         },
         {
           "check_id": "SC009/Q09",
@@ -102,7 +113,8 @@
             "SC009/S0"
           ],
           "result": "PASS",
-          "detail": "reached by replay"
+          "detail": "holds at scene start",
+          "time_seconds": 0.0
         },
         {
           "check_id": "SC009/Q10",
@@ -112,7 +124,8 @@
             "SC009/S1"
           ],
           "result": "PASS",
-          "detail": "reached by replay"
+          "detail": "reached at 5.46s",
+          "time_seconds": 6.26
         },
         {
           "check_id": "SC009/Q11",
@@ -122,7 +135,8 @@
             "SC009/S2"
           ],
           "result": "PASS",
-          "detail": "reached by replay"
+          "detail": "reached at 10.88s",
+          "time_seconds": 12.08
         },
         {
           "check_id": "SC009/Q12",
@@ -132,7 +146,8 @@
             "SC009/S3"
           ],
           "result": "PASS",
-          "detail": "reached by replay"
+          "detail": "reached at 14.26s",
+          "time_seconds": 15.46
         },
         {
           "check_id": "SC009/Q13",
@@ -142,7 +157,7 @@
             "SC009/INV01"
           ],
           "result": "PASS",
-          "detail": "violations []"
+          "detail": "holds after every sync group"
         },
         {
           "check_id": "SC009/Q14",
@@ -152,7 +167,7 @@
             "SC009/INV02"
           ],
           "result": "PASS",
-          "detail": "violations []"
+          "detail": "holds after every sync group"
         },
         {
           "check_id": "SC009/Q15",
@@ -164,29 +179,178 @@
             "SC009/A03"
           ],
           "result": "PASS",
-          "detail": "starts [4.46, 7.16, 11.96]"
+          "detail": "times [5.06, 8.36, 13.76]"
         },
         {
           "check_id": "SC009/Q16",
+          "type": "PROHIBITED_SIMPLIFICATION",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/A01"
+          ],
+          "result": "PASS",
+          "detail": "runs at least 0.6s"
+        },
+        {
+          "check_id": "SC009/Q17",
+          "type": "PROHIBITED_SIMPLIFICATION",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/A02"
+          ],
+          "result": "PASS",
+          "detail": "runs at least 1.0s"
+        },
+        {
+          "check_id": "SC009/Q18",
+          "type": "PROHIBITED_SIMPLIFICATION",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/A03"
+          ],
+          "result": "PASS",
+          "detail": "runs at least 0.6s"
+        },
+        {
+          "check_id": "SC009/Q19",
           "type": "CAUSAL_CHAIN",
           "role": "REQUIRED",
           "target_ids": [
             "SC009/CC01"
           ],
           "result": "PASS",
-          "detail": "states ['SC009/S1', 'SC009/S2', 'SC009/S3']"
+          "detail": "cause, intermediate reactions and effect all happen, in order"
         },
         {
-          "check_id": "SC009/Q17",
+          "check_id": "SC009/Q20",
           "type": "LAST_FRAME",
           "role": "REQUIRED",
           "target_ids": [
             "SC009/S3"
           ],
-          "result": "PASS"
+          "result": "PASS",
+          "detail": "PASS: required state SC009/S3 holds at scene end; PASS: SC009/POOL visible at scene end; PASS: SC009/META visible at scene end; PASS: SC009/AMZN visible at scene end; PASS: SC009/YIELD_META visible at scene end; PASS: persistent state CAPITAL_FLOW.YIELD_PRESSURE at scene end; PASS: HOLD after 15.46s; PASS: held 1.60s of minimum 1.5s",
+          "time_seconds": 17.06
         },
         {
-          "check_id": "SC009/Q18",
+          "check_id": "SC009/Q21",
+          "type": "PERSISTENT_STATE",
+          "role": "REQUIRED",
+          "target_ids": [],
+          "result": "PASS",
+          "detail": "CAPITAL_FLOW hands YIELD_PRESSURE to SC010: holds at scene end",
+          "time_seconds": 17.06
+        },
+        {
+          "check_id": "SC009/Q22",
+          "type": "PERSISTENT_STATE",
+          "role": "REQUIRED",
+          "target_ids": [],
+          "result": "PASS",
+          "detail": "persistent model CAPITAL_FLOW runs in the scene"
+        },
+        {
+          "check_id": "SC009/Q23",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/A01"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q24",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/A02"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q25",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/A03"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q26",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/E01"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q27",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/E02"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q28",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/E03"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q29",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/S0"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q30",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/S1"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q31",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/S2"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q32",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC009/S3"
+          ],
+          "result": "PASS",
+          "detail": "deterministic_graphics: bound"
+        },
+        {
+          "check_id": "SC009/Q33",
           "type": "PIXEL_CHANGE",
           "role": "SUPPORTING",
           "target_ids": [
@@ -195,11 +359,11 @@
             "SC009/A03"
           ],
           "result": "UNVERIFIED",
-          "detail": "supporting evidence only; needs the render"
+          "detail": "supporting evidence only"
         }
       ],
       "review_required": true,
-      "result": "UNVERIFIED",
+      "result": "PASS",
       "receipt": {
         "effective_must_preserve": [
           "SC009/A01",
@@ -225,41 +389,63 @@
           "SC009/YIELD_META"
         ],
         "expected": {
-          "actions": [
-            "SC009/A01",
-            "SC009/A02",
-            "SC009/A03"
+          "beats": [
+            "SC009/B02",
+            "SC009/B03",
+            "SC009/B04"
           ],
           "states": [
             "SC009/S0",
             "SC009/S1",
             "SC009/S2",
             "SC009/S3"
+          ],
+          "actions": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ],
+          "events": [],
+          "anchors": [
+            "SC009/AN02",
+            "SC009/AN03",
+            "SC009/AN04"
           ]
         },
         "implemented": {
-          "actions": [
-            "SC009/A01",
-            "SC009/A02",
-            "SC009/A03"
+          "beats": [
+            "SC009/B02",
+            "SC009/B03",
+            "SC009/B04"
           ],
           "states": [
             "SC009/S0",
             "SC009/S1",
             "SC009/S2",
             "SC009/S3"
+          ],
+          "actions": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ],
+          "events": [],
+          "anchors": [
+            "SC009/AN02",
+            "SC009/AN03",
+            "SC009/AN04"
           ]
         },
         "omitted": [],
         "merged": [],
         "reordered": [],
-        "lineage_coverage_agrees": true,
         "unresolved_anchors": [],
         "invariant_checks": "PASS",
         "causal_contract": "PASS",
         "last_frame": "PASS",
-        "binding": "UNVERIFIED",
-        "verdict": "UNVERIFIED"
+        "binding": "PASS",
+        "lineage_coverage_agrees": true,
+        "verdict": "PASS"
       }
     },
     {
@@ -274,7 +460,8 @@
             "SC010/AN01"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 17.06s",
+          "time_seconds": 17.06
         },
         {
           "check_id": "SC010/Q02",
@@ -284,7 +471,8 @@
             "SC010/AN02"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 17.06s",
+          "time_seconds": 17.06
         },
         {
           "check_id": "SC010/Q03",
@@ -293,57 +481,66 @@
           "target_ids": [
             "SC010/S0"
           ],
-          "result": "UNVERIFIED",
-          "detail": "non-model state: decided by binding + source check after render"
+          "result": "PASS",
+          "detail": "SC010/RATE_TABLE: cut c-sc18 places assets/evidence/kb_rate_table_capture.png = kb_rate_table_capture.png"
         },
         {
           "check_id": "SC010/Q04",
-          "type": "ORDER",
-          "role": "REQUIRED",
-          "target_ids": [],
-          "result": "PASS",
-          "detail": "starts []"
-        },
-        {
-          "check_id": "SC010/Q05",
           "type": "LAST_FRAME",
           "role": "REQUIRED",
           "target_ids": [
             "SC010/S0"
           ],
-          "result": "UNVERIFIED",
-          "detail": "evidence frame: checked on the render"
+          "result": "PASS",
+          "detail": "PASS: required state SC010/S0: every visible object is active at scene end; PASS: held 4.14s of minimum 2s",
+          "time_seconds": 21.2
+        },
+        {
+          "check_id": "SC010/Q05",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [
+            "SC010/S0"
+          ],
+          "result": "PASS",
+          "detail": "factual_source: bound"
         }
       ],
       "review_required": false,
-      "result": "UNVERIFIED",
+      "result": "PASS",
       "receipt": {
         "effective_must_preserve": [
           "SC010/RATE_TABLE",
           "SC010/S0"
         ],
         "expected": {
-          "actions": [],
+          "beats": [],
           "states": [
             "SC010/S0"
-          ]
+          ],
+          "actions": [],
+          "events": [],
+          "anchors": []
         },
         "implemented": {
-          "actions": [],
+          "beats": [],
           "states": [
             "SC010/S0"
-          ]
+          ],
+          "actions": [],
+          "events": [],
+          "anchors": []
         },
         "omitted": [],
         "merged": [],
         "reordered": [],
-        "lineage_coverage_agrees": true,
         "unresolved_anchors": [],
         "invariant_checks": "PASS",
         "causal_contract": "PASS",
-        "last_frame": "UNVERIFIED",
-        "binding": "UNVERIFIED",
-        "verdict": "UNVERIFIED"
+        "last_frame": "PASS",
+        "binding": "PASS",
+        "lineage_coverage_agrees": true,
+        "verdict": "PASS"
       }
     },
     {
@@ -358,7 +555,8 @@
             "SC014/AN01"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 21.2s",
+          "time_seconds": 21.2
         },
         {
           "check_id": "SC014/Q02",
@@ -368,12 +566,21 @@
             "SC014/AN02"
           ],
           "result": "PASS",
-          "detail": "exact text in authority script"
+          "detail": "EXACT at 21.2s",
+          "time_seconds": 21.2
+        },
+        {
+          "check_id": "SC014/Q03",
+          "type": "BINDING",
+          "role": "REQUIRED",
+          "target_ids": [],
+          "result": "PASS",
+          "detail": "production scenes ['sc19'] rendered as ['sc19']"
         }
       ],
       "review_required": false,
       "result": "PASS"
     }
   ],
-  "verdict": "UNVERIFIED"
+  "verdict": "PASS"
 }

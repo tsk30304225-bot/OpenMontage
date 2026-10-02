@@ -4,6 +4,13 @@
 targets and whether every narration anchor occurs in the script. ``compile``
 runs at the edit stage once qwen3_tts has written its forced-aligned
 ``timestamps_path`` (om_segments.json).
+
+v1.2 (``visual_direction.version == "1.2"``): the approved Director contract
+(``visual_direction_contract``, 40) and project models (``persistent_visual_models``,
+41) are required. The tool loads them, refuses a contract that is not LOCKED or
+a direction made for another revision/fingerprint, takes models only from 41,
+and keeps the contract anchor resolution on the timeline. There is no legacy
+fallback: a 1.2 direction without its contract fails.
 """
 
 from __future__ import annotations
@@ -13,7 +20,10 @@ from pathlib import Path
 from typing import Any
 
 from lib.direction_contract.hooks import (
+    DirectionContractError,
     compile_timeline,
+    load_contract,
+    validate_contract,
     ineffective_events,
     is_rail,
     rail_schedule,
@@ -67,6 +77,8 @@ class VisualTimelineCompiler(BaseTool):
         "properties": {
             "operation": {"type": "string", "enum": ["validate", "compile"]},
             "visual_direction": {"type": ["object", "string"], "description": "visual_direction artifact or path"},
+            "visual_direction_contract": {"type": ["object", "string"], "description": "v1.2: the LOCKED Director contract (40) or path; required for a 1.2 visual_direction"},
+            "persistent_visual_models": {"type": ["object", "string"], "description": "v1.2: persistent_visual_models (41) or path; required for a 1.2 visual_direction"},
             "script": {"type": ["object", "string"], "description": "script artifact or path; anchors must occur in it"},
             "scene_plan": {"type": ["object", "string"], "description": "scene_plan artifact or path; scene windows guide anchor search"},
             "alignment": {"type": ["object", "array", "string"], "description": "qwen3_tts timestamps_path / word_timestamps_path JSON or path (compile)"},
@@ -93,7 +105,34 @@ class VisualTimelineCompiler(BaseTool):
         except Exception as exc:
             return ToolResult(success=False, error=f"visual_direction is not valid: {exc}")
 
-        report = validate_direction(direction, script)
+        contract = None
+        v12 = direction.get("version") == "1.2"
+        given = [k for k in ("visual_direction_contract", "persistent_visual_models") if inputs.get(k) is not None]
+        if v12:
+            missing = [k for k in ("visual_direction_contract", "persistent_visual_models") if k not in given]
+            if missing:
+                return ToolResult(success=False, error=(
+                    f"a 1.2 visual_direction compiles only against its approved contract: missing {missing} "
+                    "(no legacy fallback)"))
+            try:
+                contract = load_contract(_load(inputs["visual_direction_contract"], "visual_direction_contract"),
+                                         _load(inputs["persistent_visual_models"], "persistent_visual_models"))
+                if not contract.locked:
+                    raise DirectionContractError(
+                        f"visual_direction_contract is {contract.doc['lifecycle']['status']}: only a LOCKED contract can be compiled against")
+                contract.check_ref("visual_direction", direction.get("contract"))
+            except Exception as exc:
+                return ToolResult(success=False, error=f"v1.2 contract: {getattr(exc, 'message', exc)}")
+            # models come from 41 only (D4); the v1.0 checks run on the same definitions
+            report = validate_direction({**direction, "visual_models": contract.definitions()}, script)
+            if script:
+                report["errors"] += [f"contract: {e}" for e in validate_contract(contract, script)["errors"]]
+        elif given:
+            return ToolResult(success=False, error=(
+                "a contract (40/41) was given but visual_direction is version "
+                f"{direction.get('version')!r}: a contract-bound direction must be 1.2"))
+        else:
+            report = validate_direction(direction, script)
         if scene_plan:
             plan_ids = {s["id"] for s in scene_plan.get("scenes") or []}
             for scene in direction.get("scenes") or []:
@@ -125,8 +164,15 @@ class VisualTimelineCompiler(BaseTool):
         if scene_plan:
             windows = {s["id"]: (float(s["start_seconds"]), float(s["end_seconds"])) for s in scene_plan.get("scenes") or []}
         source = {k: str(inputs[k]) for k in ("visual_direction", "alignment") if isinstance(inputs.get(k), str)}
-        timeline = compile_timeline(direction, alignment, scene_windows=windows,
-                                    min_score=float(inputs.get("min_score", 0.8)), source=source)
+        if contract is not None:
+            try:
+                timeline = compile_timeline(direction, alignment, models=contract.definitions(), contract=contract,
+                                            scene_windows=windows, min_score=float(inputs.get("min_score", 0.8)), source=source)
+            except (DirectionContractError, ValueError) as exc:
+                return ToolResult(success=False, error=f"v1.2 compile: {exc}")
+        else:
+            timeline = compile_timeline(direction, alignment, scene_windows=windows,
+                                        min_score=float(inputs.get("min_score", 0.8)), source=source)
         try:
             tool_plan = _load(inputs.get("tool_plan"), "tool_plan")
         except Exception as exc:
@@ -137,6 +183,17 @@ class VisualTimelineCompiler(BaseTool):
         validate_artifact("visual_timeline", timeline)
 
         problems = []
+        if contract is not None:
+            locked = {a["anchor_id"] for s in contract.scenes.values() if s.get("importance") == "REQUIRED_LOCKED"
+                      for a in s.get("anchors") or []}
+            resolution = timeline["anchor_resolution"]
+            lost = [a for a in resolution["unresolved_anchors"] if a in locked]
+            if lost:
+                problems.append(f"locked contract anchor(s) not found in the aligned narration: {', '.join(lost)}")
+            moved = [r["anchor_id"] for r in resolution["resolved_anchors"] if r["anchor_id"] in locked and not r["same_span"]]
+            if moved:
+                report["warnings"].append(
+                    f"locked anchor(s) resolved only fuzzily to other words: {', '.join(moved)} — record a deviation (44)")
         if timeline["unmatched"]:
             problems.append(f"{len(timeline['unmatched'])} beat anchor(s) not found in the aligned narration")
         dead = ineffective_events(timeline)
@@ -178,5 +235,8 @@ class VisualTimelineCompiler(BaseTool):
             "ineffective_events": dead,
             "warnings": report["warnings"],
         }
+        if contract is not None:
+            data["contract"] = contract.ref
+            data["anchor_resolution"] = timeline["anchor_resolution"]
         return ToolResult(success=not problems, data=data, artifacts=artifacts,
                           error="; ".join(problems) if problems else None)

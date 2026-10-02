@@ -632,10 +632,16 @@ def validate_direction(direction: dict[str, Any], script: dict[str, Any] | None 
     return {"errors": errors, "warnings": warnings}
 
 
+# Contract ids a v1.2 beat carries and its timeline event copies (visual_direction / visual_timeline 1.2).
+CONTRACT_ID_FIELDS = ("action_id", "state_after_id", "contract_event_id", "anchor_id", "sync_group")
+
+
 def compile_timeline(
     direction: dict[str, Any],
     alignment: Any,
     *,
+    models: list[dict[str, Any]] | None = None,
+    contract: Any = None,
     scene_windows: dict[str, tuple[float, float]] | None = None,
     min_score: float = 0.8,
     source: dict[str, str] | None = None,
@@ -646,12 +652,23 @@ def compile_timeline(
     repeated later in the narration binds to the right occurrence. When
     ``scene_windows`` is given, the search for a scene's beats starts no
     earlier than the first word inside that scene's window.
+
+    v1.2 (``direction["version"] == "1.2"``): models come from 41 (``models``,
+    the persistent_visual_models definitions) and the locked contract
+    (``contract``, a lib.direction_contract.contract_v12.Contract) is required.
+    Events carry the beat's contract ids, and every contract anchor is resolved
+    into ``anchor_resolution``. v1.0 calls are unchanged.
     """
+    v12 = direction.get("version") == "1.2"
+    if v12:
+        if models is None or contract is None:
+            raise ValueError("a 1.2 visual_direction compiles only with models (41 definitions) and the locked contract")
+        contract.check_ref("visual_direction", direction.get("contract"))
     words = flatten_alignment(alignment)
     events: list[dict[str, Any]] = []
     unmatched: list[dict[str, Any]] = []
     cursor = 0
-    models = {m["id"]: m for m in direction.get("visual_models") or []}
+    models = {m["id"]: m for m in (models if models is not None else direction.get("visual_models") or [])}
     for scene in direction.get("scenes") or []:
         beats = scene.get("beats") or []
         if not beats:
@@ -683,16 +700,67 @@ def compile_timeline(
                 "duration_seconds": float(beat.get("duration_seconds", DEFAULT_EVENT_SECONDS.get(op, 0.8))),
                 "anchor": {"text": beat.get("narration_anchor"), **{k: v for k, v in match.items() if k not in ("word_index", "last_word_index")}},
                 "takeaway": beat.get("takeaway"),
+                **({k: beat[k] for k in CONTRACT_ID_FIELDS if k in beat} if v12 else {}),
             })
     events.sort(key=lambda e: e["time_seconds"])
     used = {s.get("visual_model_id") for s in direction.get("scenes") or [] if s.get("visual_model_id")}
-    return {
-        "version": "1.0",
+    timeline = {
+        "version": "1.2" if v12 else "1.0",
         "source": source or {},
         "models": [copy.deepcopy(models[m]) for m in models if m in used],
         "events": events,
         "unmatched": unmatched,
     }
+    if v12:
+        timeline["contract"] = copy.deepcopy(direction["contract"])
+        timeline["anchor_resolution"] = resolve_contract_anchors(contract.doc, words, min_score=min_score)
+    return timeline
+
+
+def resolve_contract_anchors(contract_doc: dict[str, Any], words: list[dict[str, Any]], *, min_score: float = 0.8) -> dict[str, Any]:
+    """Resolve every contract anchor (exact canonical script text) against the aligned narration.
+
+    Anchors are matched in script order (``source_span``) with a moving cursor,
+    so a phrase that occurs twice binds to the occurrence the span names.
+    EXACT: the aligned words spell exact_text. REVERSIBLE_NORMALIZATION: equal
+    after case/punctuation/width normalization. FUZZY: only similar; a fuzzy
+    match is never taken as the contract's own words (``same_span`` false), so
+    a locked anchor resolved that way needs a deviation (README §6).
+    """
+    anchors = [a for scene in contract_doc.get("scenes") or [] for a in scene.get("anchors") or []]
+    anchors.sort(key=lambda a: (a["source_span"]["char_start"], a["source_span"]["char_end"]))
+    resolved: list[dict[str, Any]] = []
+    unresolved: list[str] = []
+    cursor = 0
+    by_span: dict[tuple[int, int], dict[str, Any] | None] = {}
+    for a in anchors:
+        key = (a["source_span"]["char_start"], a["source_span"]["char_end"])
+        if key not in by_span:
+            match = match_anchor(a["exact_text"], words, from_index=cursor, min_score=min_score)
+            by_span[key] = match
+            if match is not None:
+                cursor = match["word_index"]
+        match = by_span[key]
+        if match is None:
+            unresolved.append(a["anchor_id"])
+            continue
+        spelled = unicodedata.normalize("NFC", "".join(w["word"] for w in words[match["word_index"]: match["last_word_index"] + 1]))
+        if match["score"] < 1.0:
+            status = "FUZZY"
+        elif spelled == unicodedata.normalize("NFC", a["exact_text"]).replace(" ", ""):
+            status = "EXACT"
+        else:
+            status = "REVERSIBLE_NORMALIZATION"
+        resolved.append({
+            "anchor_id": a["anchor_id"],
+            "source_text": match["matched_text"],
+            "word_ids": list(range(match["word_index"], match["last_word_index"] + 1)),
+            "start_time": match["start_seconds"],
+            "end_time": match["end_seconds"],
+            "status": status,
+            "same_span": status != "FUZZY",
+        })
+    return {"source_word_count": len(words), "resolved_anchors": resolved, "unresolved_anchors": unresolved}
 
 
 def replay_model_states(timeline: dict[str, Any], model_id: str) -> list[tuple[dict[str, Any] | None, dict[str, Any]]]:

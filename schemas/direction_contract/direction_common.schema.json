@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmontage:schema:direction_common",
+  "title": "Direction contract v1.2 — shared definitions",
+  "description": "IDs, anchors, state assertions, invariants and enums shared by artifacts 40–46. Assertions are evaluated against the existing model state signature (lib/direction_contract/contract.py: model_state_signature) obtained by replaying the compiled visual_timeline — no pixels involved.",
+  "$defs": {
+    "scene_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]*$",
+      "description": "Director scene id, e.g. SC009. Production scene ids (scene_plan) are a separate namespace."
+    },
+    "qualified_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]*/[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "Scene-qualified id of an anchor, beat, state, object, action, event, invariant or causal chain: <scene_id>/<local id>, e.g. SC009/A02. Canonical everywhere downstream."
+    },
+    "model_ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "41 persistent_visual_models.models[].definition.id"
+    },
+    "pvm_state_ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*\\.[A-Za-z][A-Za-z0-9_-]*$",
+      "description": "<model_id>.<named state id> from 41."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "contract_fingerprint(): sha256 over canonical JSON of {contract: 40 without its lifecycle block, pvm: 41}."
+    },
+    "contract_ref": {
+      "type": "object",
+      "required": [
+        "artifact",
+        "revision",
+        "fingerprint"
+      ],
+      "additionalProperties": false,
+      "description": "Every downstream artifact names the exact contract it consumed. Identity is artifact + revision + fingerprint, never a file name.",
+      "properties": {
+        "artifact": {
+          "const": "visual_direction_contract"
+        },
+        "artifact_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fingerprint": {
+          "$ref": "#/$defs/fingerprint"
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "required": [
+        "anchor_id",
+        "exact_text",
+        "source_span",
+        "edge"
+      ],
+      "additionalProperties": false,
+      "description": "Authority reference into the approved script. exact_text is verbatim canonical_script_text (SCRIPT_SECTIONS_TEXT_V1) and canonical_script_text[source_span.char_start:source_span.char_end] == exact_text must hold; the span, not a search, identifies the occurrence. No whitespace or other normalization beyond the canonicalization. Fuzzy matching is allowed only later, in alignment (visual_timeline.anchor_resolution); the contract is never rewritten with a fuzzy result.",
+      "properties": {
+        "anchor_id": {
+          "$ref": "#/$defs/qualified_id"
+        },
+        "script_span_id": {
+          "type": "string",
+          "description": "Stable span id of the script artifact, when it has them."
+        },
+        "exact_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Verbatim slice of canonical_script_text."
+        },
+        "source_span": {
+          "type": "object",
+          "required": [
+            "char_start",
+            "char_end"
+          ],
+          "additionalProperties": false,
+          "description": "Unicode code-point offsets into canonical_script_text: char_start inclusive, char_end exclusive.",
+          "properties": {
+            "char_start": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "char_end": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "edge": {
+          "enum": [
+            "START",
+            "END"
+          ],
+          "description": "The time the anchor names: where the words start or where they end."
+        },
+        "offset_ms": {
+          "type": "integer",
+          "default": 0
+        }
+      }
+    },
+    "assertion": {
+      "description": "A check on the model state signature. 'path' is dot-separated into the signature: elements.<id>.visible, elements.<id>.attrs.<attr>, measures, active, view.<key> (element models); timeline_rail signatures use their own keys. An aggregate assertion combines several numeric paths.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "path",
+            "op"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "op": {
+              "enum": [
+                "eq",
+                "ne",
+                "gt",
+                "gte",
+                "lt",
+                "lte",
+                "in",
+                "exists",
+                "absent"
+              ]
+            },
+            "value": {},
+            "tolerance": {
+              "type": "number",
+              "minimum": 0,
+              "description": "numeric eq/ne only"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "aggregate",
+            "paths",
+            "op",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "aggregate": {
+              "enum": [
+                "sum",
+                "min",
+                "max",
+                "count_true"
+              ]
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "op": {
+              "enum": [
+                "eq",
+                "ne",
+                "gt",
+                "gte",
+                "lt",
+                "lte"
+              ]
+            },
+            "value": {
+              "type": "number"
+            },
+            "tolerance": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "state_assertion": {
+      "type": "object",
+      "required": [
+        "model_id",
+        "assert"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "model_id": {
+          "$ref": "#/$defs/model_ref"
+        },
+        "assert": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assertion"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "numeric_target": {
+      "type": "object",
+      "required": [
+        "model_id"
+      ],
+      "additionalProperties": false,
+      "description": "One numeric path, or the aggregate of several (e.g. the sum of all allocation edges).",
+      "properties": {
+        "model_id": {
+          "$ref": "#/$defs/model_ref"
+        },
+        "path": {
+          "type": "string"
+        },
+        "aggregate": {
+          "enum": [
+            "sum",
+            "min",
+            "max"
+          ]
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "path"
+          ]
+        },
+        {
+          "required": [
+            "aggregate",
+            "paths"
+          ]
+        }
+      ]
+    },
+    "truth_class": {
+      "enum": [
+        "FACTUAL",
+        "SOURCE",
+        "DERIVED",
+        "METAPHORICAL",
+        "DECORATIVE"
+      ]
+    },
+    "freedom": {
+      "enum": [
+        "LAYOUT_COORDINATES",
+        "SPACING",
+        "COMPONENT_STRUCTURE",
+        "TYPOGRAPHY_SIZE",
+        "EASING_CHOICE",
+        "MICRO_MOTION",
+        "BACKGROUND_TEXTURE",
+        "EXACT_PARTICLE_COUNT",
+        "SOURCE_CROP_MARGIN",
+        "TECHNICAL_OPTIMIZATION",
+        "SHOT_CHOICE",
+        "ASSET_CHOICE"
+      ],
+      "description": "Implementation decisions a worker may take without a deviation. Never grantable in a REQUIRED_LOCKED scene: causal order, action removal, action merge, state removal, narration anchor change (see NEVER_FREE in the README)."
+    },
+    "prohibited_simplification": {
+      "enum": [
+        "REMOVE_REQUIRED_ACTION",
+        "MERGE_LOCKED_ACTIONS",
+        "REORDER_LOCKED_ACTIONS",
+        "REMOVE_INTERMEDIATE_STATE",
+        "REPLACE_MOTION_WITH_HIGHLIGHT",
+        "REPLACE_CAUSAL_MODEL_WITH_TEXT",
+        "REPLACE_PVM_WITH_UNRELATED_BROLL",
+        "COLLAPSE_MULTIPLE_BEATS_TO_SINGLE_REVEAL",
+        "ALTER_INVARIANT"
+      ]
+    },
+    "causal_prohibited_simplification": {
+      "enum": [
+        "SEQUENTIAL_HIGHLIGHT_ONLY",
+        "STATIC_ARROW_ONLY",
+        "TEXT_ONLY",
+        "REMOVE_INTERMEDIATE_REACTION",
+        "SINGLE_FADE_FOR_MULTIPLE_ACTIONS"
+      ]
+    },
+    "deviation_reason": {
+      "enum": [
+        "CAPABILITY_UNAVAILABLE",
+        "ASSET_UNAVAILABLE",
+        "TECHNICAL_CONFLICT",
+        "TIMING_CONFLICT",
+        "OTHER"
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNVERIFIED"
+      ]
+    },
+    "script_canonicalization": {
+      "const": "SCRIPT_SECTIONS_TEXT_V1",
+      "description": "How the script artifact becomes canonical_script_text. SCRIPT_SECTIONS_TEXT_V1: take sections[i].text in the artifact's current array order (no other field), convert CRLF and CR to LF, apply Unicode NFC, join the sections with exactly one \"\n\", no trimming. script_sha256 = SHA-256 of that text encoded as UTF-8 without BOM. Recorded in the contract so a later rule stays reproducible."
+    }
+  }
+}

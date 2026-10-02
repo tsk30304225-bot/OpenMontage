@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "render_runtime": "remotion",
+  "composition_mode": "atelier",
+  "renderer_family": "explainer-data",
+  "bespoke": {
+    "entry": "tests/fixtures/direction_v1_2/capital_competition/atelier_good/index.tsx",
+    "composition_id": "CapitalFlow",
+    "art_direction": "muted finance diagram, one persistent CAPITAL_FLOW model"
+  },
+  "cuts": [
+    {
+      "id": "c-sc15",
+      "scene_id": "sc15",
+      "source": "",
+      "in_seconds": 0.0,
+      "out_seconds": 8.36
+    },
+    {
+      "id": "c-sc16",
+      "scene_id": "sc16",
+      "source": "",
+      "in_seconds": 8.36,
+      "out_seconds": 12.92
+    },
+    {
+      "id": "c-sc17",
+      "scene_id": "sc17",
+      "source": "",
+      "in_seconds": 12.92,
+      "out_seconds": 17.06
+    },
+    {
+      "id": "c-sc18",
+      "scene_id": "sc18",
+      "source": "assets/evidence/kb_rate_table_capture.png",
+      "in_seconds": 17.06,
+      "out_seconds": 21.2
+    },
+    {
+      "id": "c-sc19",
+      "scene_id": "sc19",
+      "source": "",
+      "in_seconds": 21.2,
+      "out_seconds": 24.6
+    }
+  ]
+}

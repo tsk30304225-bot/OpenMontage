@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:openmontage:schema:visual_timeline_v1_2",
-  "title": "Visual Timeline (v1.0 or v1.2)",
+  "$id": "openmontage/artifacts/visual_timeline",
+  "title": "Visual Timeline",
   "description": "Execution contract compiled from visual_direction and the forced-aligned narration: each beat becomes an event at a real time. Renderers execute these events; they do not reinterpret scene descriptions.",
   "type": "object",
   "required": [
@@ -14,10 +14,7 @@
   "properties": {
     "version": {
       "type": "string",
-      "enum": [
-        "1.0",
-        "1.2"
-      ]
+      "const": "1.0"
     },
     "source": {
       "type": "object",
@@ -28,7 +25,7 @@
     },
     "models": {
       "type": "array",
-      "description": "v1.0: copied from visual_direction.visual_models. v1.2: copied from persistent_visual_models (definition of every model the timeline uses).",
+      "description": "Model definitions copied verbatim from visual_direction.visual_models (validated there) so the renderer needs no other file.",
       "items": {
         "type": "object",
         "required": [
@@ -144,26 +141,6 @@
                 "maximum": 1
               }
             }
-          },
-          "action_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-            "description": "v1.2: contract action this operation implements (an action may span several operations)."
-          },
-          "state_after_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-            "description": "v1.2: contract state that must hold once this operation's sync group has applied."
-          },
-          "contract_event_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-            "description": "v1.2: contract event (time group) this belongs to."
-          },
-          "anchor_id": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id",
-            "description": "v1.2: contract anchor whose exact text this beat uses as narration_anchor."
-          },
-          "sync_group": {
-            "type": "string",
-            "description": "v1.2: operations forming one change: same resolved start and duration; invariants are checked after the whole group."
           }
         }
       }
@@ -226,85 +203,6 @@
     },
     "metadata": {
       "type": "object"
-    },
-    "contract": {
-      "$ref": "urn:openmontage:schema:direction_common#/$defs/contract_ref"
-    },
-    "anchor_resolution": {
-      "type": "object",
-      "required": [
-        "resolved_anchors",
-        "unresolved_anchors"
-      ],
-      "additionalProperties": false,
-      "description": "v1.2 (original §26): every contract anchor resolved against the forced alignment.",
-      "properties": {
-        "source_word_count": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "resolved_anchors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "anchor_id",
-              "status",
-              "start_time",
-              "end_time"
-            ],
-            "additionalProperties": false,
-            "properties": {
-              "anchor_id": {
-                "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
-              },
-              "source_text": {
-                "type": "string"
-              },
-              "word_ids": {
-                "type": "array",
-                "items": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              },
-              "start_time": {
-                "type": "number",
-                "minimum": 0
-              },
-              "end_time": {
-                "type": "number",
-                "minimum": 0
-              },
-              "start_frame": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "end_frame": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "status": {
-                "enum": [
-                  "EXACT",
-                  "REVERSIBLE_NORMALIZATION",
-                  "FUZZY"
-                ]
-              },
-              "same_span": {
-                "type": "boolean",
-                "description": "false = resolved to different words than the contract span: a deviation for a locked anchor"
-              }
-            }
-          }
-        },
-        "unresolved_anchors": {
-          "type": "array",
-          "items": {
-            "$ref": "urn:openmontage:schema:direction_common#/$defs/qualified_id"
-          }
-        }
-      }
     }
   }
 }
