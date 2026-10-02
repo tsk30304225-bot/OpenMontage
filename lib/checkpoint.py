@@ -16,6 +16,8 @@ import jsonschema
 
 from schemas.artifacts import ARTIFACT_NAMES, validate_artifact
 
+from lib import checkpoint_hooks  # fork seam: extra artifacts + stage validation
+
 # All known stages across all pipelines (used only for artifact name lookup).
 ALL_KNOWN_STAGES = frozenset([
     "research", "proposal", "idea", "script", "scene_plan",
@@ -45,10 +47,8 @@ SUPPLEMENTARY_ARTIFACTS = {
     "source_media_review",  # Required before first planning stage when user media exists
     "final_review",         # Required by compose stage before presenting to user
     "video_analysis_brief", # Reference-video grounding artifact carried alongside stages
-    "visual_direction",     # Scene-stage meaning contract: viewer journey, visual models, anchored beats
-    "visual_timeline",      # Edit-stage execution contract: beats resolved to aligned narration time
-    "tool_plan",            # Scene-stage WHAT WITH: verified tool offers routed from scene visual_need
 }
+SUPPLEMENTARY_ARTIFACTS |= checkpoint_hooks.SUPPLEMENTARY_ARTIFACTS  # fork: lib/checkpoint_hooks.py
 
 
 def get_pipeline_stages(pipeline_type: str | None) -> list[str]:
@@ -187,9 +187,7 @@ def validate_checkpoint(checkpoint: dict[str, Any]) -> None:
         raise CheckpointValidationError("Checkpoint artifacts must be a dictionary")
 
     _validate_artifacts_for_stage(stage, status, artifacts)
-    from lib.direction_contract.hooks import validate_scene_plan_direction
-
-    validate_scene_plan_direction(stage, status, artifacts, pipeline_type)
+    checkpoint_hooks.validate_stage(stage, status, artifacts, pipeline_type)  # fork: lib/checkpoint_hooks.py
 
     try:
         jsonschema.validate(instance=checkpoint, schema=_load_checkpoint_schema())

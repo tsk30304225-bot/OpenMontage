@@ -42,6 +42,7 @@ from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import unquote, urlsplit
 
+from lib import compose_hooks
 from lib.tool_routing import RouteOffer, smoke_via_execute
 from tools.base_tool import (
     BaseTool,
@@ -1171,36 +1172,11 @@ class VideoCompose(BaseTool):
                 return ToolResult(success=False, error=f"atelier props_path not found: {pp}")
             props_path = str(pp)
 
-        # Direction contract: the bespoke composition implements visual_timeline
-        # events; it does not re-decide them. Refuse to render when the contract
-        # is missing or unimplemented, and hand the resolved timeline to the
-        # composition as props.visualTimeline.
-        # Scene runtime overrides: HyperFrames scene cuts render to clips the
-        # bespoke composition places from props.sceneClips.
-        scene_clips = None
-        from lib.direction_contract.hooks import hyperframes_cuts, prepare_atelier_direction, scene_clips_unread_error
-        hf_cuts = hyperframes_cuts(edit_decisions)
-        if hf_cuts:
-            unread = scene_clips_unread_error(entry_path)
-            if unread:
-                return ToolResult(success=False, error=unread)
-            rendered = self._render_scene_runtimes(edit_decisions, hf_cuts, output_path, inputs)
-            if isinstance(rendered, ToolResult):
-                return rendered
-            pd = bespoke.get("public_dir")
-            public_root = Path(pd).resolve() if pd else composer_dir / "public"
-            (public_root / "scene_clips").mkdir(parents=True, exist_ok=True)
-            scene_clips = []
-            for cut, placed in zip(hf_cuts, rendered["cuts"]):
-                dest = public_root / "scene_clips" / Path(placed["source"]).name
-                shutil.copy2(placed["source"], dest)
-                scene_clips.append({"scene_id": cut.get("scene_id"), "cut_id": cut.get("id"),
-                                    "src": dest.relative_to(public_root).as_posix(),
-                                    "start": float(cut["in_seconds"]), "end": float(cut["out_seconds"])})
-        direction = prepare_atelier_direction(entry_path, edit_decisions, props_path, output_path,
-                                              scene_clips=scene_clips)
+        # Direction contract + HyperFrames scene clips (fork seam, lib/compose_hooks.py).
+        direction = compose_hooks.atelier_direction(entry_path, composer_dir, bespoke, edit_decisions, props_path,
+                                                    output_path, inputs)
         if direction.get("error"):
-            return ToolResult(success=False, error=direction["error"], data={"direction_trace": direction.get("trace")})
+            return ToolResult(success=False, error=direction["error"], data=direction["data"])
         props_path = direction.get("props_path") or props_path
         if props_path:
             # Equals form is required for cross-platform path parsing (see _remotion_render).
@@ -1834,25 +1810,13 @@ class VideoCompose(BaseTool):
                 resolved_cut["source"] = asset_lookup[source_id]["path"]
             resolved_cuts.append(resolved_cut)
 
-        # --- Planned-vs-executed runtime (soft): a planned HyperFrames scene that
-        # the edit renders without it is reported, never blocked.
-        from lib.scene_runtime import planned_runtime_gaps
-        plan_input = inputs.get("scene_plan")
-        plan_scenes = plan_input.get("scenes", []) if isinstance(plan_input, dict) else (plan_input or [])
-        runtime_gaps = planned_runtime_gaps(plan_scenes, cuts)
-        for gap in runtime_gaps:
-            logging.getLogger("video_compose").warning(gap["message"])
-
-        # --- Scene runtime overrides (v1): render HyperFrames scenes to clips ---
-        scene_runtimes = None
-        if any(c.get("runtime") for c in resolved_cuts):
-            if render_runtime != "remotion":
-                return ToolResult(success=False, error=(
-                    "Scene runtime overrides (cut.runtime) are assembled by the Remotion templated path in v1; "
-                    f"this edit renders with {render_runtime!r}."))
-            scene_runtimes = self._render_scene_runtimes(edit_decisions, resolved_cuts, output_path, inputs)
-            if isinstance(scene_runtimes, ToolResult):
-                return scene_runtimes
+        # --- Scene runtime overrides (fork seam, lib/compose_hooks.py) ---
+        runtimes = compose_hooks.templated_scene_runtimes(inputs, cuts, resolved_cuts, render_runtime,
+                                                          edit_decisions, output_path)
+        if runtimes.get("error"):
+            return ToolResult(success=False, error=runtimes["error"], data=runtimes["data"])
+        runtime_gaps, scene_runtimes = runtimes["gaps"], runtimes["scene_runtimes"]
+        if scene_runtimes is not None:
             resolved_cuts = scene_runtimes["cuts"]
 
         # --- Pre-compose validation gate ---
@@ -1979,89 +1943,6 @@ class VideoCompose(BaseTool):
                 )
 
         return render_result
-
-    def _render_scene_runtimes(
-        self,
-        edit_decisions: dict[str, Any],
-        cuts: list[dict[str, Any]],
-        output_path: Path,
-        inputs: dict[str, Any],
-    ) -> dict[str, Any] | ToolResult:
-        """Render every ``runtime: "hyperframes"`` cut to a scene clip.
-
-        Each clip replaces its cut as an ordinary video cut of the same length,
-        so the Remotion assembly, captions and audio work unchanged. The scene's
-        visual_timeline events are written into the workspace (om-direction.js)
-        and every one must be placed by the authored code before it renders.
-        """
-        from lib.direction_contract.hooks import scene_events, trace_workspace, write_bridge
-        from lib.scene_runtime import approved_runtimes
-        from tools.video.hyperframes_compose import HyperFramesCompose
-
-        approved = approved_runtimes(edit_decisions, "remotion")
-        timeline = edit_decisions.get("visual_timeline")
-        if isinstance(timeline, str):
-            try:
-                timeline = json.loads(Path(timeline).read_text(encoding="utf-8"))
-            except (OSError, ValueError) as exc:
-                return ToolResult(success=False, error=f"Could not read visual_timeline for scene runtimes: {exc}")
-        clip_dir = output_path.parent / "scene_clips"
-        out_cuts: list[dict[str, Any]] = []
-        report: list[dict[str, Any]] = []
-        for cut in cuts:
-            runtime = (cut.get("runtime") or "remotion").lower()
-            row = {"cut_id": cut.get("id"), "scene_id": cut.get("scene_id"), "runtime": runtime}
-            if runtime != "hyperframes":
-                if runtime == "footage" and not self._is_media_source(cut.get("source")):
-                    return ToolResult(success=False, error=(
-                        f"cut {cut.get('id')}: runtime 'footage' needs a video or image source, got "
-                        f"{cut.get('source')!r}"))
-                out_cuts.append(cut)
-                report.append(row)
-                continue
-            if "hyperframes" not in approved:
-                return ToolResult(success=False, error=(
-                    f"RUNTIME_NOT_APPROVED: cut {cut.get('id')} uses runtime 'hyperframes' but approved runtimes are "
-                    f"{sorted(approved)}. Approve HyperFrames at proposal (edit_decisions.approved_runtimes) or "
-                    "author this scene in Remotion."))
-            spec = cut.get("hyperframes") or {}
-            workspace = Path(str(spec.get("workspace") or ""))
-            if not spec.get("workspace") or not (workspace / "index.html").is_file():
-                return ToolResult(success=False, error=(
-                    f"cut {cut.get('id')}: runtime 'hyperframes' needs hyperframes.workspace with an authored "
-                    f"index.html (got {spec.get('workspace')!r})"))
-            duration = float(cut["out_seconds"]) - float(cut["in_seconds"])
-            events = scene_events(timeline, cut)
-            write_bridge(workspace, cut, events)
-            trace = trace_workspace(workspace, events, expected_duration=duration)
-            if trace["hard_failures"]:
-                return ToolResult(success=False, error=(
-                    f"HyperFrames scene {cut.get('id')} does not implement its visual direction: "
-                    + "; ".join(trace["hard_failures"])), data={"trace": trace})
-            clip_dir.mkdir(parents=True, exist_ok=True)
-            clip = clip_dir / f"{cut.get('id') or 'scene'}.mp4"
-            result = HyperFramesCompose().execute({
-                "operation": "render_existing",
-                "workspace_path": str(workspace),
-                "output_path": str(clip),
-                "quality": spec.get("quality", "standard"),
-                "skip_contrast": spec.get("skip_contrast", True),
-                **({"profile": inputs["profile"]} if inputs.get("profile") else {}),
-            })
-            if not result.success:
-                return ToolResult(success=False, error=f"HyperFrames scene {cut.get('id')} failed: {result.error}",
-                                  data=result.data)
-            placed = {k: v for k, v in cut.items() if k not in ("runtime", "hyperframes", "type")}
-            placed.update({"source": str(clip), "source_in_seconds": 0})
-            out_cuts.append(placed)
-            report.append({**row, "clip": str(clip), "events": len(events), "implemented": trace["implemented"],
-                           "trace": trace["events"]})
-        return {"cuts": out_cuts, "report": report}
-
-    @staticmethod
-    def _is_media_source(source: Any) -> bool:
-        return bool(source) and Path(str(source)).suffix.lower() in {
-            ".mp4", ".mov", ".webm", ".mkv", ".avi", ".png", ".jpg", ".jpeg", ".webp"}
 
     def _render_via_hyperframes(
         self,
@@ -2313,11 +2194,9 @@ class VideoCompose(BaseTool):
         if caption_error:
             return ToolResult(success=False, error=caption_error)
 
-        from lib.direction_contract.hooks import attach_visual_timeline
-
-        timeline_error = attach_visual_timeline(props, composition_id)
-        if timeline_error:
-            return ToolResult(success=False, error=timeline_error)
+        props_error = compose_hooks.templated_props(props, composition_id)
+        if props_error:
+            return ToolResult(success=False, error=props_error)
 
         if composition_id == "CinematicRenderer":
             if not props.get("scenes") and props.get("cuts"):
