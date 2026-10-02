@@ -269,7 +269,7 @@
         },
         "lineage_coverage_agrees": {
           "type": "boolean",
-          "description": "42 system_coverage.omitted_locked_ids equals this receipt's omitted (a mismatch means 42 is stale or was tampered with)"
+          "description": "plan-derived coverage (42 system_coverage.omitted_locked_ids, computed by check_lineage from the plan) equals execution-derived coverage (this receipt's omitted, from the compiled timeline and the execution binding). false when 42 is stale or was edited, and also when timing resolution or execution loses something the plan had (an anchor resolved elsewhere, a sync group split in time, an unbound layer)"
         }
       }
     }

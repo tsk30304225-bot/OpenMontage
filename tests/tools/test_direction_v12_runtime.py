@@ -175,7 +175,7 @@ def test_compose_gate_rejects_a_hand_edited_lineage_coverage() -> None:
     run = acc._run(acc._card(), atelier="atelier_card")
     artifacts = acc._artifacts(run)
     artifacts["direction_lineage"]["system_coverage"]["omitted_locked_ids"] = []  # edited after check_lineage
-    with pytest.raises(CheckpointValidationError, match="disagrees"):
+    with pytest.raises(CheckpointValidationError, match="plan-derived coverage .42. and execution-derived coverage .45 receipt. disagree"):
         h.completion_gate("compose", "completed", artifacts, "animated-explainer")
 
 

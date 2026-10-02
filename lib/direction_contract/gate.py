@@ -150,7 +150,7 @@ def completion_gate(stage: str, status: str, artifacts: dict[str, Any], pipeline
                     if left:
                         problems.append(f"{sid}: locked ids not delivered {left}")
                     if not receipt["lineage_coverage_agrees"]:
-                        problems.append(f"{sid}: direction_lineage system_coverage disagrees with the recomputed receipt (stale or edited 42)")
+                        problems.append(f"{sid}: plan-derived coverage (42) and execution-derived coverage (45 receipt) disagree: 42 is stale or edited, or timing/execution lost what the plan had")
                 unverified = [c for c in scene["checks"] if c["role"] == "REQUIRED" and c["result"] == "UNVERIFIED"]
                 for c in unverified:
                     problems.append(f"{sid} {c['type']} {c['target_ids']} UNVERIFIED: {c.get('detail', '')}")

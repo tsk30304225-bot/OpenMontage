@@ -35,7 +35,7 @@
 | D10 | binding은 deterministic_graphics 전용이 아니다. 40 `runtime_stack`에서 **잠긴 요구를 `consumes`로 선언한 모든 layer**를 검사. 엔진은 primary runtime 중심이어도 스키마는 multi-runtime 유지 | 43 `bindings[]` (개정 5, D16으로 대체: 옛 `actions[].layer_bindings[]`) |
 | D11 | 42 `transformed`(자유 문장) → **typed `transformations[]`**: SPLIT · MERGE · TIMING_RESOLUTION · ASSET_BINDING · RUNTIME_BINDING · IMPLEMENTATION_DETAIL. 의미 변경 타입은 없다 → LOCKED 의미 변경은 deviation + 새 승인 revision | 42 schema |
 | D12 | `PIXEL_CHANGE`는 LOCKED의 필수 PASS 조건이 아니다. **보조 증거(role SUPPORTING)만**. 동적 LOCKED 완료 = 구조 QA(45) + 필요한 Direction Review(46) | 45 `checks[].role` (PIXEL_CHANGE는 SUPPORTING 강제) |
-| D13 | `omitted_locked_ids`는 Planner 값을 믿지 않는다. **시스템이** 승인 contract의 effective must_preserve와 실제 lineage coverage(주장 ∩ 실제 구현)를 비교해 계산 → 42 `system_coverage`(computed_by=check_lineage). 45가 **독립 재계산**하고 일치 여부를 기록 | 42 `system_coverage`, 45 receipt `effective_must_preserve`·`omitted`·`lineage_coverage_agrees` |
+| D13 | `omitted_locked_ids`는 Planner 값을 믿지 않는다. **시스템이** 승인 contract의 effective must_preserve와 실제 lineage coverage(주장 ∩ 실제 구현)를 비교해 계산 → 42 `system_coverage`(computed_by=check_lineage, plan-derived). 45가 timeline + binding으로 **독립 재계산**(execution-derived)하고 두 coverage의 일치 여부를 기록 (12절) | 42 `system_coverage`, 45 receipt `effective_must_preserve`·`omitted`·`lineage_coverage_agrees` |
 
 ### 정정 결정 (2026-10-02, 개정 4)
 
@@ -247,7 +247,7 @@ Phase 1 runtime 결과 (`lib/direction_contract`, acceptance fixture `tests/fixt
 | 출처 불일치 (sc18 cut이 다른 금리표) | 영향 없음 | — | **SOURCE_EVIDENCE FAIL** | — |
 | cut이 장면 끝을 덮지만 `visible_text` 요구 | 영향 없음 | — | **LAST_FRAME UNVERIFIED** (ACTIVE_AT_SCENE_END만으로 PASS 안 됨, D17) | — |
 
-`lineage_coverage_agrees`: 42는 scene_plan 시점에 Planner 산출물(beat를 문서 순서로 replay)로, 45는 컴파일된 timeline + binding으로 계산한다. 정상·카드·총량 변경은 둘이 같고, **타이밍에서만 생기는 실패**(순간 80, 순서 변경)는 42에 안 보이므로 `false`가 된다 — 그 경우 receipt는 이미 FAIL이다. 손으로 고친 42도 `false` → compose 게이트 실패.
+`lineage_coverage_agrees` = **plan-derived coverage와 execution-derived coverage의 일치 여부**. 42 `system_coverage`는 scene_plan 시점에 Planner 산출물(beat를 문서 순서로 replay)로, 45 receipt `omitted`는 컴파일된 timeline + execution binding으로 계산한다. `false`의 원인은 42가 stale이거나 손으로 고쳐진 경우만이 아니다: **timing resolution**(앵커가 다른 곳으로 resolve, sync group이 시간상 갈라짐 — 순간 80, 순서 변경)이나 **실제 실행 실패**(binding unbound 등)로 계획에 있던 것이 실행에서 빠져도 `false`다. 어느 경우든 compose 게이트는 막힌다.
 
 Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_state`, `SETTLING/CONTINUOUS`, 픽셀 의미)은 UNVERIFIED. 잠기지 않은 장면의 `truth_requirements.source`는 43 binding 대상이 아니라 UNVERIFIED.
 
@@ -256,6 +256,11 @@ Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_sta
 - action 존재는 beat가 아니라 **컴파일된 타임라인 event**로 판정 (beat가 있어도 앵커가 안 맞으면 실행되지 않는다).
 - sync group 위반은 그 그룹이 건드린 element를 대상으로 하는 invariant에만 귀속.
 - 모델 밖 상태(문서가 보임)는 replay가 아니라 렌더 후 binding + SOURCE_EVIDENCE로 판정.
+
+### 정정 기록 (2026-10-03, 개정 5 이후)
+- **fixture 문장 간격 0.8 s → 1.2 s.** 개정 5 커밋(7eb0476) 메시지는 "0.8 s 간격이면 SC009가 마지막 화면을 1.5 s 유지한다"고 적었으나 계산 실수였다: 0.8 s에서 SC009 마지막 연산(`ev-sc17-b2`, AN04 + 0.5 s, EXPAND 1.2 s) 종료 후 sc17 끝까지는 1.2 s로 `minimum_hold_seconds` 1.5 s에 못 미친다. Phase 1 runtime 커밋(e230e30)에서 간격을 1.2 s로 바꿔 유지 시간이 1.6 s가 됐다. contract·스키마는 바뀌지 않았고, 커밋 이력은 고치지 않는다.
+- **`lineage_coverage_agrees` 정의.** 45 스키마 설명의 "불일치 = 42 stale/조작"을 "plan-derived와 execution-derived coverage의 일치 여부"로 정정 (필드·타입·필수 여부는 그대로).
+- **`visual_timeline_compiler` 1.2 production path.** 1.2 연출안은 LOCKED 40/41을 함께 받아야 하고 (없으면 legacy fallback 없이 실패), revision/fingerprint를 확인한 뒤 `compile_timeline(..., models=41, contract=40)`으로 컴파일하며 `anchor_resolution`을 timeline과 결과에 보존한다.
 
 ## 13. 남은 질문
 없음. 개정 2의 세 질문은 D10–D12로 확정.
@@ -285,4 +290,4 @@ schemas/direction_contract/                  canonical runtime 스키마 (D18) �
 schemas/artifacts/visual_direction.schema.json · visual_timeline.schema.json   생성물 (self-contained, 손으로 고치지 않는다)
 ```
 
-Phase 1에서 구현: README §11 API 전부 (`lib/direction_contract/hooks.py`가 공개), 게이트 연결 (`checkpoint_hooks.validate_stage` → `completion_gate`). 하지 않은 것: Director 프롬프트·스킬 변경, `visual_timeline_compiler` 도구의 1.2 연결, 렌더 경로 변경, 자동 의미 vision QA (Phase 2).
+Phase 1에서 구현: README §11 API 전부 (`lib/direction_contract/hooks.py`가 공개), 게이트 연결 (`checkpoint_hooks.validate_stage` → `completion_gate`). `visual_timeline_compiler` 도구의 1.2 production path도 Phase 1에 포함 (정정 기록 참고). 하지 않은 것: Director 프롬프트·스킬 변경, 렌더 경로 변경, 자동 의미 vision QA (Phase 2).
