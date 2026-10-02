@@ -5,7 +5,7 @@
  * they actually happen. What items mean, their labels, colours and the queue
  * policy come from the project's visual_direction model definition.
  *
- * Mirrors lib/visual_direction.py (rail_schedule / apply_rail_event). State is
+ * Mirrors lib/direction_contract/contract.py (rail_schedule / apply_rail_event). State is
  * a pure function of the absolute video time, so every cut showing the same
  * model renders one continuously evolving graphic.
  */

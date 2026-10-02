@@ -2,7 +2,7 @@
  * Element models: any visual model type without a dedicated reducer
  * (flow_network, quantity_stack, comparison_split, ...).
  *
- * Mirrors lib/visual_direction.py (element_initial_state / apply_element_event);
+ * Mirrors lib/direction_contract/contract.py (element_initial_state / apply_element_event);
  * a parity test runs both. Elements start hidden unless declared visible, so a
  * final state cannot be on screen before the beat that reveals it.
  */

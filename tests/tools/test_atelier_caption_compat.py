@@ -19,7 +19,8 @@ from pathlib import Path
 
 import pytest
 
-from lib.visual_direction import compile_timeline
+from lib.direction_contract.hooks import compile_timeline
+from lib.phrase_captions import caption_words_from_timing
 from tools.analysis.direction_qa import DirectionQA
 from tools.video import remotion_caption_burn as burn_module
 from tools.video.remotion_caption_burn import RemotionCaptionBurn
@@ -193,7 +194,7 @@ def test_atelier_fixture_renders_shared_phrase_captions_and_keeps_the_contract(t
                                 scene_windows={s["id"]: (s["start_seconds"], s["end_seconds"]) for s in plan["scenes"]})
     tl = tmp_path / "visual_timeline.json"
     tl.write_text(json.dumps(timeline), encoding="utf-8")
-    captions = VideoCompose._caption_words_from_timing(load("alignment.json"))
+    captions = caption_words_from_timing(load("alignment.json"))
     props = {"scenes": [{"id": s["id"], "start": s["start_seconds"], "end": s["end_seconds"]} for s in plan["scenes"]],
              "durationSeconds": plan["scenes"][-1]["end_seconds"], "captions": captions}
     (tmp_path / "props.json").write_text(json.dumps(props, ensure_ascii=False), encoding="utf-8")

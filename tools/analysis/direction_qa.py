@@ -24,10 +24,16 @@ import time
 from pathlib import Path
 from typing import Any
 
-from lib.atelier_direction import build_trace
-from lib.scene_runtime import hyperframes_cuts, scene_events, trace_workspace, without_scene_events
+from lib.direction_contract.hooks import (
+    REALITY_ROLES,
+    build_trace,
+    hyperframes_cuts,
+    ineffective_events,
+    scene_events,
+    trace_workspace,
+    without_scene_events,
+)
 from lib.tool_routing import tool_usage_report
-from lib.visual_direction import REALITY_ROLES, ineffective_events
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -162,7 +168,7 @@ class DirectionQA(BaseTool):
             hard.append("visual_direction declares visual models but visual_timeline has no events (timeline not compiled)")
 
         # Atelier: no cuts execute the events, the bespoke source does. The trace
-        # (lib/atelier_direction.py) maps every event to the code that reads it.
+        # (lib/direction_contract/binding/remotion_source.py) maps every event to the code that reads it.
         atelier = edit.get("composition_mode") == "atelier" or edit.get("renderer_family") == "bespoke"
         trace = None
         implemented: dict[str, bool] = {}

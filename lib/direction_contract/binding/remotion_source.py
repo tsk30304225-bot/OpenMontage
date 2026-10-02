@@ -20,7 +20,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from lib.visual_direction import is_rail, rail_schedule, replay_model_states
+from lib.direction_contract.contract import is_rail, rail_schedule, replay_model_states
 
 SOURCE_EXTS = {".tsx", ".ts", ".jsx", ".js"}
 
