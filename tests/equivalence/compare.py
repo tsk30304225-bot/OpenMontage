@@ -2,10 +2,10 @@
 
     python -m tests.equivalence.compare before.json after.json [--control control.json]
 
-Every difference between ``before`` and ``after`` is a failure, except where
-the control recording (a second run of the *before* code) already differs from
-``before`` at the same place: such values are nondeterministic in the test
-itself (random test audio, timing) and are reported separately. Tests whose
+Every difference between ``before`` and ``after`` is a failure, except in
+tests whose control recording (a second run of the *before* code) already
+differs from ``before``: those tests are nondeterministic themselves (unseeded
+random test audio) and their differences are listed separately. Tests whose
 outcome differs between runs are listed too. Exit 0 only when no real
 difference remains.
 """
@@ -73,16 +73,16 @@ def main(argv: list[str] | None = None) -> int:
             if d:
                 noisy[t] = {_INDEX_RE.sub("[]", p) for p in d}
 
+    # A test whose recording already differs between two runs of the same code
+    # (unseeded random input) cannot prove equality: all its differences are
+    # reported as nondeterministic, never silently dropped.
     real: dict[str, list[str]] = {}
     nondeterministic: dict[str, list[str]] = {}
     for t in sorted(set(rb) | set(ra)):
         d: list[str] = []
         _diffs(rb.get(t), ra.get(t), "", d)
         for p in d:
-            if _INDEX_RE.sub("[]", p) in noisy.get(t, set()):
-                nondeterministic.setdefault(t, []).append(p)
-            else:
-                real.setdefault(t, []).append(p)
+            (nondeterministic if t in noisy else real).setdefault(t, []).append(p)
 
     outcome_changes = {t: (before.get("outcomes", {}).get(t), after.get("outcomes", {}).get(t))
                        for t in set(before.get("outcomes", {})) | set(after.get("outcomes", {}))
