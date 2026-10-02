@@ -1,6 +1,6 @@
 # Visual Direction v1.2 — machine schema 설계 (개정 5, 설계 정정)
 
-상태: **설계 문서.** 이 폴더에는 README·예시(와 Director용 문법 가이드)만 있다. 40–46 canonical runtime 스키마와 생성·검증 스크립트는 포크 소유 `schemas/direction_contract/`에 있고 (D18), `visual_direction`/`visual_timeline` 1.2는 거기서 **self-contained로 생성**되어 `schemas/artifacts/`의 shipped 스키마가 된다 (D14). runtime은 이 폴더를 읽지 않는다.
+상태: **설계 문서.** 이 폴더에는 README·예시(와 Director용 문법 가이드)만 있다. 40–46 canonical runtime 스키마와 생성·검증 스크립트는 포크 소유 `schemas/direction_contract/`에 있고 (D18), `visual_direction`/`visual_timeline` 1.2는 거기서 **self-contained로 생성**되어 `schemas/artifacts/`의 shipped 스키마가 된다 (D14). runtime은 이 폴더를 읽지 않는다. Phase 1 runtime: `lib/direction_contract/` (authority · contract_v12 · evaluate · lineage · states · binding/execution · qa · deviations · gate).
 개정 4 (2026-10-02, Phase 1 착수 중 발견한 결함 정정): D14 스키마 통합, D15 script canonicalization.
 개정 5 (2026-10-03): D16 43 binding-centric (원문 §18), D17 SOURCE_EVIDENCE·LAST_FRAME 판정, D18 스키마 위치.
 기준 코드: 포크 `origin/main` 4a9aed4 (Phase 0 병합 후).
@@ -235,17 +235,21 @@ Production Complete
 - **42 `system_coverage` = 45 독립 재계산** (good 0개 · as_produced 6개 일치)
 - 스키마만으로 거부되어야 할 입력 **30/30 거부** (개정 5 추가: bound binding에 locator 없음 · 아무 id도 소비하지 않는 binding · CODE locator에 implementation_path 없음 · ASSET locator에 cut 없음 · 알 수 없는 locator kind · deviated에 deviation_id 없음 · 옛 action 중심 43. 개정 4 추가: LOCKED인데 canonicalization_id 없음 · 알 수 없는 canonicalization · 앵커 source_span 없음 · 1.2인데 contract 없음 · v1.0인데 contract · v1.0 beat에 action_id). 기존: causal 장면 review=not_required · static_replacement_valid=false인데 not_required · motion 장면 actions 없음 · causal_explanation인데 causal contract 없음 · LOCKED must_preserve 없음 · locked_direction_mutation=true · LOCKED인데 script_sha256 없음 · 비정규 action ID · **42 의미 변경 transformation** · **system_coverage를 check_lineage 아닌 주체가 작성** · **PIXEL_CHANGE를 REQUIRED로** · **receipt에 effective_must_preserve 없음** · 1.2가 모델 정의 · MATERIAL deviation 승인 불요 · APPROVED에 decision 없음 · LOCKED 장면 receipt 없음
 
-아래 표와 45 예시는 개정 3의 프로토타입 출력이다 (binding 이전이라 SC010이 UNVERIFIED). Phase 1에서 `qa_report`가 D16·D17로 다시 생성한다.
+Phase 1 runtime 결과 (`lib/direction_contract`, acceptance fixture `tests/fixtures/direction_v1_2/capital_competition`; 42 system coverage · 43 · 45 예시는 이 runtime의 출력이다):
 
-의미 검사 프로토타입 (저장소 밖, 버리는 코드. 기존 `compile_timeline` + `replay_model_states`만 사용. 42 system coverage와 45 예시가 이 출력):
-
-| 시나리오 | SC009 (LOCKED·인과) | 시스템 계산 omitted | SC010 (LOCKED·정적 증거) | SC014 (FLEX) |
+| 시나리오 | SC009 (LOCKED·인과) | 시스템 계산 omitted (45) | SC010 (LOCKED·정적 증거) | SC014 (FLEX) |
 |---|---|---|---|---|
-| 정상 | 구조 REQUIRED 전부 통과 → **UNVERIFIED** (binding·46 대기). PIXEL_CHANGE는 SUPPORTING·UNVERIFIED | **없음** | 렌더 후 출처 판정 → UNVERIFIED, **리뷰 불필요** | **PASS** |
-| **카드 대체 (실제 제작)** | **FAIL 6**: ACTION_EXISTENCE A02 · STATE S2·S3 · ORDER · CAUSAL_CHAIN · LAST_FRAME | **A02 · B03 · CC01 · INV03 · S2 · S3** | 동일 | 동일 |
-| 총량 변경 (META 30) | **INVARIANT INV01만 FAIL** (상태 검사는 통과) | INV01 | 동일 | 동일 |
-| 재배분 중 순간 80 | **INV01만 FAIL** (POOL 불변식 INV02는 영향 없음) | INV01 | 동일 | 동일 |
-| 순서 변경 (수익률 먼저) | **FAIL 5**: A03 타임라인 미실행 · S3 · ORDER · CAUSAL · LAST_FRAME | A03 · B04 · CC01 · INV03 · S3 | 동일 | 동일 |
+| 정상 | 구조 REQUIRED 전부 PASS → **PASS**. 완료는 46 PASS가 있어야 (review_required). PIXEL_CHANGE는 SUPPORTING·UNVERIFIED | **없음** | **PASS**: 출처 identity (cut c-sc18 = `kb_rate_table_capture.png`) + `sc18/factual_source` ASSET binding + LAST_FRAME(2.0 s hold), **리뷰 불필요** | **PASS** |
+| **카드 대체 (실제 제작)** | **FAIL**: ACTION_EXISTENCE A02 · STATE S2·S3 · ORDER · CAUSAL_CHAIN · LAST_FRAME · ANCHOR AN03 · BINDING A02/E02/S2 (`sc16` unbound) | A02 · AN03 · B03 · B04 · CC01 · INV03 · S2 · S3 | PASS | PASS |
+| 총량 변경 (META 30) | **INVARIANT INV01만 FAIL** | INV01 | PASS | PASS |
+| 재배분 중 순간 80 | **INV01만 FAIL** (sync group이 동시에 일어나지 않음) | INV01 | PASS | PASS |
+| 순서 변경 (수익률 먼저) | **FAIL**: A03 타임라인 미실행 · S3 · ORDER · CAUSAL · LAST_FRAME · AN04 · BINDING(sc17) | A03 · AN04 · B04 · CC01 · INV03 · S3 · YIELD_META | PASS | PASS |
+| 출처 불일치 (sc18 cut이 다른 금리표) | 영향 없음 | — | **SOURCE_EVIDENCE FAIL** | — |
+| cut이 장면 끝을 덮지만 `visible_text` 요구 | 영향 없음 | — | **LAST_FRAME UNVERIFIED** (ACTIVE_AT_SCENE_END만으로 PASS 안 됨, D17) | — |
+
+`lineage_coverage_agrees`: 42는 scene_plan 시점에 Planner 산출물(beat를 문서 순서로 replay)로, 45는 컴파일된 timeline + binding으로 계산한다. 정상·카드·총량 변경은 둘이 같고, **타이밍에서만 생기는 실패**(순간 80, 순서 변경)는 42에 안 보이므로 `false`가 된다 — 그 경우 receipt는 이미 FAIL이다. 손으로 고친 42도 `false` → compose 게이트 실패.
+
+Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_state`, `SETTLING/CONTINUOUS`, 픽셀 의미)은 UNVERIFIED. 잠기지 않은 장면의 `truth_requirements.source`는 43 binding 대상이 아니라 UNVERIFIED.
 
 검증 중 발견해 고친 것
 - 42 `consumed`에 `causal_chain_ids`가 없어 must_preserve의 인과 사슬을 커버할 방법이 없었다 → 추가. 원칙: **must_preserve의 모든 범주는 42에 대응 칸이 있다.**
@@ -281,4 +285,4 @@ schemas/direction_contract/                  canonical runtime 스키마 (D18) �
 schemas/artifacts/visual_direction.schema.json · visual_timeline.schema.json   생성물 (self-contained, 손으로 고치지 않는다)
 ```
 
-이번 단계에서 하지 않은 것: API 구현, 런타임 스키마 등록, 게이트 연결, Director 프롬프트 변경, 렌더 경로 변경. 프로토타입 코드는 저장소에 넣지 않았다.
+Phase 1에서 구현: README §11 API 전부 (`lib/direction_contract/hooks.py`가 공개), 게이트 연결 (`checkpoint_hooks.validate_stage` → `completion_gate`). 하지 않은 것: Director 프롬프트·스킬 변경, `visual_timeline_compiler` 도구의 1.2 연결, 렌더 경로 변경, 자동 의미 vision QA (Phase 2).

@@ -251,11 +251,13 @@
   ],
   "system_coverage": {
     "computed_by": "check_lineage",
-    "computed_at": "2026-10-02T15:00:00+09:00",
+    "computed_at": "2026-10-03T00:00:00+00:00",
     "effective_must_preserve_count": 23,
     "omitted_locked_ids": [
       "SC009/A02",
+      "SC009/AN03",
       "SC009/B03",
+      "SC009/B04",
       "SC009/CC01",
       "SC009/INV03",
       "SC009/S2",
@@ -263,7 +265,9 @@
     ],
     "claimed_but_not_implemented": [
       "SC009/A02",
+      "SC009/AN03",
       "SC009/B03",
+      "SC009/B04",
       "SC009/CC01",
       "SC009/INV03",
       "SC009/S2",

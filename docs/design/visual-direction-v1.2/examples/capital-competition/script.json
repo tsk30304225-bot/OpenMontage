@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "title": "AI 설비투자와 주담대 금리 — 자금 경쟁 발췌",
-  "total_duration_seconds": 22.6,
+  "total_duration_seconds": 24.6,
   "sections": [
     {
       "id": "s1",
@@ -12,32 +12,32 @@
     {
       "id": "s2",
       "text": "그런데 메타와 아마존이 채권을 쏟아내기 시작했습니다.",
-      "start_seconds": 4.24,
-      "end_seconds": 6.72
+      "start_seconds": 4.64,
+      "end_seconds": 7.12
     },
     {
       "id": "s3",
       "text": "같은 돈이 더 많은 채권 사이로 나뉘어 흘러갑니다.",
-      "start_seconds": 7.56,
-      "end_seconds": 10.88
+      "start_seconds": 8.36,
+      "end_seconds": 11.68
     },
     {
       "id": "s4",
       "text": "그러자 발행자들은 더 높은 금리를 약속해야 했습니다.",
-      "start_seconds": 11.72,
-      "end_seconds": 14.62
+      "start_seconds": 12.92,
+      "end_seconds": 15.82
     },
     {
       "id": "s5",
       "text": "은행 금리표에는 이 변화가 그대로 찍혀 있습니다.",
-      "start_seconds": 15.46,
-      "end_seconds": 18.36
+      "start_seconds": 17.06,
+      "end_seconds": 19.96
     },
     {
       "id": "s6",
       "text": "이 모든 돈은 결국 거대한 데이터센터로 향합니다.",
-      "start_seconds": 19.2,
-      "end_seconds": 22.1
+      "start_seconds": 21.2,
+      "end_seconds": 24.1
     }
   ]
 }
