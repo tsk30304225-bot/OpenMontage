@@ -1,0 +1,727 @@
+{
+  "schema_name": "OpenMontage_Visual_Direction",
+  "schema_version": "1.2",
+  "artifact_role": "CANONICAL_EXECUTION_CONTRACT",
+  "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
+  "project_id": "ai-capital-flow-mortgage-ko",
+  "lifecycle": {
+    "revision": 1,
+    "status": "LOCKED",
+    "generated_at": "2026-10-02T11:50:00+09:00",
+    "locked_by": "user",
+    "locked_at": "2026-10-02T12:00:00+09:00"
+  },
+  "authority": {
+    "script_ref": "examples/capital-competition/script.txt",
+    "script_sha256": "45226c0d9272ab9cb98c2a040cf7e4c433e1ab144b1deb44d60a6def29f4904d",
+    "script_normalization": "NFC_WHITESPACE",
+    "pvm_ref": {
+      "artifact": "persistent_visual_models"
+    }
+  },
+  "priority_policy": {
+    "mechanism_over_style": true,
+    "meaning_over_aesthetics": true,
+    "contract_over_runtime_convenience": true,
+    "if_conflict": "preserve_higher_authority"
+  },
+  "approval_scope": {
+    "continue_pipeline": true,
+    "generated_media": true,
+    "cost_tools": false,
+    "locked_direction_mutation": false,
+    "semantic_fallback": "requires_new_approval",
+    "causal_contract_change": "requires_new_approval"
+  },
+  "visual_identity": {
+    "ref": "art-direction.md",
+    "mechanism_compatibility": {
+      "style_must_not_reduce_state_visibility": true,
+      "style_must_not_hide_causal_motion": true
+    }
+  },
+  "scenes": [
+    {
+      "id": "SC009",
+      "importance": "REQUIRED_LOCKED",
+      "role": "explanation",
+      "visual_mode": "model",
+      "anchors": [
+        {
+          "anchor_id": "SC009/AN01",
+          "exact_text": "투자할 수 있는 장기 자금은 정해져 있습니다",
+          "edge": "START"
+        },
+        {
+          "anchor_id": "SC009/AN02",
+          "exact_text": "메타와 아마존이 채권을 쏟아내기 시작했습니다",
+          "edge": "START"
+        },
+        {
+          "anchor_id": "SC009/AN03",
+          "exact_text": "같은 돈이 더 많은 채권 사이로 나뉘어 흘러갑니다",
+          "edge": "START"
+        },
+        {
+          "anchor_id": "SC009/AN04",
+          "exact_text": "더 높은 금리를 약속해야 했습니다",
+          "edge": "START"
+        },
+        {
+          "anchor_id": "SC009/AN05",
+          "exact_text": "더 높은 금리를 약속해야 했습니다",
+          "edge": "END"
+        }
+      ],
+      "narration_span": {
+        "start_anchor": "SC009/AN01",
+        "end_anchor": "SC009/AN05"
+      },
+      "meaning_contract": {
+        "before": "빅테크가 채권을 많이 발행한다는 사실만 안다",
+        "change": "같은 자금을 더 많은 채권이 나눠 갖는다",
+        "after": "자금 총량은 그대로인데 선택지가 늘어 같은 돈이 나뉘고, 그래서 발행자의 요구수익률이 오른다"
+      },
+      "viewer_question": "빅테크가 채권을 많이 찍으면 왜 금리가 오르나?",
+      "motion_reason": {
+        "motion_required": true,
+        "understanding_dependency": "총량이 그대로라는 것과 배분이 바뀌는 과정을 보지 못하면 금리 상승의 이유를 이해할 수 없다",
+        "temporal_logic": "공급 증가 → 재배분 → 수익률 상승의 시간 순서 자체가 인과 설명이다",
+        "causal_explanation": true,
+        "static_replacement_valid": false,
+        "decorative_motion_allowed": true
+      },
+      "beats": [
+        {
+          "beat_id": "SC009/B01",
+          "anchor": "SC009/AN01",
+          "narrative_function": "전제",
+          "new_information": "투자 가능한 장기자금 총량 100",
+          "visual_state_after": "SC009/S0"
+        },
+        {
+          "beat_id": "SC009/B02",
+          "anchor": "SC009/AN02",
+          "narrative_function": "원인",
+          "new_information": "메타·아마존 채권 공급",
+          "visual_state_before": "SC009/S0",
+          "required_change": "채권 선택지 2개 → 4개",
+          "visual_state_after": "SC009/S1",
+          "linked_actions": [
+            "SC009/A01"
+          ]
+        },
+        {
+          "beat_id": "SC009/B03",
+          "anchor": "SC009/AN03",
+          "narrative_function": "중간 반응",
+          "new_information": "같은 돈의 재배분",
+          "visual_state_before": "SC009/S1",
+          "required_change": "배분이 바뀌고 총량은 유지",
+          "visual_state_after": "SC009/S2",
+          "linked_actions": [
+            "SC009/A02"
+          ]
+        },
+        {
+          "beat_id": "SC009/B04",
+          "anchor": "SC009/AN04",
+          "narrative_function": "결과",
+          "new_information": "요구수익률 상승",
+          "visual_state_before": "SC009/S2",
+          "required_change": "메타 요구수익률 4.5% → 5.2%",
+          "visual_state_after": "SC009/S3",
+          "linked_actions": [
+            "SC009/A03"
+          ]
+        }
+      ],
+      "models": [
+        {
+          "model_id": "CAPITAL_FLOW",
+          "enter_state": "CAPITAL_FLOW.BASE",
+          "visibility": "VISIBLE"
+        }
+      ],
+      "objects": [
+        {
+          "object_id": "SC009/POOL",
+          "object_type": "value",
+          "semantic_role": "고정된 장기 투자자금",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "POOL",
+          "persistence": "PVM",
+          "semantic_necessity": {
+            "required_for_meaning": true,
+            "removable": false
+          }
+        },
+        {
+          "object_id": "SC009/UST",
+          "object_type": "node",
+          "semantic_role": "미국 국채",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "UST",
+          "persistence": "PVM"
+        },
+        {
+          "object_id": "SC009/GOOG",
+          "object_type": "node",
+          "semantic_role": "구글 채권",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "GOOG",
+          "persistence": "PVM"
+        },
+        {
+          "object_id": "SC009/META",
+          "object_type": "node",
+          "semantic_role": "새 공급: 메타 채권",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "META",
+          "persistence": "PVM"
+        },
+        {
+          "object_id": "SC009/AMZN",
+          "object_type": "node",
+          "semantic_role": "새 공급: 아마존 채권",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "AMZN",
+          "persistence": "PVM"
+        },
+        {
+          "object_id": "SC009/ALLOC_UST",
+          "object_type": "edge",
+          "semantic_role": "국채로 가는 자금",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "ALLOC_UST"
+        },
+        {
+          "object_id": "SC009/ALLOC_GOOG",
+          "object_type": "edge",
+          "semantic_role": "구글로 가는 자금",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "ALLOC_GOOG"
+        },
+        {
+          "object_id": "SC009/ALLOC_META",
+          "object_type": "edge",
+          "semantic_role": "메타로 가는 자금",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "ALLOC_META"
+        },
+        {
+          "object_id": "SC009/ALLOC_AMZN",
+          "object_type": "edge",
+          "semantic_role": "아마존으로 가는 자금",
+          "truth_class": "METAPHORICAL",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "ALLOC_AMZN"
+        },
+        {
+          "object_id": "SC009/YIELD_META",
+          "object_type": "value",
+          "semantic_role": "메타가 제시해야 하는 요구수익률",
+          "truth_class": "DERIVED",
+          "model_id": "CAPITAL_FLOW",
+          "element_id": "YIELD_META"
+        }
+      ],
+      "initial_state": "SC009/S0",
+      "states": [
+        {
+          "state_id": "SC009/S0",
+          "semantic_meaning": "자금 100, 채권 선택지 2개",
+          "pvm_state": "CAPITAL_FLOW.BASE",
+          "exited_by": "SC009/A01"
+        },
+        {
+          "state_id": "SC009/S1",
+          "semantic_meaning": "자금 100, 채권 선택지 4개, 배분은 아직 그대로",
+          "pvm_state": "CAPITAL_FLOW.MORE_SUPPLY",
+          "entered_by": "SC009/A01",
+          "exited_by": "SC009/A02"
+        },
+        {
+          "state_id": "SC009/S2",
+          "semantic_meaning": "같은 자금 100이 더 많은 채권 사이로 나뉨",
+          "pvm_state": "CAPITAL_FLOW.REALLOCATED",
+          "invariants": [
+            "SC009/INV01"
+          ],
+          "entered_by": "SC009/A02",
+          "exited_by": "SC009/A03"
+        },
+        {
+          "state_id": "SC009/S3",
+          "semantic_meaning": "공급 증가 → 자금 재배분 → 수익률 압력이 한 화면에서 확인됨",
+          "pvm_state": "CAPITAL_FLOW.YIELD_PRESSURE",
+          "object_states": [
+            {
+              "model_id": "CAPITAL_FLOW",
+              "assert": [
+                {
+                  "path": "elements.ALLOC_META.visible",
+                  "op": "eq",
+                  "value": true
+                }
+              ]
+            }
+          ],
+          "entered_by": "SC009/A03"
+        }
+      ],
+      "actions": [
+        {
+          "action_id": "SC009/A01",
+          "semantic_role": "메타·아마존 채권이 투자 선택지에 추가된다",
+          "action_type": "ADD",
+          "model_id": "CAPITAL_FLOW",
+          "target_objects": [
+            "SC009/META",
+            "SC009/AMZN"
+          ],
+          "start_anchor": "SC009/AN02",
+          "end_anchor": "SC009/AN03",
+          "from_state_id": "SC009/S0",
+          "to_state_id": "SC009/S1",
+          "min_duration_seconds": 0.6
+        },
+        {
+          "action_id": "SC009/A02",
+          "semantic_role": "같은 장기자금이 더 많은 채권 사이로 실제로 재배분된다",
+          "action_type": "REALLOCATE",
+          "model_id": "CAPITAL_FLOW",
+          "target_objects": [
+            "SC009/ALLOC_UST",
+            "SC009/ALLOC_META",
+            "SC009/ALLOC_AMZN"
+          ],
+          "start_anchor": "SC009/AN03",
+          "end_anchor": "SC009/AN04",
+          "from_state_id": "SC009/S1",
+          "to_state_id": "SC009/S2",
+          "dependency": {
+            "after": [
+              {
+                "action": "SC009/A01",
+                "on": "complete"
+              }
+            ],
+            "sync_group": "SC009/REALLOCATE"
+          },
+          "min_duration_seconds": 1.0
+        },
+        {
+          "action_id": "SC009/A03",
+          "semantic_role": "자금을 끌어오기 위해 요구수익률이 오른다",
+          "action_type": "RAISE",
+          "model_id": "CAPITAL_FLOW",
+          "target_objects": [
+            "SC009/YIELD_META"
+          ],
+          "start_anchor": "SC009/AN04",
+          "end_anchor": "SC009/AN05",
+          "from_state_id": "SC009/S2",
+          "to_state_id": "SC009/S3",
+          "dependency": {
+            "after": [
+              {
+                "action": "SC009/A02",
+                "on": "complete"
+              }
+            ]
+          },
+          "min_duration_seconds": 0.6
+        }
+      ],
+      "events": [
+        {
+          "event_id": "SC009/E01",
+          "trigger_anchor": "SC009/AN02",
+          "precondition_state": "SC009/S0",
+          "actions": [
+            "SC009/A01"
+          ],
+          "resulting_state": "SC009/S1",
+          "next_event_dependency": "SC009/E02"
+        },
+        {
+          "event_id": "SC009/E02",
+          "trigger_anchor": "SC009/AN03",
+          "precondition_state": "SC009/S1",
+          "actions": [
+            "SC009/A02"
+          ],
+          "resulting_state": "SC009/S2",
+          "next_event_dependency": "SC009/E03"
+        },
+        {
+          "event_id": "SC009/E03",
+          "trigger_anchor": "SC009/AN04",
+          "precondition_state": "SC009/S2",
+          "actions": [
+            "SC009/A03"
+          ],
+          "resulting_state": "SC009/S3"
+        }
+      ],
+      "invariants": [
+        {
+          "invariant_id": "SC009/INV01",
+          "description": "배분된 장기자금의 합은 100으로 유지된다",
+          "kind": "CONSTANT",
+          "target": {
+            "model_id": "CAPITAL_FLOW",
+            "aggregate": "sum",
+            "paths": [
+              "elements.ALLOC_UST.attrs.value",
+              "elements.ALLOC_GOOG.attrs.value",
+              "elements.ALLOC_META.attrs.value",
+              "elements.ALLOC_AMZN.attrs.value"
+            ]
+          },
+          "value": 100,
+          "during": "scene"
+        },
+        {
+          "invariant_id": "SC009/INV02",
+          "description": "투자 가능한 장기자금 총량은 100",
+          "kind": "CONSTANT",
+          "target": {
+            "model_id": "CAPITAL_FLOW",
+            "path": "elements.POOL.attrs.value"
+          },
+          "value": 100,
+          "during": "scene"
+        },
+        {
+          "invariant_id": "SC009/INV03",
+          "description": "공급 증가 → 재배분 → 수익률 상승 순서",
+          "kind": "ORDER",
+          "order": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ]
+        }
+      ],
+      "causal_motion_contracts": [
+        {
+          "causal_chain_id": "SC009/CC01",
+          "proposition": "빅테크 채권 공급이 늘면 같은 투자자금이 나뉘고, 자금을 끌어오려는 발행자의 요구수익률이 오른다",
+          "cause": {
+            "state_id": "SC009/S1",
+            "objects": [
+              "SC009/META",
+              "SC009/AMZN"
+            ],
+            "actions": [
+              "SC009/A01"
+            ],
+            "narration_anchor": "SC009/AN02"
+          },
+          "intermediate_reactions": [
+            {
+              "state_id": "SC009/S2",
+              "objects": [
+                "SC009/ALLOC_UST",
+                "SC009/ALLOC_META",
+                "SC009/ALLOC_AMZN"
+              ],
+              "actions": [
+                "SC009/A02"
+              ],
+              "required": true
+            }
+          ],
+          "effect": {
+            "state_id": "SC009/S3",
+            "objects": [
+              "SC009/YIELD_META"
+            ],
+            "actions": [
+              "SC009/A03"
+            ],
+            "narration_anchor": "SC009/AN04"
+          },
+          "dependencies": {
+            "effect_after_cause": true,
+            "intermediate_required": true
+          },
+          "visibility": {
+            "cause_visible": true,
+            "intermediate_visible": true,
+            "effect_visible": true
+          },
+          "final_proof_state": {
+            "state_id": "SC009/S3",
+            "viewer_can_observe": [
+              "CAUSE",
+              "INTERMEDIATE",
+              "EFFECT"
+            ]
+          },
+          "prohibited_simplification": [
+            "SEQUENTIAL_HIGHLIGHT_ONLY",
+            "STATIC_ARROW_ONLY",
+            "TEXT_ONLY",
+            "REMOVE_INTERMEDIATE_REACTION",
+            "SINGLE_FADE_FOR_MULTIPLE_ACTIONS"
+          ]
+        }
+      ],
+      "must_preserve": {
+        "beats": [
+          "SC009/B02",
+          "SC009/B03",
+          "SC009/B04"
+        ],
+        "objects": [
+          "SC009/POOL",
+          "SC009/META",
+          "SC009/AMZN",
+          "SC009/YIELD_META"
+        ],
+        "causal_chains": [
+          "SC009/CC01"
+        ],
+        "narration_anchors": [
+          "SC009/AN02",
+          "SC009/AN03",
+          "SC009/AN04"
+        ],
+        "persistent_models": [
+          "CAPITAL_FLOW"
+        ],
+        "last_frame_elements": [
+          "SC009/POOL",
+          "SC009/META",
+          "SC009/AMZN",
+          "SC009/YIELD_META"
+        ]
+      },
+      "allowed_freedom": [
+        "LAYOUT_COORDINATES",
+        "SPACING",
+        "COMPONENT_STRUCTURE",
+        "TYPOGRAPHY_SIZE",
+        "EASING_CHOICE",
+        "MICRO_MOTION",
+        "EXACT_PARTICLE_COUNT"
+      ],
+      "prohibited_simplification": [
+        "REMOVE_REQUIRED_ACTION",
+        "MERGE_LOCKED_ACTIONS",
+        "REORDER_LOCKED_ACTIONS",
+        "REMOVE_INTERMEDIATE_STATE",
+        "REPLACE_CAUSAL_MODEL_WITH_TEXT",
+        "REPLACE_PVM_WITH_UNRELATED_BROLL",
+        "ALTER_INVARIANT"
+      ],
+      "runtime_stack": {
+        "deterministic_graphics": {
+          "runtime": "remotion",
+          "purpose": "CAPITAL_FLOW 모델",
+          "consumes": [
+            "SC009/A01",
+            "SC009/A02",
+            "SC009/A03"
+          ]
+        },
+        "captions": {
+          "runtime": "remotion",
+          "purpose": "PhraseCaptions"
+        }
+      },
+      "last_frame_contract": {
+        "required_state_id": "SC009/S3",
+        "end_anchor": "SC009/AN05",
+        "visible_objects": [
+          "SC009/POOL",
+          "SC009/META",
+          "SC009/AMZN",
+          "SC009/YIELD_META"
+        ],
+        "persistent_states": [
+          "CAPITAL_FLOW.YIELD_PRESSURE"
+        ],
+        "motion_state": "HOLD",
+        "minimum_hold_seconds": 1.5,
+        "handoff_to_scene": "SC010"
+      },
+      "fallback_contract": {
+        "allowed_fallbacks": [],
+        "on_failure": "DIRECTION_DEVIATION"
+      },
+      "qa_contract": {
+        "review": "auto",
+        "review_questions": [
+          "자금 총량이 변하지 않은 채 배분이 바뀌는 과정이 화면에 보이는가?",
+          "수익률 상승이 재배분 뒤에 일어나는가?"
+        ],
+        "evidence_states": [
+          "SC009/S1",
+          "SC009/S2",
+          "SC009/S3"
+        ]
+      }
+    },
+    {
+      "id": "SC010",
+      "importance": "REQUIRED_LOCKED",
+      "role": "evidence",
+      "visual_mode": "evidence",
+      "anchors": [
+        {
+          "anchor_id": "SC010/AN01",
+          "exact_text": "은행 금리표에는 이 변화가 그대로 찍혀 있습니다",
+          "edge": "START"
+        },
+        {
+          "anchor_id": "SC010/AN02",
+          "exact_text": "은행 금리표에는 이 변화가 그대로 찍혀 있습니다",
+          "edge": "END"
+        }
+      ],
+      "narration_span": {
+        "start_anchor": "SC010/AN01",
+        "end_anchor": "SC010/AN02"
+      },
+      "meaning_contract": {
+        "after": "모델 속 압력이 실제 은행 금리표에 나타난다"
+      },
+      "motion_reason": {
+        "motion_required": false,
+        "understanding_dependency": "실제 문서를 정확히 보여주는 것 자체가 핵심",
+        "static_replacement_valid": true
+      },
+      "beats": [
+        {
+          "beat_id": "SC010/B01",
+          "anchor": "SC010/AN01",
+          "narrative_function": "증거",
+          "visual_state_after": "SC010/S0"
+        }
+      ],
+      "objects": [
+        {
+          "object_id": "SC010/RATE_TABLE",
+          "object_type": "document",
+          "semantic_role": "은행 혼합형 주담대 금리표",
+          "truth_class": "SOURCE",
+          "source_asset": "kb_rate_table_capture.png",
+          "semantic_necessity": {
+            "required_for_meaning": true,
+            "removable": false
+          }
+        }
+      ],
+      "initial_state": "SC010/S0",
+      "states": [
+        {
+          "state_id": "SC010/S0",
+          "semantic_meaning": "금리표 원본이 읽을 수 있게 보인다",
+          "visible_objects": [
+            "SC010/RATE_TABLE"
+          ]
+        }
+      ],
+      "truth_requirements": [
+        {
+          "statement": "표시되는 금리 수치는 원본 금리표와 같다",
+          "truth_class": "SOURCE",
+          "source": "kb_rate_table_capture.png"
+        }
+      ],
+      "must_preserve": {
+        "objects": [
+          "SC010/RATE_TABLE"
+        ]
+      },
+      "allowed_freedom": [
+        "SOURCE_CROP_MARGIN",
+        "LAYOUT_COORDINATES"
+      ],
+      "prohibited_simplification": [
+        "REPLACE_PVM_WITH_UNRELATED_BROLL"
+      ],
+      "last_frame_contract": {
+        "required_state_id": "SC010/S0",
+        "minimum_hold_seconds": 2.0
+      },
+      "qa_contract": {
+        "review": "auto",
+        "checks": [
+          "SOURCE_EVIDENCE",
+          "LAST_FRAME"
+        ]
+      },
+      "runtime_stack": {
+        "factual_source": {
+          "runtime": "remotion",
+          "purpose": "금리표 원본 캡처를 읽을 수 있게 배치",
+          "consumes": [
+            "SC010/S0"
+          ]
+        }
+      }
+    },
+    {
+      "id": "SC014",
+      "importance": "REQUIRED_FLEX",
+      "role": "immersion",
+      "visual_mode": "reality",
+      "anchors": [
+        {
+          "anchor_id": "SC014/AN01",
+          "exact_text": "이 모든 돈은 결국 거대한 데이터센터로 향합니다",
+          "edge": "START"
+        },
+        {
+          "anchor_id": "SC014/AN02",
+          "exact_text": "이 모든 돈은 결국 거대한 데이터센터로 향합니다",
+          "edge": "END"
+        }
+      ],
+      "narration_span": {
+        "start_anchor": "SC014/AN01",
+        "end_anchor": "SC014/AN02"
+      },
+      "meaning_contract": {
+        "after": "추상 설명에서 현실 세계로 착지한다"
+      },
+      "beats": [
+        {
+          "beat_id": "SC014/B01",
+          "anchor": "SC014/AN01"
+        }
+      ],
+      "requirements": [
+        "실제 데이터센터 외관",
+        "와이드",
+        "시설 규모가 느껴질 것"
+      ],
+      "runtime_hint": "footage",
+      "allowed_freedom": [
+        "SHOT_CHOICE",
+        "ASSET_CHOICE",
+        "SOURCE_CROP_MARGIN",
+        "MICRO_MOTION"
+      ],
+      "runtime_stack": {
+        "base_visual": {
+          "runtime": "footage",
+          "purpose": "데이터센터 외관 실사"
+        }
+      }
+    }
+  ]
+}

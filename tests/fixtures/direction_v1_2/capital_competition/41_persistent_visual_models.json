@@ -1,0 +1,221 @@
+{
+  "version": "1.2",
+  "models": [
+    {
+      "definition": {
+        "id": "CAPITAL_FLOW",
+        "type": "flow_network",
+        "title": "장기자금 경쟁",
+        "grammar": {
+          "node": "투자 대상(채권 발행자)",
+          "edge_value": "그 대상으로 배분된 장기자금(총 100)",
+          "yield_value": "발행자가 제시해야 하는 요구수익률(%)"
+        },
+        "renderer": "bespoke",
+        "initial_state": {
+          "elements": [
+            {
+              "id": "POOL",
+              "kind": "value",
+              "label": "투자 가능한 장기자금",
+              "visible": true,
+              "attrs": {
+                "value": 100
+              }
+            },
+            {
+              "id": "UST",
+              "kind": "node",
+              "label": "미국 국채",
+              "visible": true
+            },
+            {
+              "id": "GOOG",
+              "kind": "node",
+              "label": "구글 채권",
+              "visible": true
+            },
+            {
+              "id": "META",
+              "kind": "node",
+              "label": "메타 채권"
+            },
+            {
+              "id": "AMZN",
+              "kind": "node",
+              "label": "아마존 채권"
+            },
+            {
+              "id": "ALLOC_UST",
+              "kind": "edge",
+              "from": "POOL",
+              "to": "UST",
+              "visible": true,
+              "attrs": {
+                "value": 60
+              }
+            },
+            {
+              "id": "ALLOC_GOOG",
+              "kind": "edge",
+              "from": "POOL",
+              "to": "GOOG",
+              "visible": true,
+              "attrs": {
+                "value": 40
+              }
+            },
+            {
+              "id": "ALLOC_META",
+              "kind": "edge",
+              "from": "POOL",
+              "to": "META",
+              "attrs": {
+                "value": 0
+              }
+            },
+            {
+              "id": "ALLOC_AMZN",
+              "kind": "edge",
+              "from": "POOL",
+              "to": "AMZN",
+              "attrs": {
+                "value": 0
+              }
+            },
+            {
+              "id": "YIELD_META",
+              "kind": "value",
+              "label": "메타 요구수익률",
+              "attrs": {
+                "value": 4.5
+              }
+            }
+          ]
+        }
+      },
+      "semantic_role": "AI 설비투자 → 빅테크 채권 공급 → 같은 장기자금의 재배분 → 요구수익률 상승을 하나의 화면 모델로 이어간다.",
+      "named_states": [
+        {
+          "id": "BASE",
+          "description": "국채와 구글 채권만 있고, 자금 100이 둘 사이에 배분됨",
+          "assert": [
+            {
+              "path": "elements.META.visible",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "path": "elements.AMZN.visible",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "path": "elements.ALLOC_UST.attrs.value",
+              "op": "eq",
+              "value": 60
+            }
+          ]
+        },
+        {
+          "id": "MORE_SUPPLY",
+          "description": "메타·아마존 채권이 추가됨. 자금 배분은 아직 그대로",
+          "assert": [
+            {
+              "path": "elements.META.visible",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "path": "elements.AMZN.visible",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "path": "elements.ALLOC_UST.attrs.value",
+              "op": "eq",
+              "value": 60
+            },
+            {
+              "path": "elements.ALLOC_META.attrs.value",
+              "op": "eq",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "id": "REALLOCATED",
+          "description": "같은 자금 100이 더 많은 채권 사이로 나뉨",
+          "assert": [
+            {
+              "path": "elements.ALLOC_META.visible",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "path": "elements.ALLOC_META.attrs.value",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "path": "elements.ALLOC_AMZN.attrs.value",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "path": "elements.ALLOC_UST.attrs.value",
+              "op": "lt",
+              "value": 60
+            }
+          ]
+        },
+        {
+          "id": "YIELD_PRESSURE",
+          "description": "자금을 끌어오려면 발행자가 더 높은 수익률을 제시해야 함",
+          "assert": [
+            {
+              "path": "elements.YIELD_META.visible",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "path": "elements.YIELD_META.attrs.value",
+              "op": "gt",
+              "value": 4.5
+            }
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "from": "BASE",
+          "to": "MORE_SUPPLY",
+          "meaning": "공급 증가"
+        },
+        {
+          "from": "MORE_SUPPLY",
+          "to": "REALLOCATED",
+          "meaning": "자금 재배분"
+        },
+        {
+          "from": "REALLOCATED",
+          "to": "YIELD_PRESSURE",
+          "meaning": "요구수익률 상승"
+        }
+      ],
+      "handoffs": [
+        {
+          "from_scene": "SC009",
+          "to_scene": "SC010",
+          "state": "YIELD_PRESSURE"
+        }
+      ],
+      "persistence": {
+        "survives_hidden": true,
+        "first_scene": "SC009",
+        "default_visibility": "VISIBLE",
+        "last_scene": "SC009"
+      }
+    }
+  ]
+}

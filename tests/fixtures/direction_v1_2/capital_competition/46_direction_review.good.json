@@ -1,0 +1,31 @@
+{
+  "version": "1.2",
+  "contract": {
+    "artifact": "visual_direction_contract",
+    "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
+    "revision": 1,
+    "fingerprint": "sha256:65d58660737383838fcd56ea1ebdb5653161ff5924d811677b4f4e430cfcab21"
+  },
+  "render": {
+    "path": "renders/final.mp4",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "scenes": [
+    {
+      "scene_id": "SC009",
+      "verdict": "PASS",
+      "reviewer": "user",
+      "reviewed_at": "2026-10-03T10:00:00+09:00",
+      "answers": [
+        {
+          "question": "자금 총량이 변하지 않은 채 배분이 바뀌는 과정이 화면에 보이는가?",
+          "answer": "예"
+        },
+        {
+          "question": "수익률 상승이 재배분 뒤에 일어나는가?",
+          "answer": "예"
+        }
+      ]
+    }
+  ]
+}
