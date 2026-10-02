@@ -35,6 +35,7 @@ class SceneFacts:
     merged: dict[str, str]                      # action id -> why it collapses below min_duration
     collapsed_beats: list[str]
     final_signature: dict[str, Any]             # model id -> signature at scene end
+    entry_signature: dict[str, Any] = field(default_factory=dict)  # model id -> signature before the scene's first operation
     models_on_timeline: set[str] = field(default_factory=set)
 
     def action_span(self, aid: str) -> tuple[float, float] | None:
@@ -229,11 +230,17 @@ def evaluate_scene(contract: Contract, scene_id: str, timeline: dict[str, Any], 
         seen[key] = bid
 
     final = {mid: replay.at(mid, hi) for mid in replay.models}
+    # ENTRY_SIGNATURE: what the scene inherits — every earlier operation applied, none of its own
+    # (an action at the scene's first anchor, even one starting before the window, is not included).
+    entry = {}
+    for mid in replay.models:
+        own = [e["time_seconds"] for e in events if e.get("model_id") == mid]
+        entry[mid] = replay.at(mid, min([lo] + own), inclusive=False)
     return SceneFacts(
         scene_id=scene_id, window=window, events=in_window, action_events=action_events, reached=reached,
         reached_at=reached_at, state_detail=detail, invariant_violations=inv_bad, sync_bad=sync_bad, order=order,
         dependency_violations=dep_bad, merged=merged, collapsed_beats=sorted(set(collapsed)), final_signature=final,
-        models_on_timeline=set(replay.models),
+        entry_signature=entry, models_on_timeline=set(replay.models),
     )
 
 

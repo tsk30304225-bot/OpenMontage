@@ -540,4 +540,37 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
                 for cid in spec.get("consumes") or []:
                     if contract.scene_of(cid) != sid:
                         err(f"{sid}.runtime_stack.{layer}.consumes: {cid} is not an id of this scene")
+
+    # --- 41 handoffs: cross-scene continuity (to_scene inherits the state) -------------------------
+    order = {sid: i for i, sid in enumerate(contract.scenes)}
+    for mid, entry in contract.models.items():
+        persistence = entry.get("persistence") or {}
+        names = {n["id"] for n in entry.get("named_states") or []}
+        for handoff in entry.get("handoffs") or []:
+            frm, to, state = handoff["from_scene"], handoff["to_scene"], handoff["state"]
+            where = f"{mid} handoff {frm} -> {to}"
+            if state not in names:
+                err(f"{where}: {state} is not a named state of {mid}")
+            if frm not in order or to not in order:
+                err(f"{where}: {frm if frm not in order else to} is not a scene of this contract")
+                continue
+            if order[to] <= order[frm]:
+                err(f"{where}: to_scene must come after from_scene")
+            first, last = persistence.get("first_scene"), persistence.get("last_scene")
+            if first in order and order[first] > order[frm]:
+                err(f"{where}: persistence.first_scene {first} starts after from_scene")
+            if last in order and order[last] < order[to]:
+                err(f"{where}: persistence.last_scene {last} ends before to_scene")
+            target = contract.scenes[to]
+            declared = next((m for m in target.get("models") or [] if m["model_id"] == mid), None)
+            if declared is None:
+                err(f"{where}: {to} does not declare {mid} in models (VISIBLE, or HIDDEN_BUT_ACTIVE when off screen)")
+                continue
+            if declared.get("enter_state") not in (None, f"{mid}.{state}"):
+                err(f"{where}: {to} enter_state {declared['enter_state']} is not the handed-off {mid}.{state}")
+            if declared.get("visibility") == "HIDDEN_BUT_ACTIVE" and persistence.get("survives_hidden") is False:
+                err(f"{where}: {to} keeps {mid} HIDDEN_BUT_ACTIVE but persistence.survives_hidden is false")
+            init = (contract.obj(target.get("initial_state") or "") or {}).get("pvm_state")
+            if init and init.split(".", 1)[0] == mid and init != f"{mid}.{state}":
+                err(f"{where}: {to} initial_state is {init}, not the handed-off {mid}.{state}")
     return {"errors": errors, "warnings": warnings}

@@ -289,6 +289,19 @@ def qa_report(contract: Contract, lineage: dict[str, Any], visual_direction: dic
                     if truth.get("source"):
                         add("SOURCE_EVIDENCE", "UNVERIFIED", [], f"{truth['statement']!r} from {truth['source']}: not bound for a non-locked scene")
 
+        # --- handoff destination: the scene starts from the handed-off state (any importance) -------
+        for h in contract.models.values():
+            for handoff in h.get("handoffs") or []:
+                if handoff.get("to_scene") != sid:
+                    continue
+                mid = h["definition"]["id"]
+                sig = facts.entry_signature.get(mid)
+                ok = sig is not None and all(assertion_holds(a, sig) for a in contract.named_state(f"{mid}.{handoff['state']}"))
+                add("PERSISTENT_STATE", "PASS" if ok else "FAIL", [],
+                    f"{mid} enters from {handoff.get('from_scene')} in {handoff['state']}: "
+                    f"{'holds' if ok else ('not on the timeline' if sig is None else 'does not hold')} before the scene's first operation",
+                    violation="REPLACE_PVM_WITH_UNRELATED_BROLL", time=lo)
+
         required = [c["result"] for c in checks if c["role"] == "REQUIRED"]
         result = _worst(required + ([receipt["verdict"]] if receipt else []))
         row = {"scene_id": sid, "importance": importance, "checks": checks,
