@@ -4,13 +4,13 @@
     "artifact": "visual_direction_contract",
     "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
     "revision": 1,
-    "fingerprint": "sha256:7047616a43079b6e2e2403cfcefec81cc83ac13c3266091655b901c3ecd52421"
+    "fingerprint": "sha256:2649e3464b5584d45525d7f8c2b0e3b1ed14bf6fbcf11d4ce477ef9a24571a6a"
   },
   "inputs": {
-    "timeline_sha256": "2bbed5bd52d0740f3b8f5a74c2ec82133271921048e85109af73a44787ff4419",
-    "lineage_sha256": "daba5ee33baa3677b090b1f50da85254c09a22d3820566cb3e3f29f4befb2a6d",
-    "binding_sha256": "273ef033da0593c3ac31d513e89753c894cd69f7874ac4c3e1d0f1517db9c8c7",
-    "visual_direction_sha256": "a898e34b732f796ec4ce7afef1dc9feddfa86118d224a2f4cb9234890ad99d28"
+    "timeline_sha256": "417e12df850eb6bb72bae09f5087ad8fd6b61e095bdc3436ac1ba1af45f7d737",
+    "lineage_sha256": "52e611c69b59965f6e2baf7bc4a8070aacb70fa34ac46cee4bc002e885fc86ba",
+    "binding_sha256": "b182f1a88a070ab77f804d636ef26754a1fa6e7bd099825a513ef31ecd1ad379",
+    "visual_direction_sha256": "15a5a6b0895ed1c8b4a354a72e67786f10cbba03e168bc2bda4f796175f28a95"
   },
   "scenes": [
     {
@@ -230,19 +230,10 @@
           "role": "REQUIRED",
           "target_ids": [],
           "result": "PASS",
-          "detail": "CAPITAL_FLOW hands YIELD_PRESSURE to SC010: holds at scene end",
-          "time_seconds": 17.06
-        },
-        {
-          "check_id": "SC009/Q21",
-          "type": "PERSISTENT_STATE",
-          "role": "REQUIRED",
-          "target_ids": [],
-          "result": "PASS",
           "detail": "persistent model CAPITAL_FLOW runs in the scene"
         },
         {
-          "check_id": "SC009/Q22",
+          "check_id": "SC009/Q21",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -252,7 +243,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q23",
+          "check_id": "SC009/Q22",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -263,7 +254,7 @@
           "violation": "REMOVE_REQUIRED_ACTION"
         },
         {
-          "check_id": "SC009/Q24",
+          "check_id": "SC009/Q23",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -273,7 +264,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q25",
+          "check_id": "SC009/Q24",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -283,7 +274,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q26",
+          "check_id": "SC009/Q25",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -293,7 +284,7 @@
           "detail": "deterministic_graphics: unbound"
         },
         {
-          "check_id": "SC009/Q27",
+          "check_id": "SC009/Q26",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -303,7 +294,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q28",
+          "check_id": "SC009/Q27",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -313,7 +304,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q29",
+          "check_id": "SC009/Q28",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -323,7 +314,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q30",
+          "check_id": "SC009/Q29",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -333,7 +324,7 @@
           "detail": "deterministic_graphics: unbound"
         },
         {
-          "check_id": "SC009/Q31",
+          "check_id": "SC009/Q30",
           "type": "BINDING",
           "role": "REQUIRED",
           "target_ids": [
@@ -343,7 +334,7 @@
           "detail": "deterministic_graphics: bound"
         },
         {
-          "check_id": "SC009/Q32",
+          "check_id": "SC009/Q31",
           "type": "PIXEL_CHANGE",
           "role": "SUPPORTING",
           "target_ids": [
