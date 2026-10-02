@@ -8,12 +8,14 @@ calls at the same points of each render path; the logic here does not change.
 Each function returns plain data; video_compose turns ``{"error", "data"}``
 into a failed ToolResult.
 
-- ``templated_props``        Remotion templated path, before render: the
-                             visual_timeline guard
+- ``templated_props``        Remotion templated path, before render: phrase captions
+                             (lib/phrase_captions.py), then the visual_timeline guard
 - ``atelier_direction``      atelier path, before render: HyperFrames scene clips +
                              direction contract binding
 - ``templated_scene_runtimes`` templated path, before the pre-compose gate:
                              planned-runtime warnings + HyperFrames scene clips
+- ``atelier_stock_import`` / ``ATELIER_IMPORT_SPEC_RE``
+                             atelier doctrine scan (lib/atelier_policy.py)
 """
 
 from __future__ import annotations
@@ -23,15 +25,20 @@ from pathlib import Path
 from typing import Any
 
 from lib import scene_runtime
+from lib.atelier_policy import IMPORT_SPEC_RE as ATELIER_IMPORT_SPEC_RE
+from lib.atelier_policy import classify_import
 from lib.direction_contract.hooks import (
     attach_visual_timeline,
     hyperframes_cuts,
     prepare_atelier_direction,
     scene_clips_unread_error,
 )
+from lib.phrase_captions import attach_phrase_captions
 
 __all__ = [
+    "ATELIER_IMPORT_SPEC_RE",
     "atelier_direction",
+    "atelier_stock_import",
     "templated_props",
     "templated_scene_runtimes",
 ]
@@ -44,7 +51,10 @@ def _render_hyperframes(params: dict[str, Any]) -> Any:
 
 
 def templated_props(props: dict[str, Any], composition_id: str) -> str | None:
-    """Bind the visual_timeline into stock-composition props; error message or None."""
+    """Bind captions, then the visual_timeline, into stock-composition props; error message or None."""
+    caption_error = attach_phrase_captions(props, composition_id)
+    if caption_error:
+        return caption_error
     return attach_visual_timeline(props, composition_id)
 
 
@@ -122,3 +132,7 @@ def templated_scene_runtimes(
             return scene_runtimes
     return {"gaps": runtime_gaps, "scene_runtimes": scene_runtimes}
 
+
+def atelier_stock_import(spec: str) -> str | None:
+    """'stock', 'shared_infra' or None for one import specifier in a bespoke project."""
+    return classify_import(spec)

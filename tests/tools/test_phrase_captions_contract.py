@@ -4,7 +4,7 @@ from pathlib import Path
 import jsonschema
 import pytest
 
-from tools.video.video_compose import VideoCompose
+from lib.phrase_captions import attach_phrase_captions, caption_words_from_timing
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -38,7 +38,7 @@ QWEN3_SEGMENTS = {
 
 
 def test_qwen3_segments_become_global_ms_captions_with_segment_breaks() -> None:
-    captions = VideoCompose._caption_words_from_timing(QWEN3_SEGMENTS)
+    captions = caption_words_from_timing(QWEN3_SEGMENTS)
 
     assert [c["word"] for c in captions] == ["금리가", "오르면", "대출이", "무거워집니다.", "그런데", "왜일까요"]
     assert captions[0] == {"word": "금리가", "startMs": 400, "endMs": 900}
@@ -47,8 +47,8 @@ def test_qwen3_segments_become_global_ms_captions_with_segment_breaks() -> None:
 
 def test_flat_word_timestamps_and_timestamps_list_are_accepted() -> None:
     flat = {"word_timestamps": [{"word": "하나", "start": 0.0, "end": 0.3}, {"word": "둘", "start": 0.5, "end": 0.8}]}
-    assert [c["startMs"] for c in VideoCompose._caption_words_from_timing(flat)] == [0, 500]
-    assert len(VideoCompose._caption_words_from_timing(QWEN3_SEGMENTS["segments"])) == 6
+    assert [c["startMs"] for c in caption_words_from_timing(flat)] == [0, 500]
+    assert len(caption_words_from_timing(QWEN3_SEGMENTS["segments"])) == 6
 
 
 def test_karaoke_style_loads_word_timings_from_subtitles_source(tmp_path: Path) -> None:
@@ -56,7 +56,7 @@ def test_karaoke_style_loads_word_timings_from_subtitles_source(tmp_path: Path) 
     source.write_text(json.dumps(QWEN3_SEGMENTS, ensure_ascii=False), encoding="utf-8")
     props = {"cuts": [], "subtitles": {"enabled": True, "style": "karaoke", "source": str(source)}}
 
-    assert VideoCompose._attach_phrase_captions(props, "Explainer") is None
+    assert attach_phrase_captions(props, "Explainer") is None
     assert len(props["captions"]) == 6
 
 
@@ -67,7 +67,7 @@ def test_karaoke_style_builds_cinematic_caption_config(tmp_path: Path) -> None:
         "subtitles": {"style": "Karaoke", "source": str(source), "dim_color": "#777777", "hold_seconds": 0.4}
     }
 
-    assert VideoCompose._attach_phrase_captions(props, "CinematicRenderer") is None
+    assert attach_phrase_captions(props, "CinematicRenderer") is None
     assert props["captions"]["style"] == "karaoke"
     assert props["captions"]["dimColor"] == "#777777"
     assert props["captions"]["holdSeconds"] == 0.4
@@ -77,17 +77,17 @@ def test_karaoke_style_builds_cinematic_caption_config(tmp_path: Path) -> None:
 def test_existing_captions_are_kept_and_other_styles_are_untouched() -> None:
     words = [{"word": "a", "startMs": 0, "endMs": 100}]
     props = {"captions": words, "subtitles": {"style": "karaoke"}}
-    assert VideoCompose._attach_phrase_captions(props, "Explainer") is None
+    assert attach_phrase_captions(props, "Explainer") is None
     assert props["captions"] is words
 
     legacy = {"subtitles": {"style": "word-by-word", "source": "captions.srt"}}
-    assert VideoCompose._attach_phrase_captions(legacy, "Explainer") is None
+    assert attach_phrase_captions(legacy, "Explainer") is None
     assert "captions" not in legacy
 
 
 def test_karaoke_without_word_timings_fails_loudly() -> None:
     props = {"subtitles": {"enabled": True, "style": "karaoke", "source": "captions.srt"}}
-    error = VideoCompose._attach_phrase_captions(props, "Explainer")
+    error = attach_phrase_captions(props, "Explainer")
     assert error and "word timings" in error
 
 
