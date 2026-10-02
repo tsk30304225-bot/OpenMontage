@@ -2,12 +2,19 @@
 
     python -m tests.equivalence.compare before.json after.json [--control control.json]
 
-Every difference between ``before`` and ``after`` is a failure, except in
-tests whose control recording (a second run of the *before* code) already
-differs from ``before``: those tests are nondeterministic themselves (unseeded
-random test audio) and their differences are listed separately. Tests whose
-outcome differs between runs are listed too. Exit 0 only when no real
-difference remains.
+Every difference between ``before`` and ``after`` is a failure, with two
+documented exceptions:
+
+1. ``IGNORED_PATH_SUFFIXES`` — version stamps of external CLIs fetched on
+   demand; compared nowhere.
+2. ``NOISE_FIELDS`` — values that are random by test design. A difference is
+   tolerated only when BOTH hold: the test's control recording (a second run of
+   the *before* code) already differs from ``before``, and the differing path
+   is one of the confirmed noise fields below. Any other difference in such a
+   test (a verdict, a status, an issue count, a video frame hash) is real.
+
+Tests whose outcome differs between recordings are listed. Exit 0 only when no
+real difference remains.
 """
 
 from __future__ import annotations
@@ -23,6 +30,17 @@ _INDEX_RE = re.compile(r"\[\d+\]")
 # Version stamps of external CLIs fetched on demand (npx hyperframes auto-updates
 # between runs); they describe the environment, not this code.
 IGNORED_PATH_SUFFIXES = ("._meta.version",)
+
+# Confirmed noise (tests/tools/test_final_audio_delivery.py synthesizes unseeded
+# anoisesrc pink noise; two runs of the same code differ exactly here):
+#   - loudness readings of that audio
+#   - the decoded AUDIO frame hash of files rendered from it (video hash stays strict)
+#   - the final MP4 size, which follows the audio content
+#   - issue messages that quote a reading: equal once numbers are masked
+NOISE_LEAF_KEYS = {"integrated_lufs", "lra_lu", "true_peak_dbtp"}
+NOISE_PATH_SUFFIXES = (".frames.audio", ".technical_probe.file_size_bytes")
+_ISSUE_RE = re.compile(r"\.issues\[\d+\]$")
+_NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?")
 
 
 def _diffs(a: Any, b: Any, path: str, out: list[str]) -> None:
@@ -44,15 +62,28 @@ def _diffs(a: Any, b: Any, path: str, out: list[str]) -> None:
         out.append(path)
 
 
-def _value(rec: Any, path: str) -> str:
+def _get(rec: Any, path: str) -> Any:
+    """Value at a diff path (keys may not contain dots; file-capture keys are never looked up)."""
     cur = rec
-    for part in re.findall(r"\.([^.\[#]+)|\[(\d+)\]", path):
-        key, idx = part
+    for key, idx in re.findall(r"\.([^.\[#]+)|\[(\d+)\]", path):
         try:
             cur = cur[int(idx)] if idx else cur[key]
         except (KeyError, IndexError, TypeError):
-            return "<absent>"
-    return json.dumps(cur, ensure_ascii=False)[:160]
+            return None
+    return cur
+
+
+def _value(rec: Any, path: str) -> str:
+    return json.dumps(_get(rec, path), ensure_ascii=False)[:160]
+
+
+def _is_noise(path: str, a_rec: Any, b_rec: Any) -> bool:
+    if path.rsplit(".", 1)[-1] in NOISE_LEAF_KEYS or path.endswith(NOISE_PATH_SUFFIXES):
+        return True
+    if _ISSUE_RE.search(path):
+        a, b = _get(a_rec, path), _get(b_rec, path)
+        return isinstance(a, str) and isinstance(b, str) and _NUMBER_RE.sub("#", a) == _NUMBER_RE.sub("#", b)
+    return False
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,16 +108,14 @@ def main(argv: list[str] | None = None) -> int:
             if d:
                 noisy[t] = {_INDEX_RE.sub("[]", p) for p in d}
 
-    # A test whose recording already differs between two runs of the same code
-    # (unseeded random input) cannot prove equality: all its differences are
-    # reported as nondeterministic, never silently dropped.
     real: dict[str, list[str]] = {}
     nondeterministic: dict[str, list[str]] = {}
     for t in sorted(set(rb) | set(ra)):
         d: list[str] = []
         _diffs(rb.get(t), ra.get(t), "", d)
         for p in d:
-            (nondeterministic if t in noisy else real).setdefault(t, []).append(p)
+            tolerated = t in noisy and _is_noise(p, rb.get(t), ra.get(t))
+            (nondeterministic if tolerated else real).setdefault(t, []).append(p)
 
     outcome_changes = {t: (before.get("outcomes", {}).get(t), after.get("outcomes", {}).get(t))
                        for t in set(before.get("outcomes", {})) | set(after.get("outcomes", {}))
@@ -98,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
         for p in paths[:3]:
             print(f"   {p}: {_value(rb.get(t), p)}  !=  {_value(ra.get(t), p)}")
     for t, paths in nondeterministic.items():
-        print(f"NONDETERMINISTIC (also differs in control) {t}: {len(paths)} value(s), e.g. {paths[0]}")
+        print(f"NOISE (confirmed field, test varies in control) {t}: {len(paths)} value(s), e.g. {paths[0]}")
     for t, (x, y) in sorted(outcome_changes.items()):
         print(f"OUTCOME {t}: {x} -> {y}")
     if missing:
