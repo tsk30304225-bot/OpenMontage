@@ -20,6 +20,10 @@ from typing import Any
 
 _INDEX_RE = re.compile(r"\[\d+\]")
 
+# Version stamps of external CLIs fetched on demand (npx hyperframes auto-updates
+# between runs); they describe the environment, not this code.
+IGNORED_PATH_SUFFIXES = ("._meta.version",)
+
 
 def _diffs(a: Any, b: Any, path: str, out: list[str]) -> None:
     if type(a) is not type(b):
@@ -36,7 +40,7 @@ def _diffs(a: Any, b: Any, path: str, out: list[str]) -> None:
             out.append(f"{path}#len")
         for i, (x, y) in enumerate(zip(a, b)):
             _diffs(x, y, f"{path}[{i}]", out)
-    elif a != b:
+    elif a != b and not path.endswith(IGNORED_PATH_SUFFIXES):
         out.append(path)
 
 
