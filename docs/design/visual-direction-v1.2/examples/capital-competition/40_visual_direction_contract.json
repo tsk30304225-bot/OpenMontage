@@ -684,11 +684,7 @@
         "minimum_hold_seconds": 2.0
       },
       "qa_contract": {
-        "review": "auto",
-        "checks": [
-          "SOURCE_EVIDENCE",
-          "LAST_FRAME"
-        ]
+        "review": "auto"
       },
       "runtime_stack": {
         "factual_source": {

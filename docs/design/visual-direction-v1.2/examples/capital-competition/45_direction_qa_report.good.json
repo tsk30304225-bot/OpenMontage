@@ -4,13 +4,13 @@
     "artifact": "visual_direction_contract",
     "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
     "revision": 1,
-    "fingerprint": "sha256:2649e3464b5584d45525d7f8c2b0e3b1ed14bf6fbcf11d4ce477ef9a24571a6a"
+    "fingerprint": "sha256:ad20a2fa4f60fb41a0cbd862edfdad6e0f8b3775c5cc9e40304a908e9129f90e"
   },
   "inputs": {
-    "timeline_sha256": "2c292a6586ce8d3beb2c355678d868ff1ba50b14dbb32fdbd35369a7743c3958",
-    "lineage_sha256": "fb2f45bea0a9081fb438ecf1ced03723179592564958590ae476562b0f3b12d2",
-    "binding_sha256": "1cd3b67a37a249bdece7f4dd4a0c450bbd764035ed4e51eea7b6b060175841c5",
-    "visual_direction_sha256": "bc0a3026fe04bf7773849c9edf53810b17fe921cf67629e6dfe2aa940d410b10"
+    "timeline_sha256": "fb772a1dff285c6c7778eac4b323d332b59b820f513e99f4fac38d8f4fc162bb",
+    "lineage_sha256": "36d193db29a64fe2f941e60b942266bece41ec49b0f9cd31fea82c0fb339f2fd",
+    "binding_sha256": "5c13bd54d245aa38c211bfd9ed72b1bb5d6618d85c547240768d091d6a2299f5",
+    "visual_direction_sha256": "a5f172eb85c8eb691d47be7be0e151866b0e991077f025647e264847f23c3b27"
   },
   "scenes": [
     {
