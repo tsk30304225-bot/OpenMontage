@@ -126,7 +126,7 @@ RATE_TABLE: {type: document, role: 은행 혼합형 주담대 금리표, truth: 
 | `model` | `<모델>.<element>` | `model_id` + `element_id` |
 | `type` | document, footage, value … (선택) | `object_type` |
 | `role` | 이 대상이 의미하는 것 (필수) | `semantic_role` |
-| `truth` | 8-1 Truth 참조 | `truth_class` |
+| `truth` | 4-8 Truth 참조 | `truth_class` |
 | `source` | 원본 파일/asset id. **정확한 출처 identity**로 비교된다 (SOURCE_IDENTITY_V1: 경로 끝 segment 전체가 같아야 하고, 파일명 일부만 같으면 다른 출처) | `source_asset` |
 | `persistence` | SCENE · CROSS_SCENE · PVM | `persistence` |
 | `required` / `removable` | 의미에 필수인가 / 지워도 되는가 | `semantic_necessity` |
@@ -240,7 +240,7 @@ CC01:
 - **Action**은 `STATE → ACTION → STATE`. 언제(`at` 앵커)·무엇을(`targets`)·어디서 어디로(`from`/`to`). 함께 일어나야 하는 변화(한쪽에서 빼서 다른 쪽에 넣는 재배분)는 같은 `sync` 이름을 준다: 같은 시각·같은 길이로 실행되고 invariant는 그룹 전체가 적용된 뒤에 평가된다.
 - **Event**는 한 앵커에서 함께 시작되는 action 묶음이다. 동적 Locked 장면은 **지금은 Event를 직접 쓴다** (9절).
 - **Beat**는 문장이 아니라 의미·화면 변화의 단위다. 의미 있는 상태 변화마다 앵커가 있는 beat나 event가 하나 이상 있어야 한다.
-- **Invariant**: `constant`(합계·값 유지), `holds`(조건 유지), `order`(순서 유지). 범위는 기본 장면 전체 (`during: {from: A01, to: A03}`로 좁힐 수 있다). 경로를 `ALLOC_UST.value`처럼 줄여 쓰면 element 모델의 `elements.ALLOC_UST.attrs.value`다 (N7).
+- **Invariant**: `constant`(합계·값 유지), `holds`(조건 유지), `order`(순서 유지). 범위는 기본 장면 전체이고, `during: {from: S1, to: S3}`처럼 **상태 ID**로 좁힐 수 있다. action ID는 쓰지 않는다: 현재 runtime은 from/to가 둘 다 도달한 모델 상태일 때만 구간을 좁히므로, action ID를 쓰면 오류 없이 장면 전체로 검사된다. 경로를 `ALLOC_UST.value`처럼 줄여 쓰면 element 모델의 `elements.ALLOC_UST.attrs.value`다 (N7).
 - **Causal**: 원인 → 중간 반응 → 결과 상태가 화면에서 실제로 일어나야 한다는 계약. `[MOTION] causal: true`면 필수.
 - 상태의 선택 키: `until`(이 action·앵커 뒤에는 끝나도 됨), `bookkeeping: true`(화면에 보일 필요 없는 기록용 상태. 인과 중간 상태에는 쓰지 않는다).
 - Beat의 `before`/`after`는 상태 ID, `meaning_before`/`meaning_after`는 시청자 이해를 적는 문장이다.
@@ -571,7 +571,7 @@ N1–N13 전체에 공통: **빈 목록과 빈 선택 객체는 쓰지 않는다
 
 동적 Locked 장면은 40 스키마가 Event 1개 이상을 요구하고, runtime은 Event를 다음에 쓴다: runtime layer의 암시적 소비 (action → 그 action의 event), lineage 구현 판정 (event의 action이 모두 구현되고 결과 상태가 구현되면 event 구현), ORDER invariant의 `contract_event_id`, 43 `consumes.event_ids`. 그래서 이번에는 Event를 Bridge 자동 생성 대상으로 바꾸지 않는다.
 
-anchor + action으로 결정적 생성은 가능하다: 같은 `at` 앵커(또는 같은 `sync`)의 action을 한 event로 묶고, precondition = 첫 action의 from, resulting = 마지막 action의 completion/to, next = 다음 묶음. 예시 E01–E03은 이 규칙으로 그대로 재현된다. 자동 생성으로 바꾸려면 먼저 필요하다:
+anchor + action으로 결정적 생성은 가능하다: 같은 `at` 앵커(또는 같은 `sync`)의 action을 한 event로 묶고, precondition = 첫 action의 from, resulting = 마지막 action의 to_state_id, next = 다음 묶음. 예시 E01–E03은 이 규칙으로 그대로 재현된다. 자동 생성으로 바꾸려면 먼저 필요하다:
 1. 안정적인 event ID 규칙 (fingerprint와 기존 참조 보존),
 2. 같은 앵커의 독립 action, `with`가 다른 앵커에 걸친 경우의 규칙,
 3. 작성된 event와 파생 결과가 같아야 한다는 검사,
