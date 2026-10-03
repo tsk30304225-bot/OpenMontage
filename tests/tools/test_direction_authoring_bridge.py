@@ -242,3 +242,25 @@ def test_every_problem_is_reported_at_once() -> None:
 def test_validate_contract_errors_surface_as_contract_semantic() -> None:
     codes, text = _codes(_edit(("  pvm: CAPITAL_FLOW.REALLOCATED\n", "  pvm: CAPITAL_FLOW.NO_SUCH_STATE\n")))
     assert set(codes) == {"CONTRACT_SEMANTIC"} and "NO_SUCH_STATE" in text
+
+
+# --- audit fixes: no silent defaults ----------------------------------------------------------------------
+
+@pytest.mark.parametrize("old, new", [
+    ("[SHOW]\nrequirements: [실제 데이터센터 외관, 와이드, 시설 규모가 느껴질 것]", "[SHOW]\n~"),
+    ("[SHOW]\nrequirements: [실제 데이터센터 외관, 와이드, 시설 규모가 느껴질 것]", "[SHOW]\nnull"),
+    ("[ALLOWED FREEDOM]\n[SOURCE_CROP_MARGIN, LAYOUT_COORDINATES]", "[ALLOWED FREEDOM]\n~"),
+])
+def test_null_section_body_is_an_empty_section(old, new) -> None:
+    codes, text = _codes(_edit((old, new)))
+    assert codes == ["PARSE_SECTION_EMPTY"] and "body is null" in text
+
+
+def test_empty_list_body_keeps_its_existing_meaning() -> None:
+    assert _scene(_compile(), "SC010")["prohibited_simplification"] == []        # [PROHIBITED SIMPLIFICATION] []
+
+
+@pytest.mark.parametrize("empty", ["[]", "~"])
+def test_explicitly_empty_layers_is_an_error_not_the_default_route(empty) -> None:
+    codes, text = _codes(_edit(("  after: {A02: complete}\n  min_seconds: 0.6", f"  after: {{A02: complete}}\n  min_seconds: 0.6\n  layers: {empty}")))
+    assert codes == ["KEY_TYPE"] and "A03.layers must list at least one runtime layer" in text

@@ -145,8 +145,12 @@ def parse_authoring(text: str) -> tuple[AuthoringDoc, list[AuthoringIssue]]:
             return
         before = len(issues)
         data = _load_yaml("\n".join(body), header_line + 1, where, issues)
-        if len(issues) == before:
-            block.sections[name] = Section(name, header_line, data)
+        if len(issues) != before:
+            return
+        if data is None:   # an explicit YAML null (~, null) is not a body either
+            issues.append(AuthoringIssue("PARSE_SECTION_EMPTY", f"[{name}] body is null", line=header_line, **where))
+            return
+        block.sections[name] = Section(name, header_line, data)
 
     for number, raw in enumerate(lines, start=1):
         line = raw.rstrip()

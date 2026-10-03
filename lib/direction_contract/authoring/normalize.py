@@ -556,6 +556,8 @@ class Builder:
             _put(act, "min_duration_seconds", self.number(spec.get("min_seconds"), ctx, f"{local}.min_seconds"))
             _put(act, "implementation_freedom", self.strings(spec.get("freedom"), ctx, f"{local}.freedom"))
             layers = self.strings(spec.get("layers"), ctx, f"{local}.layers")
+            if "layers" in spec and not layers:
+                self.issue("KEY_TYPE", f"{local}.layers must list at least one runtime layer (leave it out for the default routing)", ctx)
             for layer in layers:
                 if layer not in g.RUNTIME_LAYERS:
                     self.issue("KEY_TYPE", f"{local}.layers: {layer} is not a runtime layer", ctx)
