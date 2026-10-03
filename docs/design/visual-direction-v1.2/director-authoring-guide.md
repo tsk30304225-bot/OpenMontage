@@ -27,10 +27,11 @@ Director authoring (이 문법)
 | `authority.pvm_ref.sha256`, fingerprint, `contract_ref` | Bridge / runtime |
 | `lifecycle` (revision, status, locked_by/at) | Bridge의 잠금 단계 (사용자 승인) |
 | `state.entered_by` / `exited_by` | Bridge (action의 from/to에서) |
-| `execution_graph` | Bridge (beat·state·action·event에서) |
+| `execution_graph` | 쓰지 않는다. Bridge가 내부에서 계산해 검사만 하고 40에는 쓰지 않는다 (N8) |
 | effective must_preserve core (LOCKED의 모든 state·action·invariant) | runtime 정규화 (D1) |
 | `runtime_stack.*.consumes` | Bridge (8절 N9 규칙) |
 | `qa_contract.checks` | 쓰지 않는다. 45는 적용 가능한 구조 검사를 항상 전부 실행한다 |
+| action `completion_state_id` · `completion_condition` · `must_execute` | 쓰지 않는다. v1.2에서 action 완료 = 그 action의 마지막 timeline 연산이 끝나는 시각이고, 모든 action은 필수다. 40에 앞의 둘이 있거나 `must_execute: false`면 contract 오류 |
 | `qa_contract.review: auto`의 최종 판정 | runtime (D6) |
 | `priority_policy`, `visual_identity.mechanism_compatibility`, `approval_scope`의 고정값, `downstream_contract` | Bridge (고정 상수 / 기본값) |
 | 41 `current_state`, `state_history` | replay |
@@ -47,6 +48,16 @@ Director authoring (이 문법)
 - `>`로 시작하는 줄은 Director 메모다. Bridge는 읽지 않는다 (기계 계약에 들어가지 않는다).
 - **ID는 장면 안의 짧은 이름**(`AN01`, `S2`, `A02`, `META`)으로 쓴다. 다른 장면의 것을 가리킬 때만 `SC010/S0`처럼 장면을 붙인다. 모델과 모델 상태는 `CAPITAL_FLOW`, `CAPITAL_FLOW.REALLOCATED`.
 - 41(PVM)은 별도 파일이다. 작성법은 `director-pvm-grammar.md`.
+
+**Markdown은 사람용 껍데기이고, YAML 부분은 작은 DSL처럼 엄격하게 파싱된다.** Bridge는 모르는 구조를 조용히 무시하지 않는다:
+
+- `[섹션]` 이름은 이 문서에 정의된 것만 인정한다 (프로젝트: `[PROJECT]` `[VIEWER JOURNEY]`, 장면: 4절의 섹션). 모르는 섹션 → 오류.
+- 한 블록 안에서 같은 섹션이 두 번 나오면 오류. 같은 YAML mapping 안의 key 중복도 오류 (`AN01`을 두 번 쓰는 등).
+- 섹션마다 허용된 key만 인정한다 (= 7절 매핑표의 사람용 열과 4절 예시의 key). 모르는 key → 오류.
+- YAML anchor(`&`), alias(`*`), merge(`<<`), custom tag(`!`)는 금지 → 오류.
+- 순서를 보존한다: 블록·섹션·mapping·목록은 쓴 순서대로 40에 옮겨진다.
+- `>` Director 메모는 **섹션과 섹션 사이에서만** 허용된다. YAML 본문 안에서 `>`로 시작하는 줄은 메모가 아니라 오류다 (YAML folded scalar로 오해되지 않게).
+- `# PROJECT`, `## <장면>`, `[섹션]` 머리, `>` 메모, 빈 줄 밖의 문장이 섹션 본문 바깥에 있으면 오류.
 
 ---
 
@@ -119,7 +130,8 @@ RATE_TABLE: {type: document, role: 은행 혼합형 주담대 금리표, truth: 
 | `source` | 원본 파일/asset id. **정확한 출처 identity**로 비교된다 (SOURCE_IDENTITY_V1: 경로 끝 segment 전체가 같아야 하고, 파일명 일부만 같으면 다른 출처) | `source_asset` |
 | `persistence` | SCENE · CROSS_SCENE · PVM | `persistence` |
 | `required` / `removable` | 의미에 필수인가 / 지워도 되는가 | `semantic_necessity` |
-| `layer`, `parent` | 선택 | `layer_id`, `parent_object` |
+| `layer` | 선택. 이 대상을 보이는 상태를 어떤 runtime layer가 맡는지 (N9 예외 routing) | `layer_id` |
+| `parent` | 선택 | `parent_object` |
 
 REQUIRED_FLEX 장면은 대상을 하나하나 잠그지 않고 보여야 할 것을 문장으로 쓴다:
 
@@ -232,7 +244,8 @@ CC01:
 - **Causal**: 원인 → 중간 반응 → 결과 상태가 화면에서 실제로 일어나야 한다는 계약. `[MOTION] causal: true`면 필수.
 - 상태의 선택 키: `until`(이 action·앵커 뒤에는 끝나도 됨), `bookkeeping: true`(화면에 보일 필요 없는 기록용 상태. 인과 중간 상태에는 쓰지 않는다).
 - Beat의 `before`/`after`는 상태 ID, `meaning_before`/`meaning_after`는 시청자 이해를 적는 문장이다.
-- `entered_by`/`exited_by`, `execution_graph`는 쓰지 않는다 (Bridge가 만든다).
+- 예외 routing: 핵심 변화를 `deterministic_graphics`가 아닌 layer가 맡는 action에만 `layers: [deterministic_graphics, character]`처럼 쓴다. 이것은 40의 action 필드가 아니라 Bridge routing hint다 (N9). 평범한 장면에서는 쓰지 않는다.
+- `entered_by`/`exited_by`, `execution_graph`, 완료 조건(`completion_state_id`·`completion_condition`), `must_execute`는 쓰지 않는다. action은 마지막 timeline 연산이 끝날 때 완료되고 항상 필수다. to_state 도달은 따로 검사된다.
 
 ### 4-8. `[TRUTH]` — 사실과 출처
 
@@ -321,6 +334,7 @@ captions: {runtime: remotion, purpose: PhraseCaptions}
 - layer: `base_visual` `factual_source` `deterministic_graphics` `generated_media` `character` `captions` `sound` `postprocess` `master_composite`.
 - runtime: `remotion` `hyperframes` `footage` `generated` `audio` `none`.
 - **무엇을 소비하는지(`consumes`)는 쓰지 않는다.** Bridge가 N9 규칙으로 정한다: 모델 action은 `deterministic_graphics`, 출처 대상을 보이는 상태는 `factual_source`, 그 밖의 모델 밖 상태는 `base_visual`. 그 layer를 선언하지 않으면 Bridge 오류다. (모델 action을 HyperFrames로 돌리고 싶으면 `deterministic_graphics`의 runtime을 `hyperframes`로 쓴다.)
+- 기본 routing이 맞지 않는 장면만 예외를 쓴다: action에 `layers: [...]`, 모델 밖 대상에 `[SHOW]`의 `layer`. **적은 layer는 모두 실제 binding이 있어야 한다** (하나라도 unbound면 그 id는 미구현).
 - FLEX/DISCRETIONARY는 `hint: footage`처럼 한 줄 힌트만 써도 된다 (`runtime_hint`).
 
 ### 4-13. `[FALLBACK]` — 대체 / Deviation
@@ -497,13 +511,14 @@ base_visual: {runtime: footage, purpose: 데이터센터 외관 실사}
 | `[MODELS] <model>` enter · visibility | `models[]` {model_id, enter_state `<model>.<enter>`, visibility} | |
 | `[STATES] <id>` pvm · also · visible · meaning · invariants · until · bookkeeping | `states[]` pvm_state · object_states · visible_objects · semantic_meaning · invariants · valid_until · must_be_visible=false | `entered_by`/`exited_by`는 Bridge (N5) |
 | `[STATES] initial: true` | `initial_state` | 장면에 정확히 하나 |
-| `[ACTIONS] <id>` | `actions[]` from_state_id · to_state_id · start_anchor(`at`) · end_anchor(`until`) · target_objects · action_type(`type`) · semantic_role(`role`) · model_id(`model`) · path · easing · completion_condition · completion_state_id(`completes_at`) · min_duration_seconds(`min_seconds`) · implementation_freedom(`freedom`) · must_execute | `model` 생략 시 N6 |
+| `[ACTIONS] <id>` | `actions[]` from_state_id · to_state_id · start_anchor(`at`) · end_anchor(`until`) · target_objects · action_type(`type`) · semantic_role(`role`) · model_id(`model`) · path · easing · min_duration_seconds(`min_seconds`) · implementation_freedom(`freedom`) | `model` 생략 시 N6. `completion_state_id`·`completion_condition`·`must_execute`는 사람용에 없다 (v1.2 미지원) |
+| `[ACTIONS] <id>` layers | — (40 필드 아님) | Bridge routing hint → `runtime_stack.<layer>.consumes` (N9) |
 | `[ACTIONS]` after · before · with · wait_until · sync | `dependency.after[{action, on}]` · `before` · `with` · `wait_until` · `sync_group` `<s>/<sync>` | |
-| `[EVENTS] <id>` on · from · do · to · completion · next | `events[]` trigger_anchor · precondition_state · actions · resulting_state · completion_condition · next_event_dependency | 9절 |
+| `[EVENTS] <id>` on · from · do · to · next | `events[]` trigger_anchor · precondition_state · actions · resulting_state · next_event_dependency | 9절. event `completion_condition`은 runtime이 읽지 않아 사람용에 두지 않는다 |
 | `[BEATS] <id>` at · function · new · meaning_before · meaning_after · before · change · after · actions | `beats[]` anchor · narrative_function · new_information · meaning_before · meaning_after · visual_state_before · required_change · visual_state_after · linked_actions | `before`/`after`는 상태 ID |
 | `[INVARIANTS] <id>` | `invariants[]` (N7) | |
 | `[CAUSAL] <id>` proposition · cause · through · effect · proof · prohibit · visibility · dependencies | `causal_motion_contracts[]` proposition · cause · intermediate_reactions · effect · final_proof_state{state_id, viewer_can_observe} · prohibited_simplification · visibility · dependencies | |
-| — | `execution_graph` | Bridge (N8) |
+| — | `execution_graph` | 쓰지 않는다 (N8: Bridge 내부 검사 전용) |
 | `[TRUTH]` | `truth_requirements[]` | |
 | `[PRESENTATION]` | `presentation.*` | guidance |
 | `[MUST PRESERVE]` beats · objects · events · causal_chains · ordering · anchors · models · last_frame · cross_scene | `must_preserve.beats` · `objects` · `events` · `causal_chains` · `ordering` · `narration_anchors` · `persistent_models` · `last_frame_elements` · `cross_scene` | core(states·actions·invariants)는 runtime (D1). Bridge는 쓰지 않는다 |
@@ -537,18 +552,18 @@ Bridge는 사람용 문서 + 41 + 승인된 script를 받아 40을 만든다. **
 | N5 | **entered_by / exited_by.** 장면에서 state `S`를 `to`로 갖는 action이 정확히 하나면 `entered_by`, `from`으로 갖는 action이 정확히 하나면 `exited_by`. 둘 이상이면 비워 둔다 (sync group의 여러 action). Director가 적었으면 오류 (1절). |
 | N6 | **action model_id.** `model`이 없고 `from`·`to` 상태가 같은 모델의 `pvm` 상태면 그 모델. 아니면 비워 둔다. |
 | N7 | **invariant 경로 축약.** `constant: sum/min/max` + `paths` → `target{model_id, aggregate, paths}`, 하나면 `path`. `<element>.<attr>` → `elements.<element>.attrs.<attr>`, `<element>.visible` → `elements.<element>.visible` (element 모델만, rail은 전체 경로를 쓴다). `during` 생략 = `scene`. |
-| N8 | **execution_graph.** 노드 = 장면의 모든 beat·state·action·event. 간선: BEAT→ACTION (`linked_actions`), STATE→ACTION (action.from), ACTION→STATE (action.to), EVENT→ACTION (event.actions). 문서 순서로 정렬. 순환이면 오류. |
-| N9 | **runtime consumes.** LOCKED 장면: 모델 action(`model_id` 있음) → `deterministic_graphics`. 모델 밖 상태 중 SOURCE 대상(`truth: SOURCE` 또는 `source` 있음)을 `visible`로 갖는 상태 → `factual_source`. 그 밖의 모델 밖 상태 → `base_visual`. 모델 상태와 event는 runtime이 action에서 함께 유도하므로 쓰지 않는다. 필요한 layer가 `[RUNTIME]`에 없으면 오류. FLEX/DISCRETIONARY는 consumes를 쓰지 않는다. |
+| N8 | **execution_graph (내부 전용).** Bridge는 그래프를 계산한다: 노드 = 장면의 모든 beat·state·action·event, 간선 BEAT→ACTION (`linked_actions`), STATE→ACTION (action.from), ACTION→STATE (action.to), EVENT→ACTION (event.actions). 참조 오류와 순환을 검사하고, 통과하면 버린다. **40 `execution_graph`에는 쓰지 않는다** — runtime이 작성된 그래프와 파생 그래프의 동일성을 검사하지 않으므로, 쓰면 원본과 파생본 두 개가 생긴다. runtime에 그 검사가 생긴 뒤에 다시 정한다. |
+| N9 | **runtime consumes.** LOCKED 장면만. 기본: 모델 action(`model_id` 있음) → `deterministic_graphics`. 모델 밖 상태 중 SOURCE 대상(`truth: SOURCE` 또는 `source` 있음)을 `visible`로 갖는 상태 → `factual_source`. 그 밖의 모델 밖 상태 → `base_visual`. **예외**: action에 `layers`가 있으면 기본 대신 그 layer들이 모두 consume한다. 모델 밖 상태는 `visible` 대상에 `[SHOW] layer`가 있으면 기본 대신 그 layer들(대상마다, 중복 제거)이 consume한다. 적은 layer는 모두 실제 binding이 필요하다 (43은 consume을 선언한 모든 layer를 검사). event와 action의 from/to 상태는 runtime이 action에서 함께 유도하므로(`_layer_consumes`) 쓰지 않는다. 필요한 layer가 `[RUNTIME]`에 없으면 오류. 결과는 layer 이름과 id를 문서 순서로. FLEX/DISCRETIONARY는 consumes를 쓰지 않는다. |
 | N10 | **QA metadata.** `qa_contract = {review: <[REVIEW] review, 없으면 auto>, review_questions, evidence_states}` (LOCKED는 항상 객체를 만든다). `checks`는 쓰지 않는다. |
-| N11 | **must_preserve.** 사람용 `[MUST PRESERVE]`를 키 이름만 바꿔 그대로 옮기고 빈 목록은 생략한다 (7-2). core ID를 덧붙이지 않는다 — effective must_preserve는 runtime이 load 때 계산한다 (D1). LOCKED는 섹션이 없어도 `{}`를 쓴다 (스키마 필수). |
-| N12 | **상수와 기본값.** `schema_name/version/artifact_role`, `priority_policy`, `visual_identity.mechanism_compatibility`, `approval_scope` 고정값, `fallback_contract.on_failure = DIRECTION_DEVIATION`. 그 외 기본값(`completion_state_id = to`, `must_execute = true`)은 쓰지 않는다 (스키마 기본). |
+| N11 | **must_preserve.** 사람용 `[MUST PRESERVE]`를 키 이름만 바꿔 그대로 옮기고 빈 목록은 생략한다 (7-2). core ID(LOCKED의 state·action·invariant)를 덧붙이지 않는다 — effective must_preserve는 runtime이 load 때 계산한다 (D1). 40에는 Director가 추가로 지정한 보존 항목만 기록된다. LOCKED는 섹션이 없어도 `{}`를 쓴다 (스키마 필수). |
+| N12 | **상수와 기본값.** `schema_name/version/artifact_role`, `priority_policy`, `visual_identity.mechanism_compatibility`, `approval_scope` 고정값, `fallback_contract.on_failure = DIRECTION_DEVIATION`. action의 `completion_state_id`·`completion_condition`·`must_execute`는 쓰지 않는다: v1.2에서 action 완료 = 마지막 timeline 연산 종료, 모든 action 필수 (40에 앞의 둘이 있거나 `must_execute: false`면 contract 오류). |
 | N13 | **검증.** 결과 40을 스키마(`visual_direction_contract`)와 `validate_contract(40, 41, script)`로 검증한다. 오류가 하나라도 있으면 40을 쓰지 않는다. |
 
-Bridge 오류 (사람용 문서를 고쳐야 하는 경우): 대본에 없는 앵커 · 모호한 앵커 · 풀리지 않는 참조 · 중복 ID · Director가 1절의 값을 씀 · `initial`이 0개 또는 2개 이상 · N9 layer 누락 · execution_graph 순환 · `validate_contract` 오류.
+Bridge 오류 (사람용 문서를 고쳐야 하는 경우): 대본에 없는 앵커 · 모호한 앵커 · 풀리지 않는 참조 · 중복 ID · Director가 1절의 값을 씀 · `initial`이 0개 또는 2개 이상 · N9 layer 누락 · execution_graph 참조 오류·순환 · 파서 규칙 위반 (2절) · `validate_contract` 오류.
 
 N1–N13 전체에 공통: **빈 목록과 빈 선택 객체는 쓰지 않는다** (스키마가 요구하는 LOCKED의 `must_preserve`, `allowed_freedom`, `prohibited_simplification`, `qa_contract`는 예외).
 
-**round-trip 기준**: Bridge(사람용 capital-competition) == `examples/capital-competition/40_visual_direction_contract.json`. 현재 예시와 다른 점은 두 가지이고, Bridge를 구현하는 커밋에서 예시를 Bridge 출력으로 맞춘다 (fingerprint 재계산 포함): 예시 SC010의 `qa_contract.checks` (Bridge가 쓰지 않는 필드, N10)와 `execution_graph` (예시에는 없고 Bridge가 쓴다, N8).
+**round-trip 기준**: Bridge(사람용 capital-competition) == `examples/capital-competition/40_visual_direction_contract.json` (lifecycle 잠금 메타 제외). 예시는 이미 Bridge 규칙에 맞춰져 있다: SC010 `qa_contract.checks` 제거, `execution_graph` 없음.
 
 ---
 

@@ -3,7 +3,7 @@
 상태: **설계 문서.** 이 폴더에는 README·예시(와 Director용 문법 가이드)만 있다. 40–46 canonical runtime 스키마와 생성·검증 스크립트는 포크 소유 `schemas/direction_contract/`에 있고 (D18), `visual_direction`/`visual_timeline` 1.2는 거기서 **self-contained로 생성**되어 `schemas/artifacts/`의 shipped 스키마가 된다 (D14). runtime은 이 폴더를 읽지 않는다. Phase 1 runtime: `lib/direction_contract/` (authority · contract_v12 · evaluate · lineage · states · binding/execution · qa · deviations · gate).
 개정 4 (2026-10-02, Phase 1 착수 중 발견한 결함 정정): D14 스키마 통합, D15 script canonicalization.
 개정 5 (2026-10-03): D16 43 binding-centric (원문 §18), D17 SOURCE_EVIDENCE·LAST_FRAME 판정, D18 스키마 위치.
-Phase 1 이후 (2026-10-03): contract-conformance 정정 X1(transitions)·X2(handoff), Director authoring guide (정정 기록 참고).
+Phase 1 이후 (2026-10-03): contract-conformance 정정 X1(transitions)·X2(handoff)·action 완료 의미, Director authoring guide (정정 기록 참고).
 기준 코드: 포크 `origin/main` 4a9aed4 (Phase 0 병합 후).
 기준 문서: 사용자 원문 「연출안 형식 설계.txt」 **전체 (§0–§35, v1.1→v1.2 표)** + 2026-10-02 확정 결정 D1–D13.
 
@@ -107,11 +107,11 @@ Production Complete
 | §7 State 일급 | `state_id, semantic_meaning, pvm_state / object_states / visible_objects, invariants, entered_by, exited_by, must_be_visible, valid_until` | `object_states` = 기계 판정 가능한 assertion. 모델 밖 대상은 `visible_objects`(렌더 후 판정) |
 | §8 Invariant | `kind: CONSTANT`(target + value) · `ASSERT`(holds) · `ORDER`(order) + `during` | 원문 `CAUSAL_ORDER` = `ORDER` |
 | §9 Object | `object_id, object_type, semantic_role, truth_class, model_id+element_id, layer_id, source_asset, parent_object, persistence, semantic_necessity` | `initial_state/lifecycle/actions`는 모델·state·action 쪽에서 표현 (중복 방지) |
-| §10 Action | `action_id, semantic_role, action_type, model_id, target_objects, start_anchor, end_anchor, from_state_id, to_state_id, path, easing, dependency{after,before,with,wait_until,sync_group}, completion_condition, completion_state_id, implementation_freedom, must_execute, min_duration_seconds` | 원문 `from_state/to_state`(서술)는 state 객체가 대신함 |
+| §10 Action | `action_id, semantic_role, action_type, model_id, target_objects, start_anchor, end_anchor, from_state_id, to_state_id, path, easing, dependency{after,before,with,wait_until,sync_group}, completion_condition, completion_state_id, implementation_freedom, must_execute, min_duration_seconds` | 원문 `from_state/to_state`(서술)는 state 객체가 대신함. **v1.2: action 완료 = 그 action의 마지막 timeline 연산 종료** (to_state 도달은 별도 검사). `completion_state_id`·`completion_condition`은 예약·미지원, `must_execute`는 생략/true만 (작성 시 contract 오류) |
 | §11 Causal motion | `causal_motion_contracts[]` {causal_chain_id, proposition, cause, intermediate_reactions[], effect, dependencies, visibility, final_proof_state, prohibited_simplification(5종)} | 배열(장면에 인과 사슬 여러 개 가능). `motion_reason.causal_explanation=true`면 필수 |
 | §12 Motion reason | `motion_required, understanding_dependency, temporal_logic, causal_explanation, static_replacement_valid, decorative_motion_allowed` | `causal_explanation` 추가 (§4 "인과 Scene이면"의 기계 판정용) |
 | §13 Event | `events[]` {event_id, trigger_anchor, precondition_state, actions, resulting_state, completion_condition, next_event_dependency} | timeline의 event(=연산 1개)와 다른 개념 → timeline event에 `contract_event_id` |
-| §14 Execution graph | 선택 필드. **정규화가 beats/states/actions/events에서 파생**, 작성됐다면 파생 결과와 같아야 함 + 비순환 | 같은 정보를 두 번 쓰지 않게 |
+| §14 Execution graph | 선택 필드. 파생 규칙은 beats/states/actions/events에서 (4절). runtime은 작성본을 검사하지 않으므로 Bridge는 내부 검사에만 쓰고 40에 쓰지 않는다 | 같은 정보를 두 번 쓰지 않게 |
 | §15 must_preserve | 11개 키 + `cross_scene` | **D1**: core(states/actions/invariants) 자동 포함 |
 | §16 allowed_freedom | 부여된 자유만 enum 배열로 | false 항목(causal_order, action_removal, action_merge, state_removal, narration_anchor_change)은 **LOCKED에서 절대 부여 불가**로 고정 (NEVER_FREE) |
 | §17 prohibited_simplification | 9종 그대로 | |
@@ -137,8 +137,8 @@ Production Complete
 
 1. 40·41 스키마 검증 (공통 registry).
 2. **effective must_preserve** = 작성된 must_preserve ∪ (LOCKED면) 모든 state·action·invariant ID. (D1)
-3. execution_graph: 파생 규칙 = BEAT→ACTION(linked_actions), STATE→ACTION(from), ACTION→STATE(to), EVENT→ACTION. **현재 runtime은 이 그래프를 파생하거나 작성본과 비교하지 않는다** (정정 기록). Director Authoring Bridge가 이 규칙으로 생성한다 (authoring guide N8).
-4. 기본값: `review = auto`는 runtime이 적용. `completion_state_id = to_state_id`, `must_execute = true`는 스키마상 기본값이며 runtime이 따로 채우지 않는다.
+3. execution_graph: 파생 규칙 = BEAT→ACTION(linked_actions), STATE→ACTION(from), ACTION→STATE(to), EVENT→ACTION. **현재 runtime은 이 그래프를 파생하거나 작성본과 비교하지 않는다** (정정 기록). Director Authoring Bridge는 이 규칙으로 그래프를 내부에서 계산해 참조·순환만 검사하고 40에는 쓰지 않는다 (authoring guide N8).
+4. 기본값: `review = auto`는 runtime이 적용. action 완료는 마지막 timeline 연산 종료로만 판정한다. `completion_state_id`·`completion_condition`은 v1.2 미지원, `must_execute`는 생략/true만 허용 (5절).
 5. **review 해석** (D6): `auto` → causal contract 있음 · action 있음 · `pvm_transitions` 있음 · `static_replacement_valid=false` 중 하나면 required, 아니면 not_required. 그 경우 `not_required`를 쓰면 contract 오류.
 6. fingerprint 계산, ID 색인 생성.
 
@@ -153,6 +153,7 @@ Production Complete
 - NEVER_FREE 항목이 allowed_freedom에 없음 (스키마 enum에 아예 없음).
 - sync_group: 같은 그룹 action은 같은 start_anchor.
 - runtime_stack: 잠긴 action·event·state는 적어도 한 layer의 `consumes`에 있어야 한다 (binding 대상이 없으면 contract 오류).
+- action 완료 필드: `completion_state_id`·`completion_condition`이 있거나 `must_execute: false`면 contract 오류 (v1.2 미지원).
 
 ## 6-1. 출처 identity · 마지막 화면 (D17)
 - **`SOURCE_IDENTITY_V1`**: 두 참조를 `\` → `/`, 앞의 `./` 제거, Unicode NFC로 정규화한다. contract `source_asset`과 cut `source`가 같거나, cut source의 경로 segment 끝이 contract `source_asset`의 segment 전체와 같으면 같은 출처. (asset-manifest id처럼 `/`가 없으면 사실상 동일 문자열 비교.)
@@ -265,7 +266,9 @@ Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_sta
 - **X1: 41 `transitions` 없음/빈 목록 = 제한 없음.** 스키마는 그렇게 정의했지만 `validate_contract`는 빈 허용 목록으로 취급해 같은 모델 안의 모든 이동을 거부했다. runtime을 스키마에 맞췄다 (스키마 무변경). regression 4종 (`tests/tools/test_direction_v12_conformance.py`).
 - **X2: handoff = 장면 간 연속성 계약 (양 끝 검사).** 이전 runtime은 from_scene 끝 상태만 검사했고 to_scene, `models[].enter_state/visibility`, persistence를 읽지 않았다. 이제 5절 규칙을 `validate_contract`가 검사하고, 45는 handoff를 받는 장면(중요도 무관)에 PERSISTENT_STATE를 추가한다: 판정 대상은 **ENTRY_SIGNATURE** = 그 장면 자신의 첫 연산 적용 전 replay 상태 (첫 앵커에서 바로 시작하는 action은 진입 상태에 들어가지 않는다). `default_visibility`는 검사하지 않는다 (범위 밖).
 - **예시 SC009 → SC010 PVM handoff 삭제.** SC010은 금리표 증거 장면이고 CAPITAL_FLOW를 쓰지 않으며 이후 장면도 모델을 다시 쓰지 않는다. 41 handoff 삭제(`last_scene: SC009` 유지), SC010의 `REPLACE_PVM_WITH_UNRELATED_BROLL` 삭제, SC009 `handoff_to_scene: SC010`은 편집상 연결로 유지. fingerprint 재계산 (`sha256:2649e346…`), 42/43/45 예시 재생성: 내용 변화는 SC009의 handoff PERSISTENT_STATE 행이 빠진 것뿐. 이전 45 예시의 `inputs.lineage_sha256`은 함께 실린 42 예시와 맞지 않았다(시각을 고정하지 않은 lineage의 hash) — 재생성으로 일치.
-- **4절 서술 정정.** "execution_graph 파생·동일성 검사"와 "completion_state_id/must_execute 기본값 채움"은 runtime에 구현된 적이 없다. 서술을 실제 동작에 맞췄다. execution_graph는 Director Authoring Bridge가 생성한다 (런타임 동일성 검사는 미구현으로 남음).
+- **action 완료 의미 확정.** runtime은 `completion_state_id`·`completion_condition`·`must_execute`를 읽은 적이 없다 (작성해도 무시됐다). v1.2의 정식 의미: action 완료 = 그 action에 속한 마지막 timeline 연산의 종료 시각 (`dependency.after … on: complete`도 이것). to_state 도달은 STATE_TRANSITION으로 따로 검사. 앞의 두 필드는 예약·미지원, `must_execute: false`도 미지원 → 작성 시 contract 오류. 스키마 구조·version은 그대로, description만 정정.
+- **예시 SC010 `qa_contract.checks` 삭제.** runtime이 읽지 않는 목록이라 "이 검사만 한다"는 오해만 만들었다. fingerprint `sha256:ad20a2fa…`로 재계산, 42/43/45 재생성: hash만 바뀌고 QA 결과는 동일.
+- **4절 서술 정정.** "execution_graph 파생·동일성 검사"와 "completion_state_id/must_execute 기본값 채움"은 runtime에 구현된 적이 없다. 서술을 실제 동작에 맞췄다. execution_graph는 Director Authoring Bridge가 내부 검사에만 쓰고 40에 serialize하지 않는다 (런타임 동일성 검사가 생기면 다시 정한다).
 - **`visual_timeline_compiler` 1.2 production path.** 1.2 연출안은 LOCKED 40/41을 함께 받아야 하고 (없으면 legacy fallback 없이 실패), revision/fingerprint를 확인한 뒤 `compile_timeline(..., models=41, contract=40)`으로 컴파일하며 `anchor_resolution`을 timeline과 결과에 보존한다.
 
 ## 13. 남은 질문
