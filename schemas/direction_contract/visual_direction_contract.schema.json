@@ -1250,11 +1250,12 @@
           }
         },
         "completion_condition": {
-          "type": "string"
+          "type": "string",
+          "description": "Reserved, unsupported in v1.2: authoring it is a contract error. An action completes when its last timeline operation ends."
         },
         "completion_state_id": {
           "$ref": "#/$defs/id",
-          "description": "defaults to to_state_id"
+          "description": "Reserved, unsupported in v1.2: authoring it is a contract error. An action completes when its last timeline operation ends; reaching to_state_id is checked separately (STATE_TRANSITION)."
         },
         "min_duration_seconds": {
           "type": "number",
@@ -1269,7 +1270,8 @@
         },
         "must_execute": {
           "type": "boolean",
-          "default": true
+          "default": true,
+          "description": "Every contract action is required. Omitted or true; false is unsupported in v1.2 and a contract error."
         }
       }
     },
@@ -1300,7 +1302,8 @@
           "$ref": "#/$defs/id"
         },
         "completion_condition": {
-          "type": "string"
+          "type": "string",
+          "description": "Reserved, unsupported in v1.2: authoring it is a contract error."
         },
         "next_event_dependency": {
           "$ref": "#/$defs/id"

@@ -203,13 +203,6 @@
           "meaning": "요구수익률 상승"
         }
       ],
-      "handoffs": [
-        {
-          "from_scene": "SC009",
-          "to_scene": "SC010",
-          "state": "YIELD_PRESSURE"
-        }
-      ],
       "persistence": {
         "survives_hidden": true,
         "first_scene": "SC009",

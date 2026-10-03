@@ -4,7 +4,7 @@
     "artifact": "visual_direction_contract",
     "artifact_id": "ai-capital-flow-mortgage-ko/visual-direction",
     "revision": 1,
-    "fingerprint": "sha256:7047616a43079b6e2e2403cfcefec81cc83ac13c3266091655b901c3ecd52421"
+    "fingerprint": "sha256:ad20a2fa4f60fb41a0cbd862edfdad6e0f8b3775c5cc9e40304a908e9129f90e"
   },
   "render": {
     "path": "renders/final.mp4",

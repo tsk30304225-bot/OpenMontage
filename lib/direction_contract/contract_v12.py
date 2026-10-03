@@ -436,8 +436,9 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
                 p_from, p_to = states[frm].get("pvm_state"), states[to].get("pvm_state")
                 if p_from and p_to and p_from.split(".")[0] == p_to.split(".")[0]:
                     mid = p_from.split(".")[0]
+                    # absent or empty transitions = unrestricted; a non-empty list is an allowlist (41 schema)
                     pairs = {(t["from"], t["to"]) for t in contract.models[mid].get("transitions") or []}
-                    if (p_from.split(".")[1], p_to.split(".")[1]) not in pairs:
+                    if pairs and (p_from.split(".")[1], p_to.split(".")[1]) not in pairs:
                         err(f"{aid}: {p_from} -> {p_to} is not a transition of {mid} in persistent_visual_models")
                 if states[to].get("entered_by") not in (None, aid):
                     err(f"{aid} enters {to} but {to}.entered_by is {states[to]['entered_by']}")
@@ -449,6 +450,12 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
                     known(d["action"] if isinstance(d, dict) else d, ("action",), f"{aid}.dependency.{rel}")
             if a.get("model_id") and a["model_id"] not in contract.models:
                 err(f"{aid}: model {a['model_id']} is not in persistent_visual_models")
+            # v1.2: an action completes when its last timeline operation ends; nothing else is interpreted
+            for key in ("completion_state_id", "completion_condition"):
+                if key in a:
+                    err(f"{aid}: {key} is reserved and unsupported in v1.2 (an action completes when its last timeline operation ends)")
+            if a.get("must_execute") is False:
+                err(f"{aid}: must_execute false is unsupported in v1.2 (every contract action is required)")
         groups: dict[str, set[str | None]] = {}
         for a in actions.values():
             g = (a.get("dependency") or {}).get("sync_group")
@@ -460,6 +467,8 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
 
         for ev in scene.get("events") or []:
             known(ev.get("trigger_anchor"), ("anchor",), f"{ev['event_id']}.trigger_anchor")
+            if "completion_condition" in ev:
+                err(f"{ev['event_id']}: completion_condition is reserved and unsupported in v1.2")
             for key in ("precondition_state", "resulting_state"):
                 if ev.get(key):
                     known(ev[key], ("state",), f"{ev['event_id']}.{key}")
@@ -539,4 +548,37 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
                 for cid in spec.get("consumes") or []:
                     if contract.scene_of(cid) != sid:
                         err(f"{sid}.runtime_stack.{layer}.consumes: {cid} is not an id of this scene")
+
+    # --- 41 handoffs: cross-scene continuity (to_scene inherits the state) -------------------------
+    order = {sid: i for i, sid in enumerate(contract.scenes)}
+    for mid, entry in contract.models.items():
+        persistence = entry.get("persistence") or {}
+        names = {n["id"] for n in entry.get("named_states") or []}
+        for handoff in entry.get("handoffs") or []:
+            frm, to, state = handoff["from_scene"], handoff["to_scene"], handoff["state"]
+            where = f"{mid} handoff {frm} -> {to}"
+            if state not in names:
+                err(f"{where}: {state} is not a named state of {mid}")
+            if frm not in order or to not in order:
+                err(f"{where}: {frm if frm not in order else to} is not a scene of this contract")
+                continue
+            if order[to] <= order[frm]:
+                err(f"{where}: to_scene must come after from_scene")
+            first, last = persistence.get("first_scene"), persistence.get("last_scene")
+            if first in order and order[first] > order[frm]:
+                err(f"{where}: persistence.first_scene {first} starts after from_scene")
+            if last in order and order[last] < order[to]:
+                err(f"{where}: persistence.last_scene {last} ends before to_scene")
+            target = contract.scenes[to]
+            declared = next((m for m in target.get("models") or [] if m["model_id"] == mid), None)
+            if declared is None:
+                err(f"{where}: {to} does not declare {mid} in models (VISIBLE, or HIDDEN_BUT_ACTIVE when off screen)")
+                continue
+            if declared.get("enter_state") not in (None, f"{mid}.{state}"):
+                err(f"{where}: {to} enter_state {declared['enter_state']} is not the handed-off {mid}.{state}")
+            if declared.get("visibility") == "HIDDEN_BUT_ACTIVE" and persistence.get("survives_hidden") is False:
+                err(f"{where}: {to} keeps {mid} HIDDEN_BUT_ACTIVE but persistence.survives_hidden is false")
+            init = (contract.obj(target.get("initial_state") or "") or {}).get("pvm_state")
+            if init and init.split(".", 1)[0] == mid and init != f"{mid}.{state}":
+                err(f"{where}: {to} initial_state is {init}, not the handed-off {mid}.{state}")
     return {"errors": errors, "warnings": warnings}

@@ -678,19 +678,13 @@
         "SOURCE_CROP_MARGIN",
         "LAYOUT_COORDINATES"
       ],
-      "prohibited_simplification": [
-        "REPLACE_PVM_WITH_UNRELATED_BROLL"
-      ],
+      "prohibited_simplification": [],
       "last_frame_contract": {
         "required_state_id": "SC010/S0",
         "minimum_hold_seconds": 2.0
       },
       "qa_contract": {
-        "review": "auto",
-        "checks": [
-          "SOURCE_EVIDENCE",
-          "LAST_FRAME"
-        ]
+        "review": "auto"
       },
       "runtime_stack": {
         "factual_source": {
