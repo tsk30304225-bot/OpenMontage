@@ -5,6 +5,8 @@ no schema field is added or changed.
 
 X1  41 transitions: absent or [] = unrestricted, a non-empty list is an allowlist.
 X2  41 handoffs: from_scene ends in the state AND to_scene starts from it (ENTRY_SIGNATURE).
+Action completion: the end of the last timeline operation; completion_state_id, completion_condition
+and must_execute false are unsupported in v1.2 (contract errors).
 """
 
 import json
@@ -187,3 +189,58 @@ def test_entry_signature_excludes_an_action_at_the_first_anchor(tmp_path, lead) 
     entry = facts.entry_signature["CAPITAL_FLOW"]
     assert all(assertion_holds(a, entry) for a in base)
     assert not all(assertion_holds(a, entry) for a in supply)
+
+
+# --- action completion (v1.2) ------------------------------------------------------------------------
+# An action completes when its last timeline operation ends. Reaching to_state_id is a separate check
+# (STATE_TRANSITION). completion_state_id / completion_condition are reserved and unsupported;
+# must_execute is required-only (omitted or true).
+
+def _with_a02(**fields):
+    doc_40 = _load("40_visual_direction_contract.json")
+    next(a for a in doc_40["scenes"][0]["actions"] if a["action_id"] == "SC009/A02").update(fields)
+    return doc_40
+
+
+def _completion_errors(errors):
+    return [e for e in errors if "SC009/A02" in e and ("reserved" in e or "must_execute" in e)]
+
+
+@pytest.mark.parametrize("fields", [{}, {"must_execute": True}])
+def test_omitted_or_true_must_execute_is_a_valid_contract(fields) -> None:
+    assert _errors(_with_a02(**fields), _load("41_persistent_visual_models.json")) == []
+
+
+@pytest.mark.parametrize("fields, needle", [
+    ({"completion_state_id": "SC009/S2"}, "completion_state_id is reserved and unsupported"),
+    ({"completion_condition": "the bars settle"}, "completion_condition is reserved and unsupported"),
+    ({"must_execute": False}, "must_execute false is unsupported"),
+])
+def test_unsupported_completion_fields_are_contract_errors(fields, needle) -> None:
+    errors = _completion_errors(_errors(_with_a02(**fields), _load("41_persistent_visual_models.json")))
+    assert len(errors) == 1 and needle in errors[0]
+
+
+def test_action_completes_when_its_last_timeline_operation_ends(tmp_path) -> None:
+    """dependency.after {on: complete} is measured against the end of the action's LAST operation."""
+    from lib.direction_contract.evaluate import evaluate_scene
+    from lib.direction_contract.lineage import production_map
+    contract, timeline, _ = _run_with(_load("40_visual_direction_contract.json"), _load("41_persistent_visual_models.json"), tmp_path)
+    prod = production_map(_load("42_direction_lineage.json"))["SC009"]
+    a01 = [e for e in timeline["events"] if e.get("action_id") == "SC009/A01"]
+    first_end = min(e["time_seconds"] + e["duration_seconds"] for e in a01)
+    last_end = max(e["time_seconds"] + e["duration_seconds"] for e in a01)
+    assert len(a01) > 1 and first_end < last_end
+
+    def a02_starting_at(t):
+        moved = json.loads(json.dumps(timeline))
+        ops = [e for e in moved["events"] if e.get("action_id") == "SC009/A02"]
+        shift = t - min(e["time_seconds"] for e in ops)
+        for e in ops:
+            e["time_seconds"] = round(e["time_seconds"] + shift, 6)
+        facts = evaluate_scene(contract, "SC009", moved, prod)
+        return [d for d in facts.dependency_violations if d.startswith("SC009/A02")]
+
+    early = a02_starting_at((first_end + last_end) / 2)  # after A01's first operation, before its last one ends
+    assert len(early) == 1 and f"before SC009/A01 completes ({last_end:g}s)" in early[0]
+    assert a02_starting_at(last_end) == []

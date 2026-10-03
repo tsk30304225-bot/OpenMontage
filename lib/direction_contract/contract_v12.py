@@ -450,6 +450,12 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
                     known(d["action"] if isinstance(d, dict) else d, ("action",), f"{aid}.dependency.{rel}")
             if a.get("model_id") and a["model_id"] not in contract.models:
                 err(f"{aid}: model {a['model_id']} is not in persistent_visual_models")
+            # v1.2: an action completes when its last timeline operation ends; nothing else is interpreted
+            for key in ("completion_state_id", "completion_condition"):
+                if key in a:
+                    err(f"{aid}: {key} is reserved and unsupported in v1.2 (an action completes when its last timeline operation ends)")
+            if a.get("must_execute") is False:
+                err(f"{aid}: must_execute false is unsupported in v1.2 (every contract action is required)")
         groups: dict[str, set[str | None]] = {}
         for a in actions.values():
             g = (a.get("dependency") or {}).get("sync_group")
