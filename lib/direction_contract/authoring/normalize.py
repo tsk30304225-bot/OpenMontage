@@ -374,7 +374,9 @@ class Builder:
                 self.issue("ANCHOR_AMBIGUOUS", f"{local}: {text!r} occurs {len(hits)} times in the canonical script", ctx)
                 continue
             start = hits[0]
-            edge = self.text(spec.get("edge"), ctx, f"{local}.edge") or "START"
+            edge = self.text(spec.get("edge"), ctx, f"{local}.edge")
+            if edge is None:
+                edge = "START"   # default only when omitted; an explicit value goes to schema validation
             anchor: dict[str, Any] = {"anchor_id": aid}
             _put(anchor, "script_span_id", self.text(spec.get("script_span_id"), ctx, f"{local}.script_span_id"))
             anchor.update({"exact_text": text, "source_span": {"char_start": start, "char_end": start + len(text)}, "edge": edge})
@@ -850,7 +852,8 @@ class Builder:
         if section is None or not self.keys(section.body, g.REVIEW_KEYS, ctx, "REVIEW"):
             return out
         body = section.body
-        out["review"] = self.text(body.get("review"), ctx, "review") or "auto"
+        review = self.text(body.get("review"), ctx, "review")
+        out["review"] = "auto" if review is None else review   # explicit values go to schema validation
         _put(out, "review_questions", self.strings(body.get("questions"), ctx, "questions"))
         _put(out, "evidence_states", self.refs(body.get("evidence_states"), ("state",), ctx, "evidence_states"))
         return out

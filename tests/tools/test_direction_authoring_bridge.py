@@ -264,3 +264,20 @@ def test_empty_list_body_keeps_its_existing_meaning() -> None:
 def test_explicitly_empty_layers_is_an_error_not_the_default_route(empty) -> None:
     codes, text = _codes(_edit(("  after: {A02: complete}\n  min_seconds: 0.6", f"  after: {{A02: complete}}\n  min_seconds: 0.6\n  layers: {empty}")))
     assert codes == ["KEY_TYPE"] and "A03.layers must list at least one runtime layer" in text
+
+
+# --- defaults apply only to omitted values ---------------------------------------------------------------
+
+def test_omitted_edge_and_review_take_their_defaults() -> None:
+    sc = _scene(_compile(), "SC009")
+    assert sc["anchors"][0]["edge"] == "START"                                     # AN01 writes no edge
+    assert sc["qa_contract"]["review"] == "auto"                                   # [REVIEW] writes no review
+
+
+@pytest.mark.parametrize("old, new", [
+    ("AN05: {text: 더 높은 금리를 약속해야 했습니다, edge: END}", "AN05: {text: 더 높은 금리를 약속해야 했습니다, edge: ''}"),
+    ("evidence_states: [S1, S2, S3]", "evidence_states: [S1, S2, S3]\nreview: ''"),
+])
+def test_explicit_empty_string_is_not_replaced_by_a_default(old, new) -> None:
+    codes, _ = _codes(_edit((old, new)))
+    assert codes == ["CONTRACT_SCHEMA"]
