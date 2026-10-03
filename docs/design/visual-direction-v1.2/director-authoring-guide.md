@@ -55,6 +55,7 @@ Director authoring (이 문법)
 - 한 블록 안에서 같은 섹션이 두 번 나오면 오류. 같은 YAML mapping 안의 key 중복도 오류 (`AN01`을 두 번 쓰는 등).
 - 섹션마다 허용된 key만 인정한다 (= 7절 매핑표의 사람용 열과 4절 예시의 key). 모르는 key → 오류.
 - YAML anchor(`&`), alias(`*`), merge(`<<`), custom tag(`!`)는 금지 → 오류.
+- boolean은 `true`/`false`만 인정한다 (YAML 1.2). `on`·`yes`·`no` 같은 낱말은 문자열이다 (`[EVENTS]`의 `on:` key가 이 덕분에 그대로 key로 읽힌다). 날짜처럼 보이는 값도 문자열로 남는다.
 - 순서를 보존한다: 블록·섹션·mapping·목록은 쓴 순서대로 40에 옮겨진다.
 - `>` Director 메모는 **섹션과 섹션 사이에서만** 허용된다. YAML 본문 안에서 `>`로 시작하는 줄은 메모가 아니라 오류다 (YAML folded scalar로 오해되지 않게).
 - `# PROJECT`, `## <장면>`, `[섹션]` 머리, `>` 메모, 빈 줄 밖의 문장이 섹션 본문 바깥에 있으면 오류.
@@ -343,6 +344,8 @@ captions: {runtime: remotion, purpose: PhraseCaptions}
 allowed: []        # 미리 승인한 대체 (allowed_fallbacks)
 ```
 
+`allowed: []`는 써도 되지만 40에는 `allowed_fallbacks`가 쓰이지 않는다 (빈 목록 규칙, 8절). 비어 있는지 생략했는지로 같은 계약의 fingerprint가 달라지지 않게 하기 위해서다.
+
 목록에 없는 대체는 전부 deviation(44)이다: 작업은 멈추고 사용자가 결정한다. 실행 승인은 연출 변경 승인이 아니다.
 
 ### 4-14. `[REVIEW]` — 사람 리뷰 질문
@@ -551,9 +554,9 @@ Bridge는 사람용 문서 + 41 + 승인된 script를 받아 40을 만든다. **
 | N4 | **narration_span 기본값.** `span`이 없으면 start = edge START인 앵커 중 char_start가 가장 작은 것 (없으면 전체 중 가장 작은 것), end = edge END인 앵커 중 char_end가 가장 큰 것 (없으면 char_start가 가장 큰 것). 같은 위치가 여럿이면 문서 순서상 먼저 쓴 것. |
 | N5 | **entered_by / exited_by.** 장면에서 state `S`를 `to`로 갖는 action이 정확히 하나면 `entered_by`, `from`으로 갖는 action이 정확히 하나면 `exited_by`. 둘 이상이면 비워 둔다 (sync group의 여러 action). Director가 적었으면 오류 (1절). |
 | N6 | **action model_id.** `model`이 없고 `from`·`to` 상태가 같은 모델의 `pvm` 상태면 그 모델. 아니면 비워 둔다. |
-| N7 | **invariant 경로 축약.** `constant: sum/min/max` + `paths` → `target{model_id, aggregate, paths}`, 하나면 `path`. `<element>.<attr>` → `elements.<element>.attrs.<attr>`, `<element>.visible` → `elements.<element>.visible` (element 모델만, rail은 전체 경로를 쓴다). `during` 생략 = `scene`. |
+| N7 | **invariant 경로 축약.** `constant: sum/min/max` + `paths` → `target{model_id, aggregate, paths}`. 경로 하나의 값 유지는 `constant: value` + `path` → `target{model_id, path}`. 둘 다 `model`이 필요하다. `holds`는 모델별 assertion 목록(전체 경로), `order`는 action·event·state ID 목록. `<element>.<attr>` → `elements.<element>.attrs.<attr>`, `<element>.visible` → `elements.<element>.visible` (element 모델만, rail은 전체 경로를 쓴다). `during` 생략 = `scene`. |
 | N8 | **execution_graph (내부 전용).** Bridge는 그래프를 계산한다: 노드 = 장면의 모든 beat·state·action·event, 간선 BEAT→ACTION (`linked_actions`), STATE→ACTION (action.from), ACTION→STATE (action.to), EVENT→ACTION (event.actions). 참조 오류와 순환을 검사하고, 통과하면 버린다. **40 `execution_graph`에는 쓰지 않는다** — runtime이 작성된 그래프와 파생 그래프의 동일성을 검사하지 않으므로, 쓰면 원본과 파생본 두 개가 생긴다. runtime에 그 검사가 생긴 뒤에 다시 정한다. |
-| N9 | **runtime consumes.** LOCKED 장면만. 기본: 모델 action(`model_id` 있음) → `deterministic_graphics`. 모델 밖 상태 중 SOURCE 대상(`truth: SOURCE` 또는 `source` 있음)을 `visible`로 갖는 상태 → `factual_source`. 그 밖의 모델 밖 상태 → `base_visual`. **예외**: action에 `layers`가 있으면 기본 대신 그 layer들이 모두 consume한다. 모델 밖 상태는 `visible` 대상에 `[SHOW] layer`가 있으면 기본 대신 그 layer들(대상마다, 중복 제거)이 consume한다. 적은 layer는 모두 실제 binding이 필요하다 (43은 consume을 선언한 모든 layer를 검사). event와 action의 from/to 상태는 runtime이 action에서 함께 유도하므로(`_layer_consumes`) 쓰지 않는다. 필요한 layer가 `[RUNTIME]`에 없으면 오류. 결과는 layer 이름과 id를 문서 순서로. FLEX/DISCRETIONARY는 consumes를 쓰지 않는다. |
+| N9 | **runtime consumes.** LOCKED 장면만. 기본: 모델 action(`model_id` 있음) → `deterministic_graphics`. 모델 밖 상태 중 SOURCE 대상(`truth: SOURCE` 또는 `source` 있음)을 `visible`로 갖는 상태 → `factual_source`. 그 밖의 모델 밖 상태 → `base_visual`. **예외**: action에 `layers`가 있으면 기본 대신 그 layer들이 모두 consume한다. 모델 밖 상태는 `visible` 대상에 `[SHOW] layer`가 있으면 기본 대신 그 layer들(대상마다, 중복 제거)이 consume한다. 적은 layer는 모두 실제 binding이 필요하다 (43은 consume을 선언한 모든 layer를 검사). event와 action의 from/to 상태는 runtime이 action에서 함께 유도하므로(`_layer_consumes`) 쓰지 않는다. 모델이 없는 action은 기본 routing이 없으므로 `layers`를 반드시 쓴다 (없으면 오류). 필요한 layer가 `[RUNTIME]`에 없으면 오류. 결과는 layer 이름과 id를 문서 순서로. FLEX/DISCRETIONARY는 consumes를 쓰지 않는다. |
 | N10 | **QA metadata.** `qa_contract = {review: <[REVIEW] review, 없으면 auto>, review_questions, evidence_states}` (LOCKED는 항상 객체를 만든다). `checks`는 쓰지 않는다. |
 | N11 | **must_preserve.** 사람용 `[MUST PRESERVE]`를 키 이름만 바꿔 그대로 옮기고 빈 목록은 생략한다 (7-2). core ID(LOCKED의 state·action·invariant)를 덧붙이지 않는다 — effective must_preserve는 runtime이 load 때 계산한다 (D1). 40에는 Director가 추가로 지정한 보존 항목만 기록된다. LOCKED는 섹션이 없어도 `{}`를 쓴다 (스키마 필수). |
 | N12 | **상수와 기본값.** `schema_name/version/artifact_role`, `priority_policy`, `visual_identity.mechanism_compatibility`, `approval_scope` 고정값, `fallback_contract.on_failure = DIRECTION_DEVIATION`. action의 `completion_state_id`·`completion_condition`·`must_execute`는 쓰지 않는다: v1.2에서 action 완료 = 마지막 timeline 연산 종료, 모든 action 필수 (40에 앞의 둘이 있거나 `must_execute: false`면 contract 오류). |
@@ -563,7 +566,12 @@ Bridge 오류 (사람용 문서를 고쳐야 하는 경우): 대본에 없는 �
 
 N1–N13 전체에 공통: **빈 목록과 빈 선택 객체는 쓰지 않는다** (스키마가 요구하는 LOCKED의 `must_preserve`, `allowed_freedom`, `prohibited_simplification`, `qa_contract`는 예외).
 
-**round-trip 기준**: Bridge(사람용 capital-competition) == `examples/capital-competition/40_visual_direction_contract.json` (lifecycle 잠금 메타 제외). 예시는 이미 Bridge 규칙에 맞춰져 있다: SC010 `qa_contract.checks` 제거, `execution_graph` 없음.
+**round-trip 기준**: `examples/capital-competition/40_visual_direction_contract.md`를 Bridge로 컴파일한 결과가 `40_visual_direction_contract.json`과 같다 (lifecycle 시각은 고정 clock으로 맞춘다). `tests/tools/test_direction_authoring_bridge.py`가 이것을 검사한다.
+
+```
+python -m lib.direction_contract.authoring 40_visual_direction_contract.md --pvm 41_persistent_visual_models.json \
+    --script script.json --out 40_visual_direction_contract.json [--lock-by user]
+```
 
 ---
 
