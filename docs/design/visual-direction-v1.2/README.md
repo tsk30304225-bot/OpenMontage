@@ -153,7 +153,7 @@ Production Complete
 - NEVER_FREE 항목이 allowed_freedom에 없음 (스키마 enum에 아예 없음).
 - sync_group: 같은 그룹 action은 같은 start_anchor.
 - runtime_stack: 잠긴 action·event·state는 적어도 한 layer의 `consumes`에 있어야 한다 (binding 대상이 없으면 contract 오류).
-- action 완료 필드: `completion_state_id`·`completion_condition`이 있거나 `must_execute: false`면 contract 오류 (v1.2 미지원).
+- action 완료 필드: `completion_state_id`·`completion_condition`이 있거나 `must_execute: false`면 contract 오류 (v1.2 미지원). event `completion_condition`도 같다.
 
 ## 6-1. 출처 identity · 마지막 화면 (D17)
 - **`SOURCE_IDENTITY_V1`**: 두 참조를 `\` → `/`, 앞의 `./` 제거, Unicode NFC로 정규화한다. contract `source_asset`과 cut `source`가 같거나, cut source의 경로 segment 끝이 contract `source_asset`의 segment 전체와 같으면 같은 출처. (asset-manifest id처럼 `/`가 없으면 사실상 동일 문자열 비교.)
@@ -266,7 +266,7 @@ Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_sta
 - **X1: 41 `transitions` 없음/빈 목록 = 제한 없음.** 스키마는 그렇게 정의했지만 `validate_contract`는 빈 허용 목록으로 취급해 같은 모델 안의 모든 이동을 거부했다. runtime을 스키마에 맞췄다 (스키마 무변경). regression 4종 (`tests/tools/test_direction_v12_conformance.py`).
 - **X2: handoff = 장면 간 연속성 계약 (양 끝 검사).** 이전 runtime은 from_scene 끝 상태만 검사했고 to_scene, `models[].enter_state/visibility`, persistence를 읽지 않았다. 이제 5절 규칙을 `validate_contract`가 검사하고, 45는 handoff를 받는 장면(중요도 무관)에 PERSISTENT_STATE를 추가한다: 판정 대상은 **ENTRY_SIGNATURE** = 그 장면 자신의 첫 연산 적용 전 replay 상태 (첫 앵커에서 바로 시작하는 action은 진입 상태에 들어가지 않는다). `default_visibility`는 검사하지 않는다 (범위 밖).
 - **예시 SC009 → SC010 PVM handoff 삭제.** SC010은 금리표 증거 장면이고 CAPITAL_FLOW를 쓰지 않으며 이후 장면도 모델을 다시 쓰지 않는다. 41 handoff 삭제(`last_scene: SC009` 유지), SC010의 `REPLACE_PVM_WITH_UNRELATED_BROLL` 삭제, SC009 `handoff_to_scene: SC010`은 편집상 연결로 유지. fingerprint 재계산 (`sha256:2649e346…`), 42/43/45 예시 재생성: 내용 변화는 SC009의 handoff PERSISTENT_STATE 행이 빠진 것뿐. 이전 45 예시의 `inputs.lineage_sha256`은 함께 실린 42 예시와 맞지 않았다(시각을 고정하지 않은 lineage의 hash) — 재생성으로 일치.
-- **action 완료 의미 확정.** runtime은 `completion_state_id`·`completion_condition`·`must_execute`를 읽은 적이 없다 (작성해도 무시됐다). v1.2의 정식 의미: action 완료 = 그 action에 속한 마지막 timeline 연산의 종료 시각 (`dependency.after … on: complete`도 이것). to_state 도달은 STATE_TRANSITION으로 따로 검사. 앞의 두 필드는 예약·미지원, `must_execute: false`도 미지원 → 작성 시 contract 오류. 스키마 구조·version은 그대로, description만 정정.
+- **action 완료 의미 확정.** runtime은 `completion_state_id`·`completion_condition`·`must_execute`를 읽은 적이 없다 (작성해도 무시됐다). v1.2의 정식 의미: action 완료 = 그 action에 속한 마지막 timeline 연산의 종료 시각 (`dependency.after … on: complete`도 이것). to_state 도달은 STATE_TRANSITION으로 따로 검사. 앞의 두 필드는 예약·미지원, `must_execute: false`도 미지원 → 작성 시 contract 오류. event `completion_condition`도 같은 이유로 예약·미지원. 스키마 구조·version은 그대로, description만 정정.
 - **예시 SC010 `qa_contract.checks` 삭제.** runtime이 읽지 않는 목록이라 "이 검사만 한다"는 오해만 만들었다. fingerprint `sha256:ad20a2fa…`로 재계산, 42/43/45 재생성: hash만 바뀌고 QA 결과는 동일.
 - **4절 서술 정정.** "execution_graph 파생·동일성 검사"와 "completion_state_id/must_execute 기본값 채움"은 runtime에 구현된 적이 없다. 서술을 실제 동작에 맞췄다. execution_graph는 Director Authoring Bridge가 내부 검사에만 쓰고 40에 serialize하지 않는다 (런타임 동일성 검사가 생기면 다시 정한다).
 - **`visual_timeline_compiler` 1.2 production path.** 1.2 연출안은 LOCKED 40/41을 함께 받아야 하고 (없으면 legacy fallback 없이 실패), revision/fingerprint를 확인한 뒤 `compile_timeline(..., models=41, contract=40)`으로 컴파일하며 `anchor_resolution`을 timeline과 결과에 보존한다.

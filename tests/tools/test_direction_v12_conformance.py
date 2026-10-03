@@ -7,6 +7,7 @@ X1  41 transitions: absent or [] = unrestricted, a non-empty list is an allowlis
 X2  41 handoffs: from_scene ends in the state AND to_scene starts from it (ENTRY_SIGNATURE).
 Action completion: the end of the last timeline operation; completion_state_id, completion_condition
 and must_execute false are unsupported in v1.2 (contract errors).
+Event completion_condition is unsupported in v1.2 as well.
 """
 
 import json
@@ -244,3 +245,18 @@ def test_action_completes_when_its_last_timeline_operation_ends(tmp_path) -> Non
     early = a02_starting_at((first_end + last_end) / 2)  # after A01's first operation, before its last one ends
     assert len(early) == 1 and f"before SC009/A01 completes ({last_end:g}s)" in early[0]
     assert a02_starting_at(last_end) == []
+
+
+# --- event completion_condition (v1.2: reserved, unsupported) ---------------------------------------
+
+def test_events_without_completion_condition_stay_valid() -> None:
+    doc_40 = _load("40_visual_direction_contract.json")
+    assert all("completion_condition" not in e for e in doc_40["scenes"][0]["events"])
+    assert _errors(doc_40, _load("41_persistent_visual_models.json")) == []
+
+
+def test_event_completion_condition_is_a_contract_error() -> None:
+    doc_40 = _load("40_visual_direction_contract.json")
+    doc_40["scenes"][0]["events"][1]["completion_condition"] = "the bars settle"
+    errors = [e for e in _errors(doc_40, _load("41_persistent_visual_models.json")) if "completion_condition" in e]
+    assert errors == ["SC009/E02: completion_condition is reserved and unsupported in v1.2"]

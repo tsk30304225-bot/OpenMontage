@@ -31,7 +31,7 @@ Director authoring (이 문법)
 | effective must_preserve core (LOCKED의 모든 state·action·invariant) | runtime 정규화 (D1) |
 | `runtime_stack.*.consumes` | Bridge (8절 N9 규칙) |
 | `qa_contract.checks` | 쓰지 않는다. 45는 적용 가능한 구조 검사를 항상 전부 실행한다 |
-| action `completion_state_id` · `completion_condition` · `must_execute` | 쓰지 않는다. v1.2에서 action 완료 = 그 action의 마지막 timeline 연산이 끝나는 시각이고, 모든 action은 필수다. 40에 앞의 둘이 있거나 `must_execute: false`면 contract 오류 |
+| action `completion_state_id` · `completion_condition` · `must_execute`, event `completion_condition` | 쓰지 않는다. v1.2에서 action 완료 = 그 action의 마지막 timeline 연산이 끝나는 시각이고, 모든 action은 필수다. 40에 앞의 둘이 있거나 `must_execute: false`면 contract 오류 |
 | `qa_contract.review: auto`의 최종 판정 | runtime (D6) |
 | `priority_policy`, `visual_identity.mechanism_compatibility`, `approval_scope`의 고정값, `downstream_contract` | Bridge (고정 상수 / 기본값) |
 | 41 `current_state`, `state_history` | replay |
@@ -514,7 +514,7 @@ base_visual: {runtime: footage, purpose: 데이터센터 외관 실사}
 | `[ACTIONS] <id>` | `actions[]` from_state_id · to_state_id · start_anchor(`at`) · end_anchor(`until`) · target_objects · action_type(`type`) · semantic_role(`role`) · model_id(`model`) · path · easing · min_duration_seconds(`min_seconds`) · implementation_freedom(`freedom`) | `model` 생략 시 N6. `completion_state_id`·`completion_condition`·`must_execute`는 사람용에 없다 (v1.2 미지원) |
 | `[ACTIONS] <id>` layers | — (40 필드 아님) | Bridge routing hint → `runtime_stack.<layer>.consumes` (N9) |
 | `[ACTIONS]` after · before · with · wait_until · sync | `dependency.after[{action, on}]` · `before` · `with` · `wait_until` · `sync_group` `<s>/<sync>` | |
-| `[EVENTS] <id>` on · from · do · to · next | `events[]` trigger_anchor · precondition_state · actions · resulting_state · next_event_dependency | 9절. event `completion_condition`은 runtime이 읽지 않아 사람용에 두지 않는다 |
+| `[EVENTS] <id>` on · from · do · to · next | `events[]` trigger_anchor · precondition_state · actions · resulting_state · next_event_dependency | 9절. event `completion_condition`은 v1.2 미지원 (40에 있으면 contract 오류) |
 | `[BEATS] <id>` at · function · new · meaning_before · meaning_after · before · change · after · actions | `beats[]` anchor · narrative_function · new_information · meaning_before · meaning_after · visual_state_before · required_change · visual_state_after · linked_actions | `before`/`after`는 상태 ID |
 | `[INVARIANTS] <id>` | `invariants[]` (N7) | |
 | `[CAUSAL] <id>` proposition · cause · through · effect · proof · prohibit · visibility · dependencies | `causal_motion_contracts[]` proposition · cause · intermediate_reactions · effect · final_proof_state{state_id, viewer_can_observe} · prohibited_simplification · visibility · dependencies | |

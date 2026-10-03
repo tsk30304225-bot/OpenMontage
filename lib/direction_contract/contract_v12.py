@@ -467,6 +467,8 @@ def validate_contract(contract: Contract, script: dict[str, Any]) -> dict[str, l
 
         for ev in scene.get("events") or []:
             known(ev.get("trigger_anchor"), ("anchor",), f"{ev['event_id']}.trigger_anchor")
+            if "completion_condition" in ev:
+                err(f"{ev['event_id']}: completion_condition is reserved and unsupported in v1.2")
             for key in ("precondition_state", "resulting_state"):
                 if ev.get(key):
                     known(ev[key], ("state",), f"{ev['event_id']}.{key}")

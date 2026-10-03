@@ -1302,7 +1302,8 @@
           "$ref": "#/$defs/id"
         },
         "completion_condition": {
-          "type": "string"
+          "type": "string",
+          "description": "Reserved, unsupported in v1.2: authoring it is a contract error."
         },
         "next_event_dependency": {
           "$ref": "#/$defs/id"
