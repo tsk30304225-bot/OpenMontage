@@ -79,6 +79,8 @@ class Builder:
                 self.issue("KEY_UNKNOWN", f"{what}.{key}", ctx)
         for key in sorted(required - set(data)):
             self.issue("KEY_REQUIRED", f"{what}.{key}", ctx)
+        for key in sorted(k for k in required & set(data) if data[k] is None):
+            self.issue("KEY_REQUIRED", f"{what}.{key} is null (a required value must be written)", ctx)
         return True
 
     def text(self, value: Any, ctx: _Ctx, what: str) -> str | None:

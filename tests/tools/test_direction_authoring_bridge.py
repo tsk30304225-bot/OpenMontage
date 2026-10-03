@@ -281,3 +281,21 @@ def test_omitted_edge_and_review_take_their_defaults() -> None:
 def test_explicit_empty_string_is_not_replaced_by_a_default(old, new) -> None:
     codes, _ = _codes(_edit((old, new)))
     assert codes == ["CONTRACT_SCHEMA"]
+
+
+# --- a required key written as null is missing, not empty ---------------------------------------------
+
+@pytest.mark.parametrize("old, new", [
+    ("  targets: [META, AMZN]", "  targets: ~"),
+    ("cause: {state: S1, objects: [META, AMZN], actions: [A01], anchor: AN02}",
+     "cause: {state: S1, objects: [META, AMZN], actions: ~, anchor: AN02}"),
+    ("E03: {on: AN04, from: S2, do: [A03], to: S3}", "E03: {on: AN04, from: S2, do: ~, to: S3}"),
+])
+def test_required_key_written_as_null_fails_at_authoring(old, new) -> None:
+    codes, text = _codes(_edit((old, new)))
+    assert codes == ["KEY_REQUIRED"] and "is null" in text
+
+
+def test_optional_key_written_as_null_is_omitted() -> None:
+    doc = _compile(_edit(("hold_seconds: 1.5\nnext_scene: SC010", "hold_seconds: 1.5\ncamera: null\nnext_scene: SC010")))
+    assert _scene(doc, "SC009")["last_frame_contract"] == _scene(CANONICAL, "SC009")["last_frame_contract"]
