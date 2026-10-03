@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 from lib.direction_contract import hooks as h
+from lib.direction_contract.authority import canonical_json_sha256
 
 REPO = Path(__file__).resolve().parents[2]
 FIX = REPO / "tests" / "fixtures" / "direction_v1_2" / "capital_competition"
@@ -25,8 +26,14 @@ def _load(name):
     return json.loads((FIX / name).read_text(encoding="utf-8"))
 
 
+def _bind(doc_40, doc_41):
+    """A contract written against this (edited) 41: authority.pvm_ref.sha256 names it."""
+    doc_40["authority"]["pvm_ref"]["sha256"] = canonical_json_sha256(doc_41)
+    return doc_40
+
+
 def _errors(doc_40, doc_41):
-    return h.validate_contract(h.load_contract(doc_40, doc_41), _load("script.json"))["errors"]
+    return h.validate_contract(h.load_contract(_bind(doc_40, doc_41), doc_41), _load("script.json"))["errors"]
 
 
 # --- X1: transitions ---------------------------------------------------------------------------------
@@ -140,7 +147,7 @@ def _run_with(doc_40, doc_41, tmp_path):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import test_direction_v12_acceptance as acc
     p40, p41 = tmp_path / "40.json", tmp_path / "41.json"
-    p40.write_text(json.dumps(doc_40, ensure_ascii=False), encoding="utf-8")
+    p40.write_text(json.dumps(_bind(doc_40, doc_41), ensure_ascii=False), encoding="utf-8")
     p41.write_text(json.dumps(doc_41, ensure_ascii=False), encoding="utf-8")
     contract = h.load_contract(p40, p41)
     vd, lineage = acc._good(), _load("42_direction_lineage.json")

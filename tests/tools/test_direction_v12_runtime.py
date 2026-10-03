@@ -63,6 +63,16 @@ def test_section_timings_and_line_endings_do_not_change_the_hash(contract) -> No
     assert h.script_sha256(lf) == h.script_sha256(crlf) == h.script_sha256(cr) != h.script_sha256(script)
 
 
+def test_contract_bound_to_another_41_is_rejected() -> None:
+    """40 names its 41 by authority.pvm_ref.sha256: an edited 41 under an unchanged 40 is refused."""
+    doc_40, doc_41 = _load("40_visual_direction_contract.json"), _load("41_persistent_visual_models.json")
+    assert doc_40["authority"]["pvm_ref"]["sha256"]
+    h.load_contract(doc_40, doc_41)                                                  # the bound pair loads
+    doc_41["models"][0]["named_states"][0]["description"] = "edited after the contract was locked"
+    with pytest.raises(h.DirectionContractError, match="pvm_ref.sha256 does not match"):
+        h.load_contract(doc_40, doc_41)
+
+
 # --- identity and staleness (D3) ---------------------------------------------------------------------
 
 def test_artifacts_for_another_contract_revision_are_rejected(contract) -> None:

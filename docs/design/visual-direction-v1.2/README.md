@@ -3,7 +3,7 @@
 상태: **설계 문서.** 이 폴더에는 README·예시(와 Director용 문법 가이드)만 있다. 40–46 canonical runtime 스키마와 생성·검증 스크립트는 포크 소유 `schemas/direction_contract/`에 있고 (D18), `visual_direction`/`visual_timeline` 1.2는 거기서 **self-contained로 생성**되어 `schemas/artifacts/`의 shipped 스키마가 된다 (D14). runtime은 이 폴더를 읽지 않는다. Phase 1 runtime: `lib/direction_contract/` (authority · contract_v12 · evaluate · lineage · states · binding/execution · qa · deviations · gate).
 개정 4 (2026-10-02, Phase 1 착수 중 발견한 결함 정정): D14 스키마 통합, D15 script canonicalization.
 개정 5 (2026-10-03): D16 43 binding-centric (원문 §18), D17 SOURCE_EVIDENCE·LAST_FRAME 판정, D18 스키마 위치.
-Phase 1 이후 (2026-10-03): contract-conformance 정정 X1(transitions)·X2(handoff)·action 완료 의미, Director authoring guide (정정 기록 참고).
+Phase 1 이후 (2026-10-03): contract-conformance 정정 X1(transitions)·X2(handoff)·action 완료 의미, Director authoring guide, Director Authoring Bridge `lib/direction_contract/authoring/` (정정 기록 참고).
 기준 코드: 포크 `origin/main` 4a9aed4 (Phase 0 병합 후).
 기준 문서: 사용자 원문 「연출안 형식 설계.txt」 **전체 (§0–§35, v1.1→v1.2 표)** + 2026-10-02 확정 결정 D1–D13.
 
@@ -269,6 +269,7 @@ Phase 1 한계 (Phase 2): 렌더가 필요한 판정(`visible_text`, `camera_sta
 - **action 완료 의미 확정.** runtime은 `completion_state_id`·`completion_condition`·`must_execute`를 읽은 적이 없다 (작성해도 무시됐다). v1.2의 정식 의미: action 완료 = 그 action에 속한 마지막 timeline 연산의 종료 시각 (`dependency.after … on: complete`도 이것). to_state 도달은 STATE_TRANSITION으로 따로 검사. 앞의 두 필드는 예약·미지원, `must_execute: false`도 미지원 → 작성 시 contract 오류. event `completion_condition`도 같은 이유로 예약·미지원. 스키마 구조·version은 그대로, description만 정정.
 - **예시 SC010 `qa_contract.checks` 삭제.** runtime이 읽지 않는 목록이라 "이 검사만 한다"는 오해만 만들었다. fingerprint `sha256:ad20a2fa…`로 재계산, 42/43/45 재생성: hash만 바뀌고 QA 결과는 동일.
 - **4절 서술 정정.** "execution_graph 파생·동일성 검사"와 "completion_state_id/must_execute 기본값 채움"은 runtime에 구현된 적이 없다. 서술을 실제 동작에 맞췄다. execution_graph는 Director Authoring Bridge가 내부 검사에만 쓰고 40에 serialize하지 않는다 (런타임 동일성 검사가 생기면 다시 정한다).
+- **Director Authoring Bridge.** `lib/direction_contract/authoring/`: 사람용 연출안(`40_visual_direction_contract.md`) → 40. 예시 40은 이제 이 사람용 원본의 Bridge 출력이다. 그 결과 두 가지가 바뀌었다: `authority.pvm_ref.sha256`이 채워졌고(N3, 기존 예시는 비어 있었다) SC009의 빈 `allowed_fallbacks: []`는 쓰지 않는다(빈 목록 규칙). fingerprint `sha256:82e36b8b…`로 재계산, 42/43/45 재생성: hash만 바뀜. 41을 고치는 테스트는 이제 40의 `pvm_ref.sha256`도 고친 41에 맞춘다 (runtime은 원래 불일치를 거부한다).
 - **`visual_timeline_compiler` 1.2 production path.** 1.2 연출안은 LOCKED 40/41을 함께 받아야 하고 (없으면 legacy fallback 없이 실패), revision/fingerprint를 확인한 뒤 `compile_timeline(..., models=41, contract=40)`으로 컴파일하며 `anchor_resolution`을 timeline과 결과에 보존한다.
 
 ## 13. 남은 질문
@@ -280,7 +281,7 @@ docs/design/visual-direction-v1.2/
   README.md                                  이 문서
   director-authoring-guide.md                Director 사람용 문법 전체, 40/41 매핑, Bridge 정규화 규칙
   director-pvm-grammar.md                    D9: Director용 41 작성 문법 (문서)
-  examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40, 41,
+  examples/capital-competition/              script.json (authority: sections), script.txt (생성: canonical text), 40.md (사람용 원본) → 40 (Bridge 출력), 41,
                                              42 (Planner 작성본 + good/as_produced system coverage), visual_direction good/as_produced,
                                              43 good, 44, 45 good/as_produced
 schemas/direction_contract/                  canonical runtime 스키마 (D18) — runtime은 여기만 읽는다
@@ -298,6 +299,7 @@ schemas/direction_contract/                  canonical runtime 스키마 (D18) �
   generate_artifact_schemas.py               v1.0 → 1.2 변경분 + common 정의 materialize → schemas/artifacts/visual_{direction,timeline}.schema.json
   validate_examples.py                       스키마·생성물·canonical script/span·출처 identity·fingerprint·legacy·부정 사례 검증
 schemas/artifacts/visual_direction.schema.json · visual_timeline.schema.json   생성물 (self-contained, 손으로 고치지 않는다)
+lib/direction_contract/authoring/             Director Authoring Bridge (syntax · grammar · normalize · graph · compile, CLI: python -m lib.direction_contract.authoring)
 ```
 
 Phase 1에서 구현: README §11 API 전부 (`lib/direction_contract/hooks.py`가 공개), 게이트 연결 (`checkpoint_hooks.validate_stage` → `completion_gate`). `visual_timeline_compiler` 도구의 1.2 production path도 Phase 1에 포함 (정정 기록 참고). 하지 않은 것: Director 프롬프트·스킬 변경, 렌더 경로 변경, 자동 의미 vision QA (Phase 2).

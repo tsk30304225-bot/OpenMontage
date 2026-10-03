@@ -16,7 +16,8 @@
     "script_sha256": "b383505409845a8ebf178fe33fcc66cff3a2e996e9cf451b09e511567698cfe6",
     "canonicalization_id": "SCRIPT_SECTIONS_TEXT_V1",
     "pvm_ref": {
-      "artifact": "persistent_visual_models"
+      "artifact": "persistent_visual_models",
+      "sha256": "fde2d49a68d690e211419326b7526e1fe26401301b814b4b3d59790158c65a9a"
     }
   },
   "priority_policy": {
@@ -578,7 +579,6 @@
         "handoff_to_scene": "SC010"
       },
       "fallback_contract": {
-        "allowed_fallbacks": [],
         "on_failure": "DIRECTION_DEVIATION"
       },
       "qa_contract": {
@@ -662,13 +662,6 @@
           ]
         }
       ],
-      "truth_requirements": [
-        {
-          "statement": "표시되는 금리 수치는 원본 금리표와 같다",
-          "truth_class": "SOURCE",
-          "source": "kb_rate_table_capture.png"
-        }
-      ],
       "must_preserve": {
         "objects": [
           "SC010/RATE_TABLE"
@@ -679,13 +672,6 @@
         "LAYOUT_COORDINATES"
       ],
       "prohibited_simplification": [],
-      "last_frame_contract": {
-        "required_state_id": "SC010/S0",
-        "minimum_hold_seconds": 2.0
-      },
-      "qa_contract": {
-        "review": "auto"
-      },
       "runtime_stack": {
         "factual_source": {
           "runtime": "remotion",
@@ -694,7 +680,21 @@
             "SC010/S0"
           ]
         }
-      }
+      },
+      "last_frame_contract": {
+        "required_state_id": "SC010/S0",
+        "minimum_hold_seconds": 2.0
+      },
+      "qa_contract": {
+        "review": "auto"
+      },
+      "truth_requirements": [
+        {
+          "statement": "표시되는 금리 수치는 원본 금리표와 같다",
+          "truth_class": "SOURCE",
+          "source": "kb_rate_table_capture.png"
+        }
+      ]
     },
     {
       "id": "SC014",
@@ -734,12 +734,6 @@
           "anchor": "SC014/AN01"
         }
       ],
-      "requirements": [
-        "실제 데이터센터 외관",
-        "와이드",
-        "시설 규모가 느껴질 것"
-      ],
-      "runtime_hint": "footage",
       "allowed_freedom": [
         "SHOT_CHOICE",
         "ASSET_CHOICE",
@@ -751,7 +745,13 @@
           "runtime": "footage",
           "purpose": "데이터센터 외관 실사"
         }
-      }
+      },
+      "requirements": [
+        "실제 데이터센터 외관",
+        "와이드",
+        "시설 규모가 느껴질 것"
+      ],
+      "runtime_hint": "footage"
     }
   ]
 }
