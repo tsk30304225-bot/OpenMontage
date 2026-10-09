@@ -202,6 +202,12 @@ natively via `<Audio>` components. Pass audio sources in the composition props:
 Remotion renders audio and video in a single pass — no external muxing needed.
 Do NOT use `audio_mixer` for ducking/mixing when rendering via Remotion.
 
+With `operation: "render"`, `video_compose` builds these props from
+`edit_decisions.audio` itself: narration `segments` (asset ids) become timed
+layers, and `music.ducking` becomes narration windows that dip the bed by
+`reduction_db` with `attack_ms`/`release_ms` ramps. Leave `audio_path` unset,
+since an external track replaces this mix.
+
 **FFmpeg fallback (ONLY when Remotion is unavailable):**
 Call the `audio_mixer` tool to:
 1. Layer narration segments in order

@@ -933,6 +933,73 @@ class VideoCompose(BaseTool):
                     (shutil.copytree if entry.is_dir() else shutil.copy2)(entry, link)
 
     @staticmethod
+    def _media_duration_seconds(path: str | Path) -> float | None:
+        try:
+            proc = subprocess.run(
+                ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                 "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
+                capture_output=True, text=True, timeout=30,
+            )
+            return float(proc.stdout.strip())
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return None
+
+    @classmethod
+    def _explainer_audio_props(
+        cls, audio: dict[str, Any], asset_lookup: dict[str, dict[str, Any]]
+    ) -> dict[str, Any] | None:
+        """Translate edit_decisions.audio (asset ids) into Explainer audio props.
+
+        Narration segments become timed {src, startSeconds} layers. Music
+        ducking becomes explicit narration windows plus a gain reduction, so
+        Remotion dips the bed under speech in the same render pass.
+        Returns None when no referenced asset resolves to a file.
+        """
+        result: dict[str, Any] = {}
+
+        segments: list[dict[str, Any]] = []
+        windows: list[list[float]] = []
+        for segment in (audio.get("narration") or {}).get("segments") or []:
+            asset = asset_lookup.get(segment.get("asset_id", ""))
+            if not asset or not asset.get("path"):
+                continue
+            start = float(segment.get("start_seconds", 0))
+            segments.append({"src": asset["path"], "startSeconds": start})
+            end = segment.get("end_seconds")
+            if end is None:
+                length = asset.get("duration_seconds") or cls._media_duration_seconds(asset["path"])
+                end = start + length if length else None
+            if end is not None and end > start:
+                windows.append([round(start, 3), round(float(end), 3)])
+        if segments:
+            result["narration"] = {"segments": segments}
+
+        music = audio.get("music") or {}
+        music_asset = asset_lookup.get(music.get("asset_id", ""))
+        if music_asset and music_asset.get("path"):
+            layer: dict[str, Any] = {"src": music_asset["path"]}
+            for src_key, dst_key in (
+                ("volume", "volume"),
+                ("fade_in_seconds", "fadeInSeconds"),
+                ("fade_out_seconds", "fadeOutSeconds"),
+            ):
+                if music.get(src_key) is not None:
+                    layer[dst_key] = music[src_key]
+            ducking = music.get("ducking")
+            if isinstance(ducking, bool):
+                ducking = {"enabled": ducking}
+            if isinstance(ducking, dict) and ducking.get("enabled", True) and windows:
+                layer["ducking"] = {
+                    "windows": windows,
+                    "reductionDb": -abs(float(ducking.get("reduction_db", -12))),
+                    "attackSeconds": float(ducking.get("attack_ms", 200)) / 1000,
+                    "releaseSeconds": float(ducking.get("release_ms", 500)) / 1000,
+                }
+            result["music"] = layer
+
+        return result or None
+
+    @staticmethod
     def _stage_remotion_media(value: Any, public_dir: Path) -> int:
         """Copy local media references into a Remotion public dir in-place.
 
@@ -1733,8 +1800,15 @@ class VideoCompose(BaseTool):
             )
         # --- Explicit Remotion path (render_runtime == 'remotion') ---
         if self._needs_remotion(resolved_cuts):
+            remotion_decisions = dict(edit_decisions, cuts=resolved_cuts)
+            # edit_decisions.audio names assets by id; the Explainer composition
+            # plays {src} layers. An external audio_path replaces the track.
+            if edit_decisions.get("audio") and not inputs.get("audio_path"):
+                explainer_audio = self._explainer_audio_props(edit_decisions["audio"], asset_lookup)
+                if explainer_audio:
+                    remotion_decisions["audio"] = explainer_audio
             remotion_inputs: dict[str, Any] = {
-                "edit_decisions": dict(edit_decisions, cuts=resolved_cuts),
+                "edit_decisions": remotion_decisions,
                 "output_path": str(output_path),
             }
             if profile:

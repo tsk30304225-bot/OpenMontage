@@ -298,9 +298,27 @@ interface AudioLayer {
   volume?: number;
 }
 
+interface NarrationSegment {
+  src: string;
+  startSeconds: number;
+  volume?: number;
+}
+
+interface MusicDucking {
+  /** [startSeconds, endSeconds] spans where narration plays. */
+  windows: [number, number][];
+  /** Gain change while ducked, e.g. -12. */
+  reductionDb?: number;
+  attackSeconds?: number;
+  releaseSeconds?: number;
+}
+
 interface AudioConfig {
-  narration?: AudioLayer;
+  /** Either one track from frame 0 (src) or timed segments. */
+  narration?: Partial<AudioLayer> & { segments?: NarrationSegment[] };
   music?: AudioLayer & {
+    /** Dip the bed under narration (video_compose fills this from edit_decisions). */
+    ducking?: MusicDucking;
     fadeInSeconds?: number;
     fadeOutSeconds?: number;
     /** Start playback from this offset in seconds (skip quiet intros).
@@ -860,6 +878,30 @@ const OverlayRenderer: React.FC<{ overlay: Overlay; theme: ThemeConfig }> = ({
 };
 
 // ---------------------------------------------------------------------------
+// Music ducking
+// ---------------------------------------------------------------------------
+
+/** Gain multiplier for the music bed at time t: 1 outside narration windows,
+ *  10^(reductionDb/20) inside, ramped over attack (in) and release (out). */
+export const duckingGain = (t: number, ducking?: MusicDucking): number => {
+  if (!ducking || ducking.windows.length === 0) return 1;
+  const floor = Math.pow(10, Math.min(0, ducking.reductionDb ?? -12) / 20);
+  const attack = Math.max(ducking.attackSeconds ?? 0.2, 0.001);
+  const release = Math.max(ducking.releaseSeconds ?? 0.5, 0.001);
+  let depth = 0;
+  for (const [start, end] of ducking.windows) {
+    let d = 0;
+    if (t >= start && t <= end) {
+      d = Math.min(1, (t - start) / attack);
+    } else if (t > end && t < end + release) {
+      d = 1 - (t - end) / release;
+    }
+    depth = Math.max(depth, d);
+  }
+  return 1 - depth * (1 - floor);
+};
+
+// ---------------------------------------------------------------------------
 // Main composition
 // ---------------------------------------------------------------------------
 
@@ -921,6 +963,11 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
       {audio?.narration?.src && (
         <Audio src={resolveAsset(audio.narration.src)} volume={audio.narration.volume ?? 1} />
       )}
+      {audio?.narration?.segments?.map((segment, i) => (
+        <Sequence key={`narration-${i}`} from={Math.round(segment.startSeconds * fps)}>
+          <Audio src={resolveAsset(segment.src)} volume={segment.volume ?? 1} />
+        </Sequence>
+      ))}
 
       {/* Layer 4: Audio — music with offset, fade in/out, and optional loop */}
       {audio?.music?.src && (
@@ -935,19 +982,23 @@ export const Explainer: React.FC<ExplainerProps> = (props) => {
             const fadeOutDur = (audio.music!.fadeOutSeconds ?? 3) * fps;
             const totalFrames = durationInFrames;
 
-            // Fade in
-            const fadeIn = interpolate(f, [0, fadeInDur], [0, baseVol], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
+            // Fade in (interpolate needs a non-empty range, so 0s means no fade)
+            const fadeIn = fadeInDur > 0
+              ? interpolate(f, [0, fadeInDur], [0, baseVol], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                })
+              : baseVol;
             // Fade out
-            const fadeOut = interpolate(
-              f,
-              [totalFrames - fadeOutDur, totalFrames],
-              [baseVol, 0],
-              { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-            );
-            return Math.min(fadeIn, fadeOut);
+            const fadeOut = fadeOutDur > 0
+              ? interpolate(
+                  f,
+                  [totalFrames - fadeOutDur, totalFrames],
+                  [baseVol, 0],
+                  { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+                )
+              : baseVol;
+            return Math.min(fadeIn, fadeOut) * duckingGain(f / fps, audio.music!.ducking);
           }}
         />
       )}
