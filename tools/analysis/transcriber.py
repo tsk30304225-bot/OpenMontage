@@ -38,8 +38,8 @@ class Transcriber(BaseTool):
 
     dependencies = ["python:faster_whisper"]
     install_instructions = (
-        "pip install faster-whisper  # CPU mode\n"
-        "pip install faster-whisper[gpu]  # GPU mode (requires CUDA)\n"
+        "pip install faster-whisper 'av<19'  # CPU mode (PyAV 19 breaks faster-whisper 1.2 decoding)\n"
+        "pip install faster-whisper[gpu] 'av<19'  # GPU mode (requires CUDA)\n"
         "pip install whisperx  # For diarization support"
     )
     agent_skills = ["speech-to-text"]

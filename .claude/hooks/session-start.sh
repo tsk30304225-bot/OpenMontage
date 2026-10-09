@@ -19,7 +19,8 @@ echo "export PATH=\"$PWD/.venv/bin:\$PATH\"" >> "${CLAUDE_ENV_FILE:-/dev/null}"
 
 # ---- Optional local tools: Piper TTS, transcription, reference-video analysis ----
 # Best effort: a blocked host must not fail the session.
-.venv/bin/python -m pip install -q piper-tts faster-whisper "yt-dlp[default]" \
+# faster-whisper 1.2 calls av.open(metadata_errors=...), which PyAV 19 removed.
+.venv/bin/python -m pip install -q piper-tts faster-whisper "av<19" "yt-dlp[default]" \
   youtube-transcript-api scenedetect opencv-python-headless \
   || echo "warning: optional Python tools failed to install" >&2
 
