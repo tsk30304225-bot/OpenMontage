@@ -17,6 +17,21 @@ fi
 echo "export VIRTUAL_ENV=\"$PWD/.venv\"" >> "${CLAUDE_ENV_FILE:-/dev/null}"
 echo "export PATH=\"$PWD/.venv/bin:\$PATH\"" >> "${CLAUDE_ENV_FILE:-/dev/null}"
 
+# ---- Optional local tools: Piper TTS, transcription, reference-video analysis ----
+# Best effort: a blocked host must not fail the session.
+.venv/bin/python -m pip install -q piper-tts faster-whisper "yt-dlp[default]" \
+  youtube-transcript-api scenedetect opencv-python-headless \
+  || echo "warning: optional Python tools failed to install" >&2
+
+# piper_tts passes the voice name to `piper --model`, which looks for
+# <name>.onnx in the working directory (repo root; *.onnx is gitignored).
+# The model lives on the Hugging Face CDN, which the network policy may block.
+PIPER_VOICE=en_US-lessac-medium
+if [ ! -f "$PIPER_VOICE.onnx" ]; then
+  timeout 300 .venv/bin/python -m piper.download_voices --download-dir . "$PIPER_VOICE" >/dev/null 2>&1 \
+    || { rm -f "$PIPER_VOICE.onnx" "$PIPER_VOICE.onnx.json"; echo "warning: Piper voice download failed (is *.hf.co allowed?)" >&2; }
+fi
+
 # ---- Remotion composer ----
 (cd remotion-composer && npm install --no-audit --no-fund --loglevel=error)
 
