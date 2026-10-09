@@ -43,6 +43,7 @@ DEFAULT_LANGUAGE_BOOST = "Korean"
 
 _EMOTIONS = ["happy", "sad", "angry", "fearful", "disgusted", "surprised", "neutral"]
 _FORMATS = ["mp3", "wav", "flac", "pcm"]
+_SENTENCE_END = set(".!?。！？…")
 
 
 class MiniMaxTTS(BaseTool):
@@ -456,6 +457,7 @@ class MiniMaxTTS(BaseTool):
                         }
                     )
                 continue
+            after_sentence_end = False
             for token in tokens:
                 if not isinstance(token, dict):
                     continue
@@ -465,9 +467,13 @@ class MiniMaxTTS(BaseTool):
                     continue
                 if not text.strip():
                     flush()
+                    after_sentence_end = False
                     continue
-                if text[:1].isspace():
+                # MiniMax may omit the space after sentence punctuation
+                # ("했습니다.카페인은"); break there unless it is a decimal point.
+                if text[:1].isspace() or (after_sentence_end and not text[:1].isdigit()):
                     flush()
+                after_sentence_end = text.rstrip()[-1:] in _SENTENCE_END
                 if current is None:
                     current = {"word": "", "start": span[0], "end": span[1]}
                 current["word"] += text.strip()

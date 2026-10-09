@@ -218,6 +218,14 @@ class TestOutput:
                                            _tok("world", 450, 900)]}]
         assert [w["word"] for w in MiniMaxTTS._word_timestamps(segments)] == ["Hello", "world"]
 
+    def test_breaks_after_sentence_punctuation_without_space(self):
+        tokens = [_tok(c, i * 100, i * 100 + 100) for i, c in enumerate("다.카페 3.5시간")]
+        segments = [{"text": "다.카페 3.5시간", "time_begin": 0, "time_end": 1000,
+                     "timestamped_words": tokens}]
+        assert [w["word"] for w in MiniMaxTTS._word_timestamps(segments)] == [
+            "다.", "카페", "3.5시간"
+        ]
+
     def test_sentence_subtitles_fall_back_to_segments(self):
         segments = [{"text": "문장 하나.", "time_begin": 0, "time_end": 1200}]
         assert MiniMaxTTS._word_timestamps(segments) == [
