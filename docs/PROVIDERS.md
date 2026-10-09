@@ -392,7 +392,9 @@ accepts happy, sad, angry, fearful, disgusted, surprised, neutral).
 
 When subtitles are enabled the subtitle file is saved next to the audio as
 `<name>.subtitles.json`, and `data.word_timestamps` returns
-`[{word, start, end}]` in seconds for caption alignment. A failed subtitle
+`[{word, start, end}]` in seconds for caption alignment. Korean/CJK subtitle
+files time each character separately; the tool joins them into
+whitespace-delimited words (the raw per-character file is kept). A failed subtitle
 download keeps the audio and adds `subtitle_warning` (signed URL query strings are masked).
 Subtitle files are served from Alibaba Cloud OSS (`*.aliyuncs.com`), so that host
 must be reachable for word timestamps. Billing is per input

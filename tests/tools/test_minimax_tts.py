@@ -43,14 +43,31 @@ def _ok_body(subtitle_file=None):
     }
 
 
+def _tok(word, begin, end):
+    return {"word": word, "word_begin": 0, "word_end": 1, "pronounce_word": word,
+            "time_begin": begin, "time_end": end}
+
+
+# Shape of a real speech-2.8-hd subtitle file: a list of segments whose
+# timestamped_words are single Korean characters, with spaces and
+# punctuation as separate entries (times in milliseconds).
 WORD_SUBTITLES = [
     {
-        "text": "안녕하세요 여러분",
-        "time_begin": 0,
-        "time_end": 1500,
+        "text": "안녕. 반가워",
+        "pronounce_text": "안녕. 반가워",
+        "time_begin": 0.0,
+        "time_end": 1500.0,
+        "text_begin": 0,
+        "text_end": 7,
+        "is_final_segment": True,
         "timestamped_words": [
-            {"word": "안녕하세요", "time_begin": 0, "time_end": 900},
-            {"word": "여러분", "time_begin": 950, "time_end": 1500},
+            _tok("안", 42.666666666666664, 128.0),
+            _tok("녕", 128.0, 298.66666666666663),
+            _tok(".", 298.66666666666663, 400.0),
+            _tok(" ", 400.0, 500.0),
+            _tok("반", 500.0, 700.0),
+            _tok("가", 700.0, 900.0),
+            _tok("워", 900.0, 1500.0),
         ],
     }
 ]
@@ -183,17 +200,23 @@ class TestOutput:
             "requests.post",
             return_value=_FakeResponse(_ok_body("https://cdn.example.com/sub.json")),
         ), patch("requests.get", return_value=_FakeResponse(WORD_SUBTITLES)) as get:
-            result = MiniMaxTTS().execute({"text": "안녕하세요 여러분", "output_path": str(out)})
+            result = MiniMaxTTS().execute({"text": "안녕. 반가워", "output_path": str(out)})
         assert result.success, result.error
         get.assert_called_once()
         sub_path = tmp_path / "narration.subtitles.json"
         assert result.data["subtitle_path"] == str(sub_path)
         assert json.loads(sub_path.read_text(encoding="utf-8")) == WORD_SUBTITLES
         assert result.data["word_timestamps"] == [
-            {"word": "안녕하세요", "start": 0.0, "end": 0.9},
-            {"word": "여러분", "start": 0.95, "end": 1.5},
+            {"word": "안녕.", "start": 0.043, "end": 0.4},
+            {"word": "반가워", "start": 0.5, "end": 1.5},
         ]
         assert str(sub_path) in result.artifacts
+
+    def test_whole_word_tokens_split_on_spaces(self):
+        segments = [{"text": "Hello world", "time_begin": 0, "time_end": 900,
+                     "timestamped_words": [_tok("Hello", 0, 400), _tok(" ", 400, 450),
+                                           _tok("world", 450, 900)]}]
+        assert [w["word"] for w in MiniMaxTTS._word_timestamps(segments)] == ["Hello", "world"]
 
     def test_sentence_subtitles_fall_back_to_segments(self):
         segments = [{"text": "문장 하나.", "time_begin": 0, "time_end": 1200}]

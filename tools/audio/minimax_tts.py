@@ -174,7 +174,10 @@ class MiniMaxTTS(BaseTool):
             "text_length": {"type": "integer"},
             "audio_duration_seconds": {"type": ["number", "null"]},
             "subtitle_path": {"type": ["string", "null"]},
-            "word_timestamps": {"type": "array"},
+            "word_timestamps": {
+                "type": "array",
+                "description": "Whitespace-delimited words [{word, start, end}] in seconds.",
+            },
         },
     }
     artifact_schema = {"type": "array", "items": {"type": "string"}}
@@ -409,39 +412,69 @@ class MiniMaxTTS(BaseTool):
     def _word_timestamps(subtitles: Any) -> list[dict[str, Any]]:
         """Flatten MiniMax subtitle JSON into [{word, start, end}] in seconds.
 
-        Segments carry text/time_begin/time_end in milliseconds; word-level
-        files add a per-segment timestamped_words list. Sentence-level files
-        fall back to one entry per segment.
+        The file is a list of segments with text/time_begin/time_end in
+        milliseconds; word-level files add timestamped_words per segment.
+        For Korean/CJK those entries are single characters, with spaces and
+        punctuation as their own entries, so tokens are joined into
+        whitespace-delimited words (punctuation stays on its word).
+        Sentence-level files fall back to one entry per segment.
         """
-        segments = subtitles if isinstance(subtitles, list) else []
-        if isinstance(subtitles, dict):
-            for key in ("subtitles", "segments", "data"):
-                if isinstance(subtitles.get(key), list):
-                    segments = subtitles[key]
-                    break
 
-        def entry(item: dict[str, Any], text_key: str) -> dict[str, Any] | None:
-            text = item.get(text_key)
+        def timed(item: dict[str, Any]) -> tuple[float, float] | None:
             begin, end = item.get("time_begin"), item.get("time_end")
-            if not text or not isinstance(begin, (int, float)) or not isinstance(end, (int, float)):
-                return None
-            return {"word": text, "start": round(begin / 1000, 3), "end": round(end / 1000, 3)}
+            if isinstance(begin, (int, float)) and isinstance(end, (int, float)):
+                return begin / 1000, end / 1000
+            return None
 
         words: list[dict[str, Any]] = []
-        for segment in segments:
+        current: dict[str, Any] | None = None
+
+        def flush() -> None:
+            nonlocal current
+            if current and current["word"]:
+                words.append(
+                    {
+                        "word": current["word"],
+                        "start": round(current["start"], 3),
+                        "end": round(current["end"], 3),
+                    }
+                )
+            current = None
+
+        for segment in subtitles if isinstance(subtitles, list) else []:
             if not isinstance(segment, dict):
                 continue
-            nested = segment.get("timestamped_words") or segment.get("words")
-            if isinstance(nested, list) and nested:
-                for word in nested:
-                    if isinstance(word, dict):
-                        item = entry(word, "word") or entry(word, "text")
-                        if item:
-                            words.append(item)
-            else:
-                item = entry(segment, "text")
-                if item:
-                    words.append(item)
+            tokens = segment.get("timestamped_words")
+            if not isinstance(tokens, list) or not tokens:
+                span = timed(segment)
+                if span and str(segment.get("text") or "").strip():
+                    words.append(
+                        {
+                            "word": str(segment["text"]).strip(),
+                            "start": round(span[0], 3),
+                            "end": round(span[1], 3),
+                        }
+                    )
+                continue
+            for token in tokens:
+                if not isinstance(token, dict):
+                    continue
+                text = str(token.get("word") or "")
+                span = timed(token)
+                if span is None:
+                    continue
+                if not text.strip():
+                    flush()
+                    continue
+                if text[:1].isspace():
+                    flush()
+                if current is None:
+                    current = {"word": "", "start": span[0], "end": span[1]}
+                current["word"] += text.strip()
+                current["end"] = span[1]
+                if text[-1:].isspace():
+                    flush()
+            flush()
         return words
 
     @staticmethod
