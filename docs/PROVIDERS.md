@@ -53,7 +53,7 @@ AZURE_SPEECH_REGION=         # Speech resource region, e.g. eastus
 
 # MULTI-MODEL GATEWAY (one key, 6+ tools)
 FAL_KEY=                     # FLUX, Recraft, Kling, Veo, MiniMax video
-MINIMAX_API_KEY=             # MiniMax first-party image + MiniMax H3 video generation
+MINIMAX_API_KEY=             # MiniMax first-party image + MiniMax H3 video + MiniMax Speech TTS
 ATLASCLOUD_API_KEY=          # Atlas Cloud image/video gateway
 
 # KLING OFFICIAL DIRECT API
@@ -357,13 +357,13 @@ select it through `tts_selector` with `preferred_provider: "fal.ai"`.
 
 ---
 
-### MiniMax — Official Direct Image and Video API
+### MiniMax — Official Direct Image, Video, and Speech API
 
 > **First-party image and video generation.** The direct MiniMax API supports
 > seeded image generation plus MiniMax H3 video generation with text, first/last
 > frames, image/video/audio references, and global or mainland-China routing.
 
-**Tools unlocked:** `minimax_image`, `minimax_video`
+**Tools unlocked:** `minimax_image`, `minimax_video`, `minimax_tts`
 
 **Env var:** `MINIMAX_API_KEY`
 
@@ -379,6 +379,27 @@ select it through `tts_selector` with `preferred_provider: "fal.ai"`.
 `MINIMAX_BASE_URL` may be used for a documented private/enterprise endpoint
 override. The default global and mainland-China hosts are selected from
 `MINIMAX_REGION`.
+
+#### MiniMax Speech (TTS)
+
+Use `minimax_tts` (or `tts_selector` with `preferred_provider: "minimax"`). It
+calls `POST /v1/t2a_v2` and defaults to a Korean narration preset:
+`model: "speech-2.8-hd"`, `language_boost: "Korean"`,
+`voice_id: "Korean_LonelyWarrior"`, speed 1.0 / vol 1 / pitch 0, with
+`subtitle_enable: true` and `subtitle_type: "word"`. Every field can be
+overridden per call (`speech-2.8-turbo` is the cheaper/faster tier; `emotion`
+accepts happy, sad, angry, fearful, disgusted, surprised, neutral).
+
+When subtitles are enabled the subtitle file is saved next to the audio as
+`<name>.subtitles.json`, and `data.word_timestamps` returns
+`[{word, start, end}]` in seconds for caption alignment. Korean/CJK subtitle
+files time each character separately; the tool joins them into
+whitespace-delimited words (the raw per-character file is kept). A failed subtitle
+download keeps the audio and adds `subtitle_warning` (signed URL query strings are masked).
+Subtitle files are served from Alibaba Cloud OSS (`*.aliyuncs.com`), so that host
+must be reachable for word timestamps. Billing is per input
+character (approx. $100 per 1M characters for HD, $60 per 1M for Turbo;
+verify on the MiniMax pricing page).
 
 #### MiniMax H3 video
 
@@ -1423,7 +1444,7 @@ These tools require only FFmpeg or Python packages — no GPU, no API key.
 | **Atlas Cloud** | `ATLASCLOUD_API_KEY` | `atlas_image`, `atlas_video` | Pay-as-you-go |
 | **Kling Official** | `KLING_API_KEY` | `kling_official_video`, `kling_official_image`, `kling_tts`, `kling_avatar`, `kling_lip_sync` | Pay-as-you-go |
 | **Volcengine Ark** | `ARK_API_KEY` | `seedance_ark` | Pay-as-you-go |
-| **MiniMax direct** | `MINIMAX_API_KEY` | `minimax_image`, `minimax_video` | Pay-as-you-go |
+| **MiniMax direct** | `MINIMAX_API_KEY` | `minimax_image`, `minimax_video`, `minimax_tts` | Pay-as-you-go |
 | **OpenAI** | `OPENAI_API_KEY` | `openai_tts`, `openai_image` | Paid only |
 | **xAI** | `XAI_API_KEY` | `grok_image`, `grok_video` | Paid only |
 | **Runway** | `RUNWAY_API_KEY` | `runway_video` | Free trial + paid |
@@ -1446,7 +1467,7 @@ How many providers cover each capability:
 |-----------|----------------|-----------------|--------------|
 | **Image Generation** | FLUX, Kling Official, Grok, Google Imagen, GPT Image 2, Recraft | Local Diffusion | Pexels, Pixabay (stock) |
 | **Video Generation** | Grok, Kling Official, fal.ai, Seedance via Volcengine Ark, Runway, Veo, Gemini Omni, Higgsfield, MiniMax, HeyGen, Tencent Hunyuan, ComfyUI Partner Nodes | WAN, Hunyuan, CogVideo, LTX, ComfyUI WAN, ComfyUI MiniMax H3 | Pexels, Pixabay (stock) |
-| **Text-to-Speech** | Azure AI Speech, ElevenLabs, fish.audio, Google TTS, Kling Official, OpenAI | Piper | Piper, Google free tier, ElevenLabs free tier, Azure free tier, fish.audio s2.1-pro-free |
+| **Text-to-Speech** | Azure AI Speech, ElevenLabs, fish.audio, Google TTS, Kling Official, MiniMax, OpenAI | Piper | Piper, Google free tier, ElevenLabs free tier, Azure free tier, fish.audio s2.1-pro-free |
 | **Music Generation** | ElevenLabs, Suno, Google Lyria | — | ElevenLabs free tier |
 | **Post-Production** | — | FFmpeg (compose, stitch, trim, mix, enhance, grade) | All free |
 | **Analysis** | — | WhisperX, Scene Detect, Frame Sampler, CLIP/BLIP-2 | All free |
