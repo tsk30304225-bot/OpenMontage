@@ -1,0 +1,2928 @@
+[
+  {
+    "text": "오후 세 시, 커피 한 잔. 마시자마자 잠이 깬 것 같죠? 사실 카페인은 아직 출발도 안 했습니다.카페인은 위와 장을 지나 혈액으로 천천히 스며들고, 약 사십오 분이 지나야 거의 다 흡수됩니다.",
+    "pronounce_text": "오후 세 시, 커피 한 잔. 마시자마자 잠이 깬 것 같죠? 사실 카페인은 아직 출발도 안 했습니다.카페인은 위와 장을 지나 혈액으로 천천히 스며들고, 약 사십오 분이 지나야 거의 다 흡수됩니다.",
+    "time_begin": 0,
+    "time_end": 14099.002267573696,
+    "text_begin": 0,
+    "text_end": 108,
+    "pronounce_text_begin": 0,
+    "pronounce_text_end": 108,
+    "timestamped_words": [
+      {
+        "word": "오",
+        "word_begin": 0,
+        "word_end": 1,
+        "pronounce_word": "오",
+        "pronounce_word_begin": 0,
+        "pronounce_word_end": 1,
+        "time_begin": 42.666666666666664,
+        "time_end": 128
+      },
+      {
+        "word": "후",
+        "word_begin": 1,
+        "word_end": 2,
+        "pronounce_word": "후",
+        "pronounce_word_begin": 1,
+        "pronounce_word_end": 2,
+        "time_begin": 128,
+        "time_end": 256
+      },
+      {
+        "word": " ",
+        "word_begin": 2,
+        "word_end": 3,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 2,
+        "pronounce_word_end": 3,
+        "time_begin": 256,
+        "time_end": 298.66666666666663
+      },
+      {
+        "word": "세",
+        "word_begin": 3,
+        "word_end": 4,
+        "pronounce_word": "세",
+        "pronounce_word_begin": 3,
+        "pronounce_word_end": 4,
+        "time_begin": 298.66666666666663,
+        "time_end": 426.66666666666663
+      },
+      {
+        "word": " ",
+        "word_begin": 4,
+        "word_end": 5,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 4,
+        "pronounce_word_end": 5,
+        "time_begin": 426.66666666666663,
+        "time_end": 469.3333333333333
+      },
+      {
+        "word": "시",
+        "word_begin": 5,
+        "word_end": 6,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 5,
+        "pronounce_word_end": 6,
+        "time_begin": 469.3333333333333,
+        "time_end": 640
+      },
+      {
+        "word": ",",
+        "word_begin": 6,
+        "word_end": 7,
+        "pronounce_word": ",",
+        "pronounce_word_begin": 6,
+        "pronounce_word_end": 7,
+        "time_begin": 640,
+        "time_end": 768
+      },
+      {
+        "word": " ",
+        "word_begin": 7,
+        "word_end": 8,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 7,
+        "pronounce_word_end": 8,
+        "time_begin": 768,
+        "time_end": 810.6666666666666
+      },
+      {
+        "word": "커",
+        "word_begin": 8,
+        "word_end": 9,
+        "pronounce_word": "커",
+        "pronounce_word_begin": 8,
+        "pronounce_word_end": 9,
+        "time_begin": 810.6666666666666,
+        "time_end": 1066.6666666666667
+      },
+      {
+        "word": "피",
+        "word_begin": 9,
+        "word_end": 10,
+        "pronounce_word": "피",
+        "pronounce_word_begin": 9,
+        "pronounce_word_end": 10,
+        "time_begin": 1066.6666666666667,
+        "time_end": 1237.3333333333335
+      },
+      {
+        "word": " ",
+        "word_begin": 10,
+        "word_end": 11,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 10,
+        "pronounce_word_end": 11,
+        "time_begin": 1237.3333333333335,
+        "time_end": 1280
+      },
+      {
+        "word": "한",
+        "word_begin": 11,
+        "word_end": 12,
+        "pronounce_word": "한",
+        "pronounce_word_begin": 11,
+        "pronounce_word_end": 12,
+        "time_begin": 1280,
+        "time_end": 1408
+      },
+      {
+        "word": " ",
+        "word_begin": 12,
+        "word_end": 13,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 12,
+        "pronounce_word_end": 13,
+        "time_begin": 1408,
+        "time_end": 1450.6666666666665
+      },
+      {
+        "word": "잔",
+        "word_begin": 13,
+        "word_end": 14,
+        "pronounce_word": "잔",
+        "pronounce_word_begin": 13,
+        "pronounce_word_end": 14,
+        "time_begin": 1450.6666666666665,
+        "time_end": 1536
+      },
+      {
+        "word": ".",
+        "word_begin": 14,
+        "word_end": 15,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 14,
+        "pronounce_word_end": 15,
+        "time_begin": 1536,
+        "time_end": 1706.6666666666665
+      },
+      {
+        "word": " ",
+        "word_begin": 15,
+        "word_end": 16,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 15,
+        "pronounce_word_end": 16,
+        "time_begin": 1706.6666666666665,
+        "time_end": 1749.3333333333333
+      },
+      {
+        "word": "마",
+        "word_begin": 16,
+        "word_end": 17,
+        "pronounce_word": "마",
+        "pronounce_word_begin": 16,
+        "pronounce_word_end": 17,
+        "time_begin": 1749.3333333333333,
+        "time_end": 2218.6666666666665
+      },
+      {
+        "word": "시",
+        "word_begin": 17,
+        "word_end": 18,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 17,
+        "pronounce_word_end": 18,
+        "time_begin": 2218.6666666666665,
+        "time_end": 2346.6666666666665
+      },
+      {
+        "word": "자",
+        "word_begin": 18,
+        "word_end": 19,
+        "pronounce_word": "자",
+        "pronounce_word_begin": 18,
+        "pronounce_word_end": 19,
+        "time_begin": 2346.6666666666665,
+        "time_end": 2474.666666666667
+      },
+      {
+        "word": "마",
+        "word_begin": 19,
+        "word_end": 20,
+        "pronounce_word": "마",
+        "pronounce_word_begin": 19,
+        "pronounce_word_end": 20,
+        "time_begin": 2474.666666666667,
+        "time_end": 2560
+      },
+      {
+        "word": "자",
+        "word_begin": 20,
+        "word_end": 21,
+        "pronounce_word": "자",
+        "pronounce_word_begin": 20,
+        "pronounce_word_end": 21,
+        "time_begin": 2560,
+        "time_end": 2687.9999999999995
+      },
+      {
+        "word": " ",
+        "word_begin": 21,
+        "word_end": 22,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 21,
+        "pronounce_word_end": 22,
+        "time_begin": 2687.9999999999995,
+        "time_end": 2730.6666666666665
+      },
+      {
+        "word": "잠",
+        "word_begin": 22,
+        "word_end": 23,
+        "pronounce_word": "잠",
+        "pronounce_word_begin": 22,
+        "pronounce_word_end": 23,
+        "time_begin": 2730.6666666666665,
+        "time_end": 2858.6666666666665
+      },
+      {
+        "word": "이",
+        "word_begin": 23,
+        "word_end": 24,
+        "pronounce_word": "이",
+        "pronounce_word_begin": 23,
+        "pronounce_word_end": 24,
+        "time_begin": 2858.6666666666665,
+        "time_end": 3370.6666666666665
+      },
+      {
+        "word": " ",
+        "word_begin": 24,
+        "word_end": 25,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 24,
+        "pronounce_word_end": 25,
+        "time_begin": 3370.6666666666665,
+        "time_end": 3413.333333333333
+      },
+      {
+        "word": "깬",
+        "word_begin": 25,
+        "word_end": 26,
+        "pronounce_word": "깬",
+        "pronounce_word_begin": 25,
+        "pronounce_word_end": 26,
+        "time_begin": 3413.333333333333,
+        "time_end": 3498.6666666666665
+      },
+      {
+        "word": " ",
+        "word_begin": 26,
+        "word_end": 27,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 26,
+        "pronounce_word_end": 27,
+        "time_begin": 3498.6666666666665,
+        "time_end": 3541.333333333333
+      },
+      {
+        "word": "것",
+        "word_begin": 27,
+        "word_end": 28,
+        "pronounce_word": "것",
+        "pronounce_word_begin": 27,
+        "pronounce_word_end": 28,
+        "time_begin": 3541.333333333333,
+        "time_end": 3626.6666666666665
+      },
+      {
+        "word": " ",
+        "word_begin": 28,
+        "word_end": 29,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 28,
+        "pronounce_word_end": 29,
+        "time_begin": 3626.6666666666665,
+        "time_end": 3669.3333333333335
+      },
+      {
+        "word": "같",
+        "word_begin": 29,
+        "word_end": 30,
+        "pronounce_word": "같",
+        "pronounce_word_begin": 29,
+        "pronounce_word_end": 30,
+        "time_begin": 3669.3333333333335,
+        "time_end": 3754.6666666666665
+      },
+      {
+        "word": "죠",
+        "word_begin": 30,
+        "word_end": 31,
+        "pronounce_word": "죠",
+        "pronounce_word_begin": 30,
+        "pronounce_word_end": 31,
+        "time_begin": 3754.6666666666665,
+        "time_end": 3925.333333333333
+      },
+      {
+        "word": "?",
+        "word_begin": 31,
+        "word_end": 32,
+        "pronounce_word": "?",
+        "pronounce_word_begin": 31,
+        "pronounce_word_end": 32,
+        "time_begin": 3925.333333333333,
+        "time_end": 4053.3333333333326
+      },
+      {
+        "word": " ",
+        "word_begin": 32,
+        "word_end": 33,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 32,
+        "pronounce_word_end": 33,
+        "time_begin": 4053.3333333333326,
+        "time_end": 4096
+      },
+      {
+        "word": "사",
+        "word_begin": 33,
+        "word_end": 34,
+        "pronounce_word": "사",
+        "pronounce_word_begin": 33,
+        "pronounce_word_end": 34,
+        "time_begin": 4096,
+        "time_end": 4565.333333333333
+      },
+      {
+        "word": "실",
+        "word_begin": 34,
+        "word_end": 35,
+        "pronounce_word": "실",
+        "pronounce_word_begin": 34,
+        "pronounce_word_end": 35,
+        "time_begin": 4565.333333333333,
+        "time_end": 4693.333333333333
+      },
+      {
+        "word": " ",
+        "word_begin": 35,
+        "word_end": 36,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 35,
+        "pronounce_word_end": 36,
+        "time_begin": 4693.333333333333,
+        "time_end": 4736
+      },
+      {
+        "word": "카",
+        "word_begin": 36,
+        "word_end": 37,
+        "pronounce_word": "카",
+        "pronounce_word_begin": 36,
+        "pronounce_word_end": 37,
+        "time_begin": 4736,
+        "time_end": 5034.666666666666
+      },
+      {
+        "word": "페",
+        "word_begin": 37,
+        "word_end": 38,
+        "pronounce_word": "페",
+        "pronounce_word_begin": 37,
+        "pronounce_word_end": 38,
+        "time_begin": 5034.666666666666,
+        "time_end": 5504
+      },
+      {
+        "word": "인",
+        "word_begin": 38,
+        "word_end": 39,
+        "pronounce_word": "인",
+        "pronounce_word_begin": 38,
+        "pronounce_word_end": 39,
+        "time_begin": 5504,
+        "time_end": 5674.666666666666
+      },
+      {
+        "word": "은",
+        "word_begin": 39,
+        "word_end": 40,
+        "pronounce_word": "은",
+        "pronounce_word_begin": 39,
+        "pronounce_word_end": 40,
+        "time_begin": 5674.666666666666,
+        "time_end": 5717.333333333333
+      },
+      {
+        "word": " ",
+        "word_begin": 40,
+        "word_end": 41,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 40,
+        "pronounce_word_end": 41,
+        "time_begin": 5717.333333333333,
+        "time_end": 5760
+      },
+      {
+        "word": "아",
+        "word_begin": 41,
+        "word_end": 42,
+        "pronounce_word": "아",
+        "pronounce_word_begin": 41,
+        "pronounce_word_end": 42,
+        "time_begin": 5760,
+        "time_end": 5888
+      },
+      {
+        "word": "직",
+        "word_begin": 42,
+        "word_end": 43,
+        "pronounce_word": "직",
+        "pronounce_word_begin": 42,
+        "pronounce_word_end": 43,
+        "time_begin": 5888,
+        "time_end": 5930.666666666666
+      },
+      {
+        "word": " ",
+        "word_begin": 43,
+        "word_end": 44,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 43,
+        "pronounce_word_end": 44,
+        "time_begin": 5930.666666666666,
+        "time_end": 5973.333333333333
+      },
+      {
+        "word": "출",
+        "word_begin": 44,
+        "word_end": 45,
+        "pronounce_word": "출",
+        "pronounce_word_begin": 44,
+        "pronounce_word_end": 45,
+        "time_begin": 5973.333333333333,
+        "time_end": 6101.333333333333
+      },
+      {
+        "word": "발",
+        "word_begin": 45,
+        "word_end": 46,
+        "pronounce_word": "발",
+        "pronounce_word_begin": 45,
+        "pronounce_word_end": 46,
+        "time_begin": 6101.333333333333,
+        "time_end": 6271.999999999999
+      },
+      {
+        "word": "도",
+        "word_begin": 46,
+        "word_end": 47,
+        "pronounce_word": "도",
+        "pronounce_word_begin": 46,
+        "pronounce_word_end": 47,
+        "time_begin": 6271.999999999999,
+        "time_end": 6357.333333333333
+      },
+      {
+        "word": " ",
+        "word_begin": 47,
+        "word_end": 48,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 47,
+        "pronounce_word_end": 48,
+        "time_begin": 6357.333333333333,
+        "time_end": 6399.999999999999
+      },
+      {
+        "word": "안",
+        "word_begin": 48,
+        "word_end": 49,
+        "pronounce_word": "안",
+        "pronounce_word_begin": 48,
+        "pronounce_word_end": 49,
+        "time_begin": 6399.999999999999,
+        "time_end": 6485.333333333333
+      },
+      {
+        "word": " ",
+        "word_begin": 49,
+        "word_end": 50,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 49,
+        "pronounce_word_end": 50,
+        "time_begin": 6485.333333333333,
+        "time_end": 6528
+      },
+      {
+        "word": "했",
+        "word_begin": 50,
+        "word_end": 51,
+        "pronounce_word": "했",
+        "pronounce_word_begin": 50,
+        "pronounce_word_end": 51,
+        "time_begin": 6528,
+        "time_end": 6613.333333333333
+      },
+      {
+        "word": "습",
+        "word_begin": 51,
+        "word_end": 52,
+        "pronounce_word": "습",
+        "pronounce_word_begin": 51,
+        "pronounce_word_end": 52,
+        "time_begin": 6613.333333333333,
+        "time_end": 6656
+      },
+      {
+        "word": "니",
+        "word_begin": 52,
+        "word_end": 53,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 52,
+        "pronounce_word_end": 53,
+        "time_begin": 6656,
+        "time_end": 6784
+      },
+      {
+        "word": "다",
+        "word_begin": 53,
+        "word_end": 54,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 53,
+        "pronounce_word_end": 54,
+        "time_begin": 6784,
+        "time_end": 6912
+      },
+      {
+        "word": ".",
+        "word_begin": 54,
+        "word_end": 55,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 54,
+        "pronounce_word_end": 55,
+        "time_begin": 6912,
+        "time_end": 7040
+      },
+      {
+        "word": "카",
+        "word_begin": 56,
+        "word_end": 57,
+        "pronounce_word": "카",
+        "pronounce_word_begin": 55,
+        "pronounce_word_end": 56,
+        "time_begin": 7082.666666666667,
+        "time_end": 7168
+      },
+      {
+        "word": "페",
+        "word_begin": 57,
+        "word_end": 58,
+        "pronounce_word": "페",
+        "pronounce_word_begin": 56,
+        "pronounce_word_end": 57,
+        "time_begin": 7168,
+        "time_end": 7338.666666666667
+      },
+      {
+        "word": "인",
+        "word_begin": 58,
+        "word_end": 59,
+        "pronounce_word": "인",
+        "pronounce_word_begin": 57,
+        "pronounce_word_end": 58,
+        "time_begin": 7338.666666666667,
+        "time_end": 7466.666666666667
+      },
+      {
+        "word": "은",
+        "word_begin": 59,
+        "word_end": 60,
+        "pronounce_word": "은",
+        "pronounce_word_begin": 58,
+        "pronounce_word_end": 59,
+        "time_begin": 7466.666666666667,
+        "time_end": 7552
+      },
+      {
+        "word": " ",
+        "word_begin": 60,
+        "word_end": 61,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 59,
+        "pronounce_word_end": 60,
+        "time_begin": 7552,
+        "time_end": 7594.666666666667
+      },
+      {
+        "word": "위",
+        "word_begin": 61,
+        "word_end": 62,
+        "pronounce_word": "위",
+        "pronounce_word_begin": 60,
+        "pronounce_word_end": 61,
+        "time_begin": 7594.666666666667,
+        "time_end": 8064
+      },
+      {
+        "word": "와",
+        "word_begin": 62,
+        "word_end": 63,
+        "pronounce_word": "와",
+        "pronounce_word_begin": 61,
+        "pronounce_word_end": 62,
+        "time_begin": 8064,
+        "time_end": 8234.666666666666
+      },
+      {
+        "word": " ",
+        "word_begin": 63,
+        "word_end": 64,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 62,
+        "pronounce_word_end": 63,
+        "time_begin": 8234.666666666666,
+        "time_end": 8277.333333333334
+      },
+      {
+        "word": "장",
+        "word_begin": 64,
+        "word_end": 65,
+        "pronounce_word": "장",
+        "pronounce_word_begin": 63,
+        "pronounce_word_end": 64,
+        "time_begin": 8277.333333333334,
+        "time_end": 8405.333333333334
+      },
+      {
+        "word": "을",
+        "word_begin": 65,
+        "word_end": 66,
+        "pronounce_word": "을",
+        "pronounce_word_begin": 64,
+        "pronounce_word_end": 65,
+        "time_begin": 8405.333333333334,
+        "time_end": 8533.333333333334
+      },
+      {
+        "word": " ",
+        "word_begin": 66,
+        "word_end": 67,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 65,
+        "pronounce_word_end": 66,
+        "time_begin": 8533.333333333334,
+        "time_end": 8576
+      },
+      {
+        "word": "지",
+        "word_begin": 67,
+        "word_end": 68,
+        "pronounce_word": "지",
+        "pronounce_word_begin": 66,
+        "pronounce_word_end": 67,
+        "time_begin": 8576,
+        "time_end": 8704
+      },
+      {
+        "word": "나",
+        "word_begin": 68,
+        "word_end": 69,
+        "pronounce_word": "나",
+        "pronounce_word_begin": 67,
+        "pronounce_word_end": 68,
+        "time_begin": 8704,
+        "time_end": 8789.333333333334
+      },
+      {
+        "word": " ",
+        "word_begin": 69,
+        "word_end": 70,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 68,
+        "pronounce_word_end": 69,
+        "time_begin": 8789.333333333334,
+        "time_end": 8832
+      },
+      {
+        "word": "혈",
+        "word_begin": 70,
+        "word_end": 71,
+        "pronounce_word": "혈",
+        "pronounce_word_begin": 69,
+        "pronounce_word_end": 70,
+        "time_begin": 8832,
+        "time_end": 9344
+      },
+      {
+        "word": "액",
+        "word_begin": 71,
+        "word_end": 72,
+        "pronounce_word": "액",
+        "pronounce_word_begin": 70,
+        "pronounce_word_end": 71,
+        "time_begin": 9344,
+        "time_end": 9472
+      },
+      {
+        "word": "으",
+        "word_begin": 72,
+        "word_end": 73,
+        "pronounce_word": "으",
+        "pronounce_word_begin": 71,
+        "pronounce_word_end": 72,
+        "time_begin": 9472,
+        "time_end": 9557.333333333332
+      },
+      {
+        "word": "로",
+        "word_begin": 73,
+        "word_end": 74,
+        "pronounce_word": "로",
+        "pronounce_word_begin": 72,
+        "pronounce_word_end": 73,
+        "time_begin": 9557.333333333332,
+        "time_end": 9600
+      },
+      {
+        "word": " ",
+        "word_begin": 74,
+        "word_end": 75,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 73,
+        "pronounce_word_end": 74,
+        "time_begin": 9600,
+        "time_end": 9642.666666666666
+      },
+      {
+        "word": "천",
+        "word_begin": 75,
+        "word_end": 76,
+        "pronounce_word": "천",
+        "pronounce_word_begin": 74,
+        "pronounce_word_end": 75,
+        "time_begin": 9642.666666666666,
+        "time_end": 9770.666666666666
+      },
+      {
+        "word": "천",
+        "word_begin": 76,
+        "word_end": 77,
+        "pronounce_word": "천",
+        "pronounce_word_begin": 75,
+        "pronounce_word_end": 76,
+        "time_begin": 9770.666666666666,
+        "time_end": 9941.333333333332
+      },
+      {
+        "word": "히",
+        "word_begin": 77,
+        "word_end": 78,
+        "pronounce_word": "히",
+        "pronounce_word_begin": 76,
+        "pronounce_word_end": 77,
+        "time_begin": 9941.333333333332,
+        "time_end": 10112
+      },
+      {
+        "word": " ",
+        "word_begin": 78,
+        "word_end": 79,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 77,
+        "pronounce_word_end": 78,
+        "time_begin": 10112,
+        "time_end": 10154.666666666666
+      },
+      {
+        "word": "스",
+        "word_begin": 79,
+        "word_end": 80,
+        "pronounce_word": "스",
+        "pronounce_word_begin": 78,
+        "pronounce_word_end": 79,
+        "time_begin": 10154.666666666666,
+        "time_end": 10197.333333333334
+      },
+      {
+        "word": "며",
+        "word_begin": 80,
+        "word_end": 81,
+        "pronounce_word": "며",
+        "pronounce_word_begin": 79,
+        "pronounce_word_end": 80,
+        "time_begin": 10197.333333333334,
+        "time_end": 10325.333333333334
+      },
+      {
+        "word": "들",
+        "word_begin": 81,
+        "word_end": 82,
+        "pronounce_word": "들",
+        "pronounce_word_begin": 80,
+        "pronounce_word_end": 81,
+        "time_begin": 10325.333333333334,
+        "time_end": 10453.333333333332
+      },
+      {
+        "word": "고",
+        "word_begin": 82,
+        "word_end": 83,
+        "pronounce_word": "고",
+        "pronounce_word_begin": 81,
+        "pronounce_word_end": 82,
+        "time_begin": 10453.333333333332,
+        "time_end": 10581.333333333332
+      },
+      {
+        "word": ",",
+        "word_begin": 83,
+        "word_end": 84,
+        "pronounce_word": ",",
+        "pronounce_word_begin": 82,
+        "pronounce_word_end": 83,
+        "time_begin": 10581.333333333332,
+        "time_end": 10666.666666666666
+      },
+      {
+        "word": " ",
+        "word_begin": 84,
+        "word_end": 85,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 83,
+        "pronounce_word_end": 84,
+        "time_begin": 10666.666666666666,
+        "time_end": 10709.333333333334
+      },
+      {
+        "word": "약",
+        "word_begin": 85,
+        "word_end": 86,
+        "pronounce_word": "약",
+        "pronounce_word_begin": 84,
+        "pronounce_word_end": 85,
+        "time_begin": 10709.333333333334,
+        "time_end": 10837.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 86,
+        "word_end": 87,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 85,
+        "pronounce_word_end": 86,
+        "time_begin": 10837.333333333332,
+        "time_end": 11136
+      },
+      {
+        "word": "사",
+        "word_begin": 87,
+        "word_end": 88,
+        "pronounce_word": "사",
+        "pronounce_word_begin": 86,
+        "pronounce_word_end": 87,
+        "time_begin": 11136,
+        "time_end": 11349.333333333332
+      },
+      {
+        "word": "십",
+        "word_begin": 88,
+        "word_end": 89,
+        "pronounce_word": "십",
+        "pronounce_word_begin": 87,
+        "pronounce_word_end": 88,
+        "time_begin": 11349.333333333332,
+        "time_end": 11605.333333333332
+      },
+      {
+        "word": "오",
+        "word_begin": 89,
+        "word_end": 90,
+        "pronounce_word": "오",
+        "pronounce_word_begin": 88,
+        "pronounce_word_end": 89,
+        "time_begin": 11605.333333333332,
+        "time_end": 11733.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 90,
+        "word_end": 91,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 89,
+        "pronounce_word_end": 90,
+        "time_begin": 11733.333333333332,
+        "time_end": 11776
+      },
+      {
+        "word": "분",
+        "word_begin": 91,
+        "word_end": 92,
+        "pronounce_word": "분",
+        "pronounce_word_begin": 90,
+        "pronounce_word_end": 91,
+        "time_begin": 11776,
+        "time_end": 11818.666666666666
+      },
+      {
+        "word": "이",
+        "word_begin": 92,
+        "word_end": 93,
+        "pronounce_word": "이",
+        "pronounce_word_begin": 91,
+        "pronounce_word_end": 92,
+        "time_begin": 11818.666666666666,
+        "time_end": 11904
+      },
+      {
+        "word": " ",
+        "word_begin": 93,
+        "word_end": 94,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 92,
+        "pronounce_word_end": 93,
+        "time_begin": 11904,
+        "time_end": 11946.666666666666
+      },
+      {
+        "word": "지",
+        "word_begin": 94,
+        "word_end": 95,
+        "pronounce_word": "지",
+        "pronounce_word_begin": 93,
+        "pronounce_word_end": 94,
+        "time_begin": 11946.666666666666,
+        "time_end": 12032
+      },
+      {
+        "word": "나",
+        "word_begin": 95,
+        "word_end": 96,
+        "pronounce_word": "나",
+        "pronounce_word_begin": 94,
+        "pronounce_word_end": 95,
+        "time_begin": 12032,
+        "time_end": 12160
+      },
+      {
+        "word": "야",
+        "word_begin": 96,
+        "word_end": 97,
+        "pronounce_word": "야",
+        "pronounce_word_begin": 95,
+        "pronounce_word_end": 96,
+        "time_begin": 12160,
+        "time_end": 12245.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 97,
+        "word_end": 98,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 96,
+        "pronounce_word_end": 97,
+        "time_begin": 12245.333333333332,
+        "time_end": 12288
+      },
+      {
+        "word": "거",
+        "word_begin": 98,
+        "word_end": 99,
+        "pronounce_word": "거",
+        "pronounce_word_begin": 97,
+        "pronounce_word_end": 98,
+        "time_begin": 12288,
+        "time_end": 12458.666666666668
+      },
+      {
+        "word": "의",
+        "word_begin": 99,
+        "word_end": 100,
+        "pronounce_word": "의",
+        "pronounce_word_begin": 98,
+        "pronounce_word_end": 99,
+        "time_begin": 12458.666666666668,
+        "time_end": 12928
+      },
+      {
+        "word": " ",
+        "word_begin": 100,
+        "word_end": 101,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 99,
+        "pronounce_word_end": 100,
+        "time_begin": 12928,
+        "time_end": 12970.666666666666
+      },
+      {
+        "word": "다",
+        "word_begin": 101,
+        "word_end": 102,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 100,
+        "pronounce_word_end": 101,
+        "time_begin": 12970.666666666666,
+        "time_end": 13056
+      },
+      {
+        "word": " ",
+        "word_begin": 102,
+        "word_end": 103,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 101,
+        "pronounce_word_end": 102,
+        "time_begin": 13056,
+        "time_end": 13098.666666666666
+      },
+      {
+        "word": "흡",
+        "word_begin": 103,
+        "word_end": 104,
+        "pronounce_word": "흡",
+        "pronounce_word_begin": 102,
+        "pronounce_word_end": 103,
+        "time_begin": 13098.666666666666,
+        "time_end": 13226.666666666668
+      },
+      {
+        "word": "수",
+        "word_begin": 104,
+        "word_end": 105,
+        "pronounce_word": "수",
+        "pronounce_word_begin": 103,
+        "pronounce_word_end": 104,
+        "time_begin": 13226.666666666668,
+        "time_end": 13354.666666666668
+      },
+      {
+        "word": "됩",
+        "word_begin": 105,
+        "word_end": 106,
+        "pronounce_word": "됩",
+        "pronounce_word_begin": 104,
+        "pronounce_word_end": 105,
+        "time_begin": 13354.666666666668,
+        "time_end": 13482.666666666668
+      },
+      {
+        "word": "니",
+        "word_begin": 106,
+        "word_end": 107,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 105,
+        "pronounce_word_end": 106,
+        "time_begin": 13482.666666666668,
+        "time_end": 13568
+      },
+      {
+        "word": "다",
+        "word_begin": 107,
+        "word_end": 108,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 106,
+        "pronounce_word_end": 107,
+        "time_begin": 13568,
+        "time_end": 13696
+      },
+      {
+        "word": ".",
+        "word_begin": 108,
+        "word_end": 109,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 107,
+        "pronounce_word_end": 108,
+        "time_begin": 13696,
+        "time_end": 13824
+      }
+    ]
+  },
+  {
+    "text": "그다음 뇌에서 졸음 신호인 아데노신의 자리를 대신 차지해요. 피로가 사라진 게 아니라, 잠시 가려진 겁니다. 문제는 퇴장이 느리다는 것.카페인의 반감기는 평균 다섯 시간.",
+    "pronounce_text": "그다음 뇌에서 졸음 신호인 아데노신의 자리를 대신 차지해요. 피로가 사라진 게 아니라, 잠시 가려진 겁니다. 문제는 퇴장이 느리다는 것.카페인의 반감기는 평균 다섯 시간.",
+    "time_begin": 14256,
+    "time_end": 26056.226757369615,
+    "text_begin": 108,
+    "text_end": 203,
+    "pronounce_text_begin": 108,
+    "pronounce_text_end": 203,
+    "timestamped_words": [
+      {
+        "word": "그",
+        "word_begin": 108,
+        "word_end": 109,
+        "pronounce_word": "그",
+        "pronounce_word_begin": 108,
+        "pronounce_word_end": 109,
+        "time_begin": 14298.666666666666,
+        "time_end": 14384
+      },
+      {
+        "word": "다",
+        "word_begin": 109,
+        "word_end": 110,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 109,
+        "pronounce_word_end": 110,
+        "time_begin": 14384,
+        "time_end": 14469.333333333334
+      },
+      {
+        "word": "음",
+        "word_begin": 110,
+        "word_end": 111,
+        "pronounce_word": "음",
+        "pronounce_word_begin": 110,
+        "pronounce_word_end": 111,
+        "time_begin": 14469.333333333334,
+        "time_end": 14554.666666666666
+      },
+      {
+        "word": " ",
+        "word_begin": 111,
+        "word_end": 112,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 111,
+        "pronounce_word_end": 112,
+        "time_begin": 14554.666666666666,
+        "time_end": 14597.333333333334
+      },
+      {
+        "word": "뇌",
+        "word_begin": 112,
+        "word_end": 113,
+        "pronounce_word": "뇌",
+        "pronounce_word_begin": 112,
+        "pronounce_word_end": 113,
+        "time_begin": 14597.333333333334,
+        "time_end": 14725.333333333334
+      },
+      {
+        "word": "에",
+        "word_begin": 113,
+        "word_end": 114,
+        "pronounce_word": "에",
+        "pronounce_word_begin": 113,
+        "pronounce_word_end": 114,
+        "time_begin": 14725.333333333334,
+        "time_end": 14896
+      },
+      {
+        "word": "서",
+        "word_begin": 114,
+        "word_end": 115,
+        "pronounce_word": "서",
+        "pronounce_word_begin": 114,
+        "pronounce_word_end": 115,
+        "time_begin": 14896,
+        "time_end": 14981.333333333334
+      },
+      {
+        "word": " ",
+        "word_begin": 115,
+        "word_end": 116,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 115,
+        "pronounce_word_end": 116,
+        "time_begin": 14981.333333333334,
+        "time_end": 15024
+      },
+      {
+        "word": "졸",
+        "word_begin": 116,
+        "word_end": 117,
+        "pronounce_word": "졸",
+        "pronounce_word_begin": 116,
+        "pronounce_word_end": 117,
+        "time_begin": 15024,
+        "time_end": 15493.333333333334
+      },
+      {
+        "word": "음",
+        "word_begin": 117,
+        "word_end": 118,
+        "pronounce_word": "음",
+        "pronounce_word_begin": 117,
+        "pronounce_word_end": 118,
+        "time_begin": 15493.333333333334,
+        "time_end": 15706.666666666666
+      },
+      {
+        "word": " ",
+        "word_begin": 118,
+        "word_end": 119,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 118,
+        "pronounce_word_end": 119,
+        "time_begin": 15706.666666666666,
+        "time_end": 15749.333333333334
+      },
+      {
+        "word": "신",
+        "word_begin": 119,
+        "word_end": 120,
+        "pronounce_word": "신",
+        "pronounce_word_begin": 119,
+        "pronounce_word_end": 120,
+        "time_begin": 15749.333333333334,
+        "time_end": 15834.666666666666
+      },
+      {
+        "word": "호",
+        "word_begin": 120,
+        "word_end": 121,
+        "pronounce_word": "호",
+        "pronounce_word_begin": 120,
+        "pronounce_word_end": 121,
+        "time_begin": 15834.666666666666,
+        "time_end": 15962.666666666666
+      },
+      {
+        "word": "인",
+        "word_begin": 121,
+        "word_end": 122,
+        "pronounce_word": "인",
+        "pronounce_word_begin": 121,
+        "pronounce_word_end": 122,
+        "time_begin": 15962.666666666666,
+        "time_end": 16048
+      },
+      {
+        "word": " ",
+        "word_begin": 122,
+        "word_end": 123,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 122,
+        "pronounce_word_end": 123,
+        "time_begin": 16048,
+        "time_end": 16090.666666666666
+      },
+      {
+        "word": "아",
+        "word_begin": 123,
+        "word_end": 124,
+        "pronounce_word": "아",
+        "pronounce_word_begin": 123,
+        "pronounce_word_end": 124,
+        "time_begin": 16090.666666666666,
+        "time_end": 16218.666666666666
+      },
+      {
+        "word": "데",
+        "word_begin": 124,
+        "word_end": 125,
+        "pronounce_word": "데",
+        "pronounce_word_begin": 124,
+        "pronounce_word_end": 125,
+        "time_begin": 16218.666666666666,
+        "time_end": 16346.666666666666
+      },
+      {
+        "word": "노",
+        "word_begin": 125,
+        "word_end": 126,
+        "pronounce_word": "노",
+        "pronounce_word_begin": 125,
+        "pronounce_word_end": 126,
+        "time_begin": 16346.666666666666,
+        "time_end": 16432
+      },
+      {
+        "word": "신",
+        "word_begin": 126,
+        "word_end": 127,
+        "pronounce_word": "신",
+        "pronounce_word_begin": 126,
+        "pronounce_word_end": 127,
+        "time_begin": 16432,
+        "time_end": 16560
+      },
+      {
+        "word": "의",
+        "word_begin": 127,
+        "word_end": 128,
+        "pronounce_word": "의",
+        "pronounce_word_begin": 127,
+        "pronounce_word_end": 128,
+        "time_begin": 16560,
+        "time_end": 16688
+      },
+      {
+        "word": " ",
+        "word_begin": 128,
+        "word_end": 129,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 128,
+        "pronounce_word_end": 129,
+        "time_begin": 16688,
+        "time_end": 16730.666666666668
+      },
+      {
+        "word": "자",
+        "word_begin": 129,
+        "word_end": 130,
+        "pronounce_word": "자",
+        "pronounce_word_begin": 129,
+        "pronounce_word_end": 130,
+        "time_begin": 16730.666666666668,
+        "time_end": 16773.333333333332
+      },
+      {
+        "word": "리",
+        "word_begin": 130,
+        "word_end": 131,
+        "pronounce_word": "리",
+        "pronounce_word_begin": 130,
+        "pronounce_word_end": 131,
+        "time_begin": 16773.333333333332,
+        "time_end": 16901.333333333332
+      },
+      {
+        "word": "를",
+        "word_begin": 131,
+        "word_end": 132,
+        "pronounce_word": "를",
+        "pronounce_word_begin": 131,
+        "pronounce_word_end": 132,
+        "time_begin": 16901.333333333332,
+        "time_end": 16986.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 132,
+        "word_end": 133,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 132,
+        "pronounce_word_end": 133,
+        "time_begin": 16986.666666666668,
+        "time_end": 17029.333333333332
+      },
+      {
+        "word": "대",
+        "word_begin": 133,
+        "word_end": 134,
+        "pronounce_word": "대",
+        "pronounce_word_begin": 133,
+        "pronounce_word_end": 134,
+        "time_begin": 17029.333333333332,
+        "time_end": 17157.333333333332
+      },
+      {
+        "word": "신",
+        "word_begin": 134,
+        "word_end": 135,
+        "pronounce_word": "신",
+        "pronounce_word_begin": 134,
+        "pronounce_word_end": 135,
+        "time_begin": 17157.333333333332,
+        "time_end": 17285.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 135,
+        "word_end": 136,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 135,
+        "pronounce_word_end": 136,
+        "time_begin": 17285.333333333332,
+        "time_end": 17328
+      },
+      {
+        "word": "차",
+        "word_begin": 136,
+        "word_end": 137,
+        "pronounce_word": "차",
+        "pronounce_word_begin": 136,
+        "pronounce_word_end": 137,
+        "time_begin": 17328,
+        "time_end": 17456
+      },
+      {
+        "word": "지",
+        "word_begin": 137,
+        "word_end": 138,
+        "pronounce_word": "지",
+        "pronounce_word_begin": 137,
+        "pronounce_word_end": 138,
+        "time_begin": 17456,
+        "time_end": 17626.666666666668
+      },
+      {
+        "word": "해",
+        "word_begin": 138,
+        "word_end": 139,
+        "pronounce_word": "해",
+        "pronounce_word_begin": 138,
+        "pronounce_word_end": 139,
+        "time_begin": 17626.666666666668,
+        "time_end": 17754.666666666668
+      },
+      {
+        "word": "요",
+        "word_begin": 139,
+        "word_end": 140,
+        "pronounce_word": "요",
+        "pronounce_word_begin": 139,
+        "pronounce_word_end": 140,
+        "time_begin": 17754.666666666668,
+        "time_end": 17840
+      },
+      {
+        "word": ".",
+        "word_begin": 140,
+        "word_end": 141,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 140,
+        "pronounce_word_end": 141,
+        "time_begin": 17840,
+        "time_end": 17882.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 141,
+        "word_end": 142,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 141,
+        "pronounce_word_end": 142,
+        "time_begin": 17882.666666666668,
+        "time_end": 17925.333333333332
+      },
+      {
+        "word": "피",
+        "word_begin": 142,
+        "word_end": 143,
+        "pronounce_word": "피",
+        "pronounce_word_begin": 142,
+        "pronounce_word_end": 143,
+        "time_begin": 17925.333333333332,
+        "time_end": 18352
+      },
+      {
+        "word": "로",
+        "word_begin": 143,
+        "word_end": 144,
+        "pronounce_word": "로",
+        "pronounce_word_begin": 143,
+        "pronounce_word_end": 144,
+        "time_begin": 18352,
+        "time_end": 18480
+      },
+      {
+        "word": "가",
+        "word_begin": 144,
+        "word_end": 145,
+        "pronounce_word": "가",
+        "pronounce_word_begin": 144,
+        "pronounce_word_end": 145,
+        "time_begin": 18480,
+        "time_end": 18565.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 145,
+        "word_end": 146,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 145,
+        "pronounce_word_end": 146,
+        "time_begin": 18565.333333333332,
+        "time_end": 18608
+      },
+      {
+        "word": "사",
+        "word_begin": 146,
+        "word_end": 147,
+        "pronounce_word": "사",
+        "pronounce_word_begin": 146,
+        "pronounce_word_end": 147,
+        "time_begin": 18608,
+        "time_end": 18693.333333333332
+      },
+      {
+        "word": "라",
+        "word_begin": 147,
+        "word_end": 148,
+        "pronounce_word": "라",
+        "pronounce_word_begin": 147,
+        "pronounce_word_end": 148,
+        "time_begin": 18693.333333333332,
+        "time_end": 18821.333333333332
+      },
+      {
+        "word": "진",
+        "word_begin": 148,
+        "word_end": 149,
+        "pronounce_word": "진",
+        "pronounce_word_begin": 148,
+        "pronounce_word_end": 149,
+        "time_begin": 18821.333333333332,
+        "time_end": 18906.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 149,
+        "word_end": 150,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 149,
+        "pronounce_word_end": 150,
+        "time_begin": 18906.666666666668,
+        "time_end": 18949.333333333332
+      },
+      {
+        "word": "게",
+        "word_begin": 150,
+        "word_end": 151,
+        "pronounce_word": "게",
+        "pronounce_word_begin": 150,
+        "pronounce_word_end": 151,
+        "time_begin": 18949.333333333332,
+        "time_end": 19034.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 151,
+        "word_end": 152,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 151,
+        "pronounce_word_end": 152,
+        "time_begin": 19034.666666666664,
+        "time_end": 19077.333333333332
+      },
+      {
+        "word": "아",
+        "word_begin": 152,
+        "word_end": 153,
+        "pronounce_word": "아",
+        "pronounce_word_begin": 152,
+        "pronounce_word_end": 153,
+        "time_begin": 19077.333333333332,
+        "time_end": 19162.666666666664
+      },
+      {
+        "word": "니",
+        "word_begin": 153,
+        "word_end": 154,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 153,
+        "pronounce_word_end": 154,
+        "time_begin": 19162.666666666664,
+        "time_end": 19248
+      },
+      {
+        "word": "라",
+        "word_begin": 154,
+        "word_end": 155,
+        "pronounce_word": "라",
+        "pronounce_word_begin": 154,
+        "pronounce_word_end": 155,
+        "time_begin": 19248,
+        "time_end": 19333.333333333332
+      },
+      {
+        "word": ",",
+        "word_begin": 155,
+        "word_end": 156,
+        "pronounce_word": ",",
+        "pronounce_word_begin": 155,
+        "pronounce_word_end": 156,
+        "time_begin": 19333.333333333332,
+        "time_end": 19418.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 156,
+        "word_end": 157,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 156,
+        "pronounce_word_end": 157,
+        "time_begin": 19418.666666666664,
+        "time_end": 19461.333333333332
+      },
+      {
+        "word": "잠",
+        "word_begin": 157,
+        "word_end": 158,
+        "pronounce_word": "잠",
+        "pronounce_word_begin": 157,
+        "pronounce_word_end": 158,
+        "time_begin": 19461.333333333332,
+        "time_end": 19930.666666666664
+      },
+      {
+        "word": "시",
+        "word_begin": 158,
+        "word_end": 159,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 158,
+        "pronounce_word_end": 159,
+        "time_begin": 19930.666666666664,
+        "time_end": 20101.333333333336
+      },
+      {
+        "word": " ",
+        "word_begin": 159,
+        "word_end": 160,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 159,
+        "pronounce_word_end": 160,
+        "time_begin": 20101.333333333336,
+        "time_end": 20144
+      },
+      {
+        "word": "가",
+        "word_begin": 160,
+        "word_end": 161,
+        "pronounce_word": "가",
+        "pronounce_word_begin": 160,
+        "pronounce_word_end": 161,
+        "time_begin": 20144,
+        "time_end": 20272
+      },
+      {
+        "word": "려",
+        "word_begin": 161,
+        "word_end": 162,
+        "pronounce_word": "려",
+        "pronounce_word_begin": 161,
+        "pronounce_word_end": 162,
+        "time_begin": 20272,
+        "time_end": 20400
+      },
+      {
+        "word": "진",
+        "word_begin": 162,
+        "word_end": 163,
+        "pronounce_word": "진",
+        "pronounce_word_begin": 162,
+        "pronounce_word_end": 163,
+        "time_begin": 20400,
+        "time_end": 20485.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 163,
+        "word_end": 164,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 163,
+        "pronounce_word_end": 164,
+        "time_begin": 20485.333333333332,
+        "time_end": 20528
+      },
+      {
+        "word": "겁",
+        "word_begin": 164,
+        "word_end": 165,
+        "pronounce_word": "겁",
+        "pronounce_word_begin": 164,
+        "pronounce_word_end": 165,
+        "time_begin": 20528,
+        "time_end": 20613.333333333332
+      },
+      {
+        "word": "니",
+        "word_begin": 165,
+        "word_end": 166,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 165,
+        "pronounce_word_end": 166,
+        "time_begin": 20613.333333333332,
+        "time_end": 20741.333333333332
+      },
+      {
+        "word": "다",
+        "word_begin": 166,
+        "word_end": 167,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 166,
+        "pronounce_word_end": 167,
+        "time_begin": 20741.333333333332,
+        "time_end": 20869.333333333332
+      },
+      {
+        "word": ".",
+        "word_begin": 167,
+        "word_end": 168,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 167,
+        "pronounce_word_end": 168,
+        "time_begin": 20869.333333333332,
+        "time_end": 20912
+      },
+      {
+        "word": " ",
+        "word_begin": 168,
+        "word_end": 169,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 168,
+        "pronounce_word_end": 169,
+        "time_begin": 20912,
+        "time_end": 20954.666666666664
+      },
+      {
+        "word": "문",
+        "word_begin": 169,
+        "word_end": 170,
+        "pronounce_word": "문",
+        "pronounce_word_begin": 169,
+        "pronounce_word_end": 170,
+        "time_begin": 20954.666666666664,
+        "time_end": 21594.666666666668
+      },
+      {
+        "word": "제",
+        "word_begin": 170,
+        "word_end": 171,
+        "pronounce_word": "제",
+        "pronounce_word_begin": 170,
+        "pronounce_word_end": 171,
+        "time_begin": 21594.666666666668,
+        "time_end": 21722.666666666668
+      },
+      {
+        "word": "는",
+        "word_begin": 171,
+        "word_end": 172,
+        "pronounce_word": "는",
+        "pronounce_word_begin": 171,
+        "pronounce_word_end": 172,
+        "time_begin": 21722.666666666668,
+        "time_end": 21808
+      },
+      {
+        "word": " ",
+        "word_begin": 172,
+        "word_end": 173,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 172,
+        "pronounce_word_end": 173,
+        "time_begin": 21808,
+        "time_end": 21850.666666666664
+      },
+      {
+        "word": "퇴",
+        "word_begin": 173,
+        "word_end": 174,
+        "pronounce_word": "퇴",
+        "pronounce_word_begin": 173,
+        "pronounce_word_end": 174,
+        "time_begin": 21850.666666666664,
+        "time_end": 22149.333333333332
+      },
+      {
+        "word": "장",
+        "word_begin": 174,
+        "word_end": 175,
+        "pronounce_word": "장",
+        "pronounce_word_begin": 174,
+        "pronounce_word_end": 175,
+        "time_begin": 22149.333333333332,
+        "time_end": 22704
+      },
+      {
+        "word": "이",
+        "word_begin": 175,
+        "word_end": 176,
+        "pronounce_word": "이",
+        "pronounce_word_begin": 175,
+        "pronounce_word_end": 176,
+        "time_begin": 22704,
+        "time_end": 22832
+      },
+      {
+        "word": " ",
+        "word_begin": 176,
+        "word_end": 177,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 176,
+        "pronounce_word_end": 177,
+        "time_begin": 22832,
+        "time_end": 22874.666666666664
+      },
+      {
+        "word": "느",
+        "word_begin": 177,
+        "word_end": 178,
+        "pronounce_word": "느",
+        "pronounce_word_begin": 177,
+        "pronounce_word_end": 178,
+        "time_begin": 22874.666666666664,
+        "time_end": 22960
+      },
+      {
+        "word": "리",
+        "word_begin": 178,
+        "word_end": 179,
+        "pronounce_word": "리",
+        "pronounce_word_begin": 178,
+        "pronounce_word_end": 179,
+        "time_begin": 22960,
+        "time_end": 23045.333333333336
+      },
+      {
+        "word": "다",
+        "word_begin": 179,
+        "word_end": 180,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 179,
+        "pronounce_word_end": 180,
+        "time_begin": 23045.333333333336,
+        "time_end": 23130.666666666664
+      },
+      {
+        "word": "는",
+        "word_begin": 180,
+        "word_end": 181,
+        "pronounce_word": "는",
+        "pronounce_word_begin": 180,
+        "pronounce_word_end": 181,
+        "time_begin": 23130.666666666664,
+        "time_end": 23216
+      },
+      {
+        "word": " ",
+        "word_begin": 181,
+        "word_end": 182,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 181,
+        "pronounce_word_end": 182,
+        "time_begin": 23216,
+        "time_end": 23258.666666666664
+      },
+      {
+        "word": "것",
+        "word_begin": 182,
+        "word_end": 183,
+        "pronounce_word": "것",
+        "pronounce_word_begin": 182,
+        "pronounce_word_end": 183,
+        "time_begin": 23258.666666666664,
+        "time_end": 23344
+      },
+      {
+        "word": ".",
+        "word_begin": 183,
+        "word_end": 184,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 183,
+        "pronounce_word_end": 184,
+        "time_begin": 23344,
+        "time_end": 23514.666666666664
+      },
+      {
+        "word": "카",
+        "word_begin": 185,
+        "word_end": 186,
+        "pronounce_word": "카",
+        "pronounce_word_begin": 184,
+        "pronounce_word_end": 185,
+        "time_begin": 23557.333333333332,
+        "time_end": 23685.333333333332
+      },
+      {
+        "word": "페",
+        "word_begin": 186,
+        "word_end": 187,
+        "pronounce_word": "페",
+        "pronounce_word_begin": 185,
+        "pronounce_word_end": 186,
+        "time_begin": 23685.333333333332,
+        "time_end": 23813.333333333332
+      },
+      {
+        "word": "인",
+        "word_begin": 187,
+        "word_end": 188,
+        "pronounce_word": "인",
+        "pronounce_word_begin": 186,
+        "pronounce_word_end": 187,
+        "time_begin": 23813.333333333332,
+        "time_end": 23984
+      },
+      {
+        "word": "의",
+        "word_begin": 188,
+        "word_end": 189,
+        "pronounce_word": "의",
+        "pronounce_word_begin": 187,
+        "pronounce_word_end": 188,
+        "time_begin": 23984,
+        "time_end": 24026.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 189,
+        "word_end": 190,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 188,
+        "pronounce_word_end": 189,
+        "time_begin": 24026.666666666664,
+        "time_end": 24069.333333333332
+      },
+      {
+        "word": "반",
+        "word_begin": 190,
+        "word_end": 191,
+        "pronounce_word": "반",
+        "pronounce_word_begin": 189,
+        "pronounce_word_end": 190,
+        "time_begin": 24069.333333333332,
+        "time_end": 24154.666666666664
+      },
+      {
+        "word": "감",
+        "word_begin": 191,
+        "word_end": 192,
+        "pronounce_word": "감",
+        "pronounce_word_begin": 190,
+        "pronounce_word_end": 191,
+        "time_begin": 24154.666666666664,
+        "time_end": 24325.333333333332
+      },
+      {
+        "word": "기",
+        "word_begin": 192,
+        "word_end": 193,
+        "pronounce_word": "기",
+        "pronounce_word_begin": 191,
+        "pronounce_word_end": 192,
+        "time_begin": 24325.333333333332,
+        "time_end": 24538.666666666664
+      },
+      {
+        "word": "는",
+        "word_begin": 193,
+        "word_end": 194,
+        "pronounce_word": "는",
+        "pronounce_word_begin": 192,
+        "pronounce_word_end": 193,
+        "time_begin": 24538.666666666664,
+        "time_end": 24624
+      },
+      {
+        "word": " ",
+        "word_begin": 194,
+        "word_end": 195,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 193,
+        "pronounce_word_end": 194,
+        "time_begin": 24624,
+        "time_end": 24666.666666666664
+      },
+      {
+        "word": "평",
+        "word_begin": 195,
+        "word_end": 196,
+        "pronounce_word": "평",
+        "pronounce_word_begin": 194,
+        "pronounce_word_end": 195,
+        "time_begin": 24666.666666666664,
+        "time_end": 25008
+      },
+      {
+        "word": "균",
+        "word_begin": 196,
+        "word_end": 197,
+        "pronounce_word": "균",
+        "pronounce_word_begin": 195,
+        "pronounce_word_end": 196,
+        "time_begin": 25008,
+        "time_end": 25178.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 197,
+        "word_end": 198,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 196,
+        "pronounce_word_end": 197,
+        "time_begin": 25178.666666666664,
+        "time_end": 25221.333333333332
+      },
+      {
+        "word": "다",
+        "word_begin": 198,
+        "word_end": 199,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 197,
+        "pronounce_word_end": 198,
+        "time_begin": 25221.333333333332,
+        "time_end": 25349.333333333332
+      },
+      {
+        "word": "섯",
+        "word_begin": 199,
+        "word_end": 200,
+        "pronounce_word": "섯",
+        "pronounce_word_begin": 198,
+        "pronounce_word_end": 199,
+        "time_begin": 25349.333333333332,
+        "time_end": 25477.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 200,
+        "word_end": 201,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 199,
+        "pronounce_word_end": 200,
+        "time_begin": 25477.333333333332,
+        "time_end": 25520
+      },
+      {
+        "word": "시",
+        "word_begin": 201,
+        "word_end": 202,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 200,
+        "pronounce_word_end": 201,
+        "time_begin": 25520,
+        "time_end": 25648
+      },
+      {
+        "word": "간",
+        "word_begin": 202,
+        "word_end": 203,
+        "pronounce_word": "간",
+        "pronounce_word_begin": 201,
+        "pronounce_word_end": 202,
+        "time_begin": 25648,
+        "time_end": 25733.333333333332
+      },
+      {
+        "word": ".",
+        "word_begin": 203,
+        "word_end": 204,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 202,
+        "pronounce_word_end": 203,
+        "time_begin": 25733.333333333332,
+        "time_end": 25904
+      }
+    ]
+  },
+  {
+    "text": "세 시에 마신 커피의 절반이, 밤 여덟 시에도 남아 있습니다. 그러니 마지막 잔은 이른 오후에. 커피는 에너지를 주는 게 아니라, 시간을 빌려주는 겁니다.",
+    "pronounce_text": "세 시에 마신 커피의 절반이, 밤 여덟 시에도 남아 있습니다. 그러니 마지막 잔은 이른 오후에. 커피는 에너지를 주는 게 아니라, 시간을 빌려주는 겁니다.",
+    "time_begin": 26208,
+    "time_end": 35697.84126984127,
+    "text_begin": 203,
+    "text_end": 289,
+    "pronounce_text_begin": 203,
+    "pronounce_text_end": 289,
+    "timestamped_words": [
+      {
+        "word": "세",
+        "word_begin": 203,
+        "word_end": 204,
+        "pronounce_word": "세",
+        "pronounce_word_begin": 203,
+        "pronounce_word_end": 204,
+        "time_begin": 26250.666666666668,
+        "time_end": 26378.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 204,
+        "word_end": 205,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 204,
+        "pronounce_word_end": 205,
+        "time_begin": 26378.666666666668,
+        "time_end": 26421.333333333332
+      },
+      {
+        "word": "시",
+        "word_begin": 205,
+        "word_end": 206,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 205,
+        "pronounce_word_end": 206,
+        "time_begin": 26421.333333333332,
+        "time_end": 26592
+      },
+      {
+        "word": "에",
+        "word_begin": 206,
+        "word_end": 207,
+        "pronounce_word": "에",
+        "pronounce_word_begin": 206,
+        "pronounce_word_end": 207,
+        "time_begin": 26592,
+        "time_end": 26677.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 207,
+        "word_end": 208,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 207,
+        "pronounce_word_end": 208,
+        "time_begin": 26677.333333333332,
+        "time_end": 26720
+      },
+      {
+        "word": "마",
+        "word_begin": 208,
+        "word_end": 209,
+        "pronounce_word": "마",
+        "pronounce_word_begin": 208,
+        "pronounce_word_end": 209,
+        "time_begin": 26720,
+        "time_end": 26805.333333333332
+      },
+      {
+        "word": "신",
+        "word_begin": 209,
+        "word_end": 210,
+        "pronounce_word": "신",
+        "pronounce_word_begin": 209,
+        "pronounce_word_end": 210,
+        "time_begin": 26805.333333333332,
+        "time_end": 26890.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 210,
+        "word_end": 211,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 210,
+        "pronounce_word_end": 211,
+        "time_begin": 26890.666666666668,
+        "time_end": 26933.333333333332
+      },
+      {
+        "word": "커",
+        "word_begin": 211,
+        "word_end": 212,
+        "pronounce_word": "커",
+        "pronounce_word_begin": 211,
+        "pronounce_word_end": 212,
+        "time_begin": 26933.333333333332,
+        "time_end": 27061.333333333332
+      },
+      {
+        "word": "피",
+        "word_begin": 212,
+        "word_end": 213,
+        "pronounce_word": "피",
+        "pronounce_word_begin": 212,
+        "pronounce_word_end": 213,
+        "time_begin": 27061.333333333332,
+        "time_end": 27232
+      },
+      {
+        "word": "의",
+        "word_begin": 213,
+        "word_end": 214,
+        "pronounce_word": "의",
+        "pronounce_word_begin": 213,
+        "pronounce_word_end": 214,
+        "time_begin": 27232,
+        "time_end": 27360
+      },
+      {
+        "word": " ",
+        "word_begin": 214,
+        "word_end": 215,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 214,
+        "pronounce_word_end": 215,
+        "time_begin": 27360,
+        "time_end": 27402.666666666668
+      },
+      {
+        "word": "절",
+        "word_begin": 215,
+        "word_end": 216,
+        "pronounce_word": "절",
+        "pronounce_word_begin": 215,
+        "pronounce_word_end": 216,
+        "time_begin": 27402.666666666668,
+        "time_end": 27445.333333333332
+      },
+      {
+        "word": "반",
+        "word_begin": 216,
+        "word_end": 217,
+        "pronounce_word": "반",
+        "pronounce_word_begin": 216,
+        "pronounce_word_end": 217,
+        "time_begin": 27445.333333333332,
+        "time_end": 27616
+      },
+      {
+        "word": "이",
+        "word_begin": 217,
+        "word_end": 218,
+        "pronounce_word": "이",
+        "pronounce_word_begin": 217,
+        "pronounce_word_end": 218,
+        "time_begin": 27616,
+        "time_end": 27744
+      },
+      {
+        "word": ",",
+        "word_begin": 218,
+        "word_end": 219,
+        "pronounce_word": ",",
+        "pronounce_word_begin": 218,
+        "pronounce_word_end": 219,
+        "time_begin": 27744,
+        "time_end": 27786.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 219,
+        "word_end": 220,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 219,
+        "pronounce_word_end": 220,
+        "time_begin": 27786.666666666668,
+        "time_end": 27829.333333333332
+      },
+      {
+        "word": "밤",
+        "word_begin": 220,
+        "word_end": 221,
+        "pronounce_word": "밤",
+        "pronounce_word_begin": 220,
+        "pronounce_word_end": 221,
+        "time_begin": 27829.333333333332,
+        "time_end": 28042.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 221,
+        "word_end": 222,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 221,
+        "pronounce_word_end": 222,
+        "time_begin": 28042.666666666668,
+        "time_end": 28298.666666666668
+      },
+      {
+        "word": "여",
+        "word_begin": 222,
+        "word_end": 223,
+        "pronounce_word": "여",
+        "pronounce_word_begin": 222,
+        "pronounce_word_end": 223,
+        "time_begin": 28298.666666666668,
+        "time_end": 28512
+      },
+      {
+        "word": "덟",
+        "word_begin": 223,
+        "word_end": 224,
+        "pronounce_word": "덟",
+        "pronounce_word_begin": 223,
+        "pronounce_word_end": 224,
+        "time_begin": 28512,
+        "time_end": 28597.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 224,
+        "word_end": 225,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 224,
+        "pronounce_word_end": 225,
+        "time_begin": 28597.333333333332,
+        "time_end": 28640
+      },
+      {
+        "word": "시",
+        "word_begin": 225,
+        "word_end": 226,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 225,
+        "pronounce_word_end": 226,
+        "time_begin": 28640,
+        "time_end": 28768
+      },
+      {
+        "word": "에",
+        "word_begin": 226,
+        "word_end": 227,
+        "pronounce_word": "에",
+        "pronounce_word_begin": 226,
+        "pronounce_word_end": 227,
+        "time_begin": 28768,
+        "time_end": 28896
+      },
+      {
+        "word": "도",
+        "word_begin": 227,
+        "word_end": 228,
+        "pronounce_word": "도",
+        "pronounce_word_begin": 227,
+        "pronounce_word_end": 228,
+        "time_begin": 28896,
+        "time_end": 28938.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 228,
+        "word_end": 229,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 228,
+        "pronounce_word_end": 229,
+        "time_begin": 28938.666666666668,
+        "time_end": 28981.333333333332
+      },
+      {
+        "word": "남",
+        "word_begin": 229,
+        "word_end": 230,
+        "pronounce_word": "남",
+        "pronounce_word_begin": 229,
+        "pronounce_word_end": 230,
+        "time_begin": 28981.333333333332,
+        "time_end": 29066.666666666668
+      },
+      {
+        "word": "아",
+        "word_begin": 230,
+        "word_end": 231,
+        "pronounce_word": "아",
+        "pronounce_word_begin": 230,
+        "pronounce_word_end": 231,
+        "time_begin": 29066.666666666668,
+        "time_end": 29194.666666666668
+      },
+      {
+        "word": " ",
+        "word_begin": 231,
+        "word_end": 232,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 231,
+        "pronounce_word_end": 232,
+        "time_begin": 29194.666666666668,
+        "time_end": 29237.333333333332
+      },
+      {
+        "word": "있",
+        "word_begin": 232,
+        "word_end": 233,
+        "pronounce_word": "있",
+        "pronounce_word_begin": 232,
+        "pronounce_word_end": 233,
+        "time_begin": 29237.333333333332,
+        "time_end": 29322.666666666668
+      },
+      {
+        "word": "습",
+        "word_begin": 233,
+        "word_end": 234,
+        "pronounce_word": "습",
+        "pronounce_word_begin": 233,
+        "pronounce_word_end": 234,
+        "time_begin": 29322.666666666668,
+        "time_end": 29408
+      },
+      {
+        "word": "니",
+        "word_begin": 234,
+        "word_end": 235,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 234,
+        "pronounce_word_end": 235,
+        "time_begin": 29408,
+        "time_end": 29493.333333333332
+      },
+      {
+        "word": "다",
+        "word_begin": 235,
+        "word_end": 236,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 235,
+        "pronounce_word_end": 236,
+        "time_begin": 29493.333333333332,
+        "time_end": 29578.666666666668
+      },
+      {
+        "word": ".",
+        "word_begin": 236,
+        "word_end": 237,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 236,
+        "pronounce_word_end": 237,
+        "time_begin": 29578.666666666668,
+        "time_end": 29664
+      },
+      {
+        "word": " ",
+        "word_begin": 237,
+        "word_end": 238,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 237,
+        "pronounce_word_end": 238,
+        "time_begin": 29664,
+        "time_end": 29706.666666666668
+      },
+      {
+        "word": "그",
+        "word_begin": 238,
+        "word_end": 239,
+        "pronounce_word": "그",
+        "pronounce_word_begin": 238,
+        "pronounce_word_end": 239,
+        "time_begin": 29706.666666666668,
+        "time_end": 30176
+      },
+      {
+        "word": "러",
+        "word_begin": 239,
+        "word_end": 240,
+        "pronounce_word": "러",
+        "pronounce_word_begin": 239,
+        "pronounce_word_end": 240,
+        "time_begin": 30176,
+        "time_end": 30261.333333333332
+      },
+      {
+        "word": "니",
+        "word_begin": 240,
+        "word_end": 241,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 240,
+        "pronounce_word_end": 241,
+        "time_begin": 30261.333333333332,
+        "time_end": 30346.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 241,
+        "word_end": 242,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 241,
+        "pronounce_word_end": 242,
+        "time_begin": 30346.666666666664,
+        "time_end": 30389.333333333332
+      },
+      {
+        "word": "마",
+        "word_begin": 242,
+        "word_end": 243,
+        "pronounce_word": "마",
+        "pronounce_word_begin": 242,
+        "pronounce_word_end": 243,
+        "time_begin": 30389.333333333332,
+        "time_end": 30432
+      },
+      {
+        "word": "지",
+        "word_begin": 243,
+        "word_end": 244,
+        "pronounce_word": "지",
+        "pronounce_word_begin": 243,
+        "pronounce_word_end": 244,
+        "time_begin": 30432,
+        "time_end": 30560
+      },
+      {
+        "word": "막",
+        "word_begin": 244,
+        "word_end": 245,
+        "pronounce_word": "막",
+        "pronounce_word_begin": 244,
+        "pronounce_word_end": 245,
+        "time_begin": 30560,
+        "time_end": 30645.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 245,
+        "word_end": 246,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 245,
+        "pronounce_word_end": 246,
+        "time_begin": 30645.333333333332,
+        "time_end": 30688
+      },
+      {
+        "word": "잔",
+        "word_begin": 246,
+        "word_end": 247,
+        "pronounce_word": "잔",
+        "pronounce_word_begin": 246,
+        "pronounce_word_end": 247,
+        "time_begin": 30688,
+        "time_end": 30816
+      },
+      {
+        "word": "은",
+        "word_begin": 247,
+        "word_end": 248,
+        "pronounce_word": "은",
+        "pronounce_word_begin": 247,
+        "pronounce_word_end": 248,
+        "time_begin": 30816,
+        "time_end": 30944
+      },
+      {
+        "word": " ",
+        "word_begin": 248,
+        "word_end": 249,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 248,
+        "pronounce_word_end": 249,
+        "time_begin": 30944,
+        "time_end": 30986.666666666664
+      },
+      {
+        "word": "이",
+        "word_begin": 249,
+        "word_end": 250,
+        "pronounce_word": "이",
+        "pronounce_word_begin": 249,
+        "pronounce_word_end": 250,
+        "time_begin": 30986.666666666664,
+        "time_end": 31242.666666666664
+      },
+      {
+        "word": "른",
+        "word_begin": 250,
+        "word_end": 251,
+        "pronounce_word": "른",
+        "pronounce_word_begin": 250,
+        "pronounce_word_end": 251,
+        "time_begin": 31242.666666666664,
+        "time_end": 31541.333333333332
+      },
+      {
+        "word": " ",
+        "word_begin": 251,
+        "word_end": 252,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 251,
+        "pronounce_word_end": 252,
+        "time_begin": 31541.333333333332,
+        "time_end": 31584
+      },
+      {
+        "word": "오",
+        "word_begin": 252,
+        "word_end": 253,
+        "pronounce_word": "오",
+        "pronounce_word_begin": 252,
+        "pronounce_word_end": 253,
+        "time_begin": 31584,
+        "time_end": 31669.333333333332
+      },
+      {
+        "word": "후",
+        "word_begin": 253,
+        "word_end": 254,
+        "pronounce_word": "후",
+        "pronounce_word_begin": 253,
+        "pronounce_word_end": 254,
+        "time_begin": 31669.333333333332,
+        "time_end": 31840
+      },
+      {
+        "word": "에",
+        "word_begin": 254,
+        "word_end": 255,
+        "pronounce_word": "에",
+        "pronounce_word_begin": 254,
+        "pronounce_word_end": 255,
+        "time_begin": 31840,
+        "time_end": 31968
+      },
+      {
+        "word": ".",
+        "word_begin": 255,
+        "word_end": 256,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 255,
+        "pronounce_word_end": 256,
+        "time_begin": 31968,
+        "time_end": 32096
+      },
+      {
+        "word": " ",
+        "word_begin": 256,
+        "word_end": 257,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 256,
+        "pronounce_word_end": 257,
+        "time_begin": 32096,
+        "time_end": 32138.666666666664
+      },
+      {
+        "word": "커",
+        "word_begin": 257,
+        "word_end": 258,
+        "pronounce_word": "커",
+        "pronounce_word_begin": 257,
+        "pronounce_word_end": 258,
+        "time_begin": 32138.666666666664,
+        "time_end": 32522.666666666668
+      },
+      {
+        "word": "피",
+        "word_begin": 258,
+        "word_end": 259,
+        "pronounce_word": "피",
+        "pronounce_word_begin": 258,
+        "pronounce_word_end": 259,
+        "time_begin": 32522.666666666668,
+        "time_end": 32650.666666666668
+      },
+      {
+        "word": "는",
+        "word_begin": 259,
+        "word_end": 260,
+        "pronounce_word": "는",
+        "pronounce_word_begin": 259,
+        "pronounce_word_end": 260,
+        "time_begin": 32650.666666666668,
+        "time_end": 32778.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 260,
+        "word_end": 261,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 260,
+        "pronounce_word_end": 261,
+        "time_begin": 32778.666666666664,
+        "time_end": 32821.333333333336
+      },
+      {
+        "word": "에",
+        "word_begin": 261,
+        "word_end": 262,
+        "pronounce_word": "에",
+        "pronounce_word_begin": 261,
+        "pronounce_word_end": 262,
+        "time_begin": 32821.333333333336,
+        "time_end": 32906.666666666664
+      },
+      {
+        "word": "너",
+        "word_begin": 262,
+        "word_end": 263,
+        "pronounce_word": "너",
+        "pronounce_word_begin": 262,
+        "pronounce_word_end": 263,
+        "time_begin": 32906.666666666664,
+        "time_end": 33034.666666666664
+      },
+      {
+        "word": "지",
+        "word_begin": 263,
+        "word_end": 264,
+        "pronounce_word": "지",
+        "pronounce_word_begin": 263,
+        "pronounce_word_end": 264,
+        "time_begin": 33034.666666666664,
+        "time_end": 33120
+      },
+      {
+        "word": "를",
+        "word_begin": 264,
+        "word_end": 265,
+        "pronounce_word": "를",
+        "pronounce_word_begin": 264,
+        "pronounce_word_end": 265,
+        "time_begin": 33120,
+        "time_end": 33205.333333333336
+      },
+      {
+        "word": " ",
+        "word_begin": 265,
+        "word_end": 266,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 265,
+        "pronounce_word_end": 266,
+        "time_begin": 33205.333333333336,
+        "time_end": 33248
+      },
+      {
+        "word": "주",
+        "word_begin": 266,
+        "word_end": 267,
+        "pronounce_word": "주",
+        "pronounce_word_begin": 266,
+        "pronounce_word_end": 267,
+        "time_begin": 33248,
+        "time_end": 33333.333333333336
+      },
+      {
+        "word": "는",
+        "word_begin": 267,
+        "word_end": 268,
+        "pronounce_word": "는",
+        "pronounce_word_begin": 267,
+        "pronounce_word_end": 268,
+        "time_begin": 33333.333333333336,
+        "time_end": 33461.333333333336
+      },
+      {
+        "word": " ",
+        "word_begin": 268,
+        "word_end": 269,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 268,
+        "pronounce_word_end": 269,
+        "time_begin": 33461.333333333336,
+        "time_end": 33504
+      },
+      {
+        "word": "게",
+        "word_begin": 269,
+        "word_end": 270,
+        "pronounce_word": "게",
+        "pronounce_word_begin": 269,
+        "pronounce_word_end": 270,
+        "time_begin": 33504,
+        "time_end": 33546.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 270,
+        "word_end": 271,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 270,
+        "pronounce_word_end": 271,
+        "time_begin": 33546.666666666664,
+        "time_end": 33589.333333333336
+      },
+      {
+        "word": "아",
+        "word_begin": 271,
+        "word_end": 272,
+        "pronounce_word": "아",
+        "pronounce_word_begin": 271,
+        "pronounce_word_end": 272,
+        "time_begin": 33589.333333333336,
+        "time_end": 33717.333333333336
+      },
+      {
+        "word": "니",
+        "word_begin": 272,
+        "word_end": 273,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 272,
+        "pronounce_word_end": 273,
+        "time_begin": 33717.333333333336,
+        "time_end": 33802.666666666664
+      },
+      {
+        "word": "라",
+        "word_begin": 273,
+        "word_end": 274,
+        "pronounce_word": "라",
+        "pronounce_word_begin": 273,
+        "pronounce_word_end": 274,
+        "time_begin": 33802.666666666664,
+        "time_end": 33888
+      },
+      {
+        "word": ",",
+        "word_begin": 274,
+        "word_end": 275,
+        "pronounce_word": ",",
+        "pronounce_word_begin": 274,
+        "pronounce_word_end": 275,
+        "time_begin": 33888,
+        "time_end": 33930.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 275,
+        "word_end": 276,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 275,
+        "pronounce_word_end": 276,
+        "time_begin": 33930.666666666664,
+        "time_end": 33973.333333333336
+      },
+      {
+        "word": "시",
+        "word_begin": 276,
+        "word_end": 277,
+        "pronounce_word": "시",
+        "pronounce_word_begin": 276,
+        "pronounce_word_end": 277,
+        "time_begin": 33973.333333333336,
+        "time_end": 34442.666666666664
+      },
+      {
+        "word": "간",
+        "word_begin": 277,
+        "word_end": 278,
+        "pronounce_word": "간",
+        "pronounce_word_begin": 277,
+        "pronounce_word_end": 278,
+        "time_begin": 34442.666666666664,
+        "time_end": 34570.666666666664
+      },
+      {
+        "word": "을",
+        "word_begin": 278,
+        "word_end": 279,
+        "pronounce_word": "을",
+        "pronounce_word_begin": 278,
+        "pronounce_word_end": 279,
+        "time_begin": 34570.666666666664,
+        "time_end": 34698.666666666664
+      },
+      {
+        "word": " ",
+        "word_begin": 279,
+        "word_end": 280,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 279,
+        "pronounce_word_end": 280,
+        "time_begin": 34698.666666666664,
+        "time_end": 34741.333333333336
+      },
+      {
+        "word": "빌",
+        "word_begin": 280,
+        "word_end": 281,
+        "pronounce_word": "빌",
+        "pronounce_word_begin": 280,
+        "pronounce_word_end": 281,
+        "time_begin": 34741.333333333336,
+        "time_end": 34826.666666666664
+      },
+      {
+        "word": "려",
+        "word_begin": 281,
+        "word_end": 282,
+        "pronounce_word": "려",
+        "pronounce_word_begin": 281,
+        "pronounce_word_end": 282,
+        "time_begin": 34826.666666666664,
+        "time_end": 34954.666666666664
+      },
+      {
+        "word": "주",
+        "word_begin": 282,
+        "word_end": 283,
+        "pronounce_word": "주",
+        "pronounce_word_begin": 282,
+        "pronounce_word_end": 283,
+        "time_begin": 34954.666666666664,
+        "time_end": 35040
+      },
+      {
+        "word": "는",
+        "word_begin": 283,
+        "word_end": 284,
+        "pronounce_word": "는",
+        "pronounce_word_begin": 283,
+        "pronounce_word_end": 284,
+        "time_begin": 35040,
+        "time_end": 35168
+      },
+      {
+        "word": " ",
+        "word_begin": 284,
+        "word_end": 285,
+        "pronounce_word": " ",
+        "pronounce_word_begin": 284,
+        "pronounce_word_end": 285,
+        "time_begin": 35168,
+        "time_end": 35210.666666666664
+      },
+      {
+        "word": "겁",
+        "word_begin": 285,
+        "word_end": 286,
+        "pronounce_word": "겁",
+        "pronounce_word_begin": 285,
+        "pronounce_word_end": 286,
+        "time_begin": 35210.666666666664,
+        "time_end": 35253.333333333336
+      },
+      {
+        "word": "니",
+        "word_begin": 286,
+        "word_end": 287,
+        "pronounce_word": "니",
+        "pronounce_word_begin": 286,
+        "pronounce_word_end": 287,
+        "time_begin": 35253.333333333336,
+        "time_end": 35381.333333333336
+      },
+      {
+        "word": "다",
+        "word_begin": 287,
+        "word_end": 288,
+        "pronounce_word": "다",
+        "pronounce_word_begin": 287,
+        "pronounce_word_end": 288,
+        "time_begin": 35381.333333333336,
+        "time_end": 35466.666666666664
+      },
+      {
+        "word": ".",
+        "word_begin": 288,
+        "word_end": 289,
+        "pronounce_word": ".",
+        "pronounce_word_begin": 288,
+        "pronounce_word_end": 289,
+        "time_begin": 35466.666666666664,
+        "time_end": 35637.33333333333
+      }
+    ]
+  }
+]

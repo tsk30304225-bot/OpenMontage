@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>caffeine-clock sc4 — 퇴장은, 느리다.</title>
+  <style>
+    @font-face { font-family: "Hahmlet"; font-weight: 800; src: url("assets/hahmlet-800.woff2") format("woff2"); }
+    @font-face { font-family: "Hahmlet"; font-weight: 600; src: url("assets/hahmlet-600.woff2") format("woff2"); }
+    html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #120B07; }
+    [data-composition-id="root"] { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+    #sunset { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; filter: saturate(1.15) contrast(1.05); }
+    .layer { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+    #shade { background: radial-gradient(ellipse at 50% 55%, rgba(18,11,7,0.25) 0%, rgba(18,11,7,0.82) 100%); }
+    #stage { display: flex; flex-direction: column; justify-content: center; padding-left: 170px; box-sizing: border-box; }
+    .kicker { display: block; width: 600px; font-family: "Hahmlet", serif; font-weight: 600; font-size: 40px; letter-spacing: 10px; color: #E9B872; }
+    .slamwrap { position: relative; display: block; width: 1400px; height: 250px; margin-top: 10px; }
+    .slam { position: absolute; left: 0; top: 0; display: block; width: 1400px; font-family: "Hahmlet", serif; font-weight: 800;
+            font-size: 230px; line-height: 250px; color: #F6EDE1; transform-origin: 0% 60%; }
+    #slam-r { color: #FF5A3D; mix-blend-mode: screen; }
+    #slam-c { color: #3DD6FF; mix-blend-mode: screen; }
+    .slowwrap { display: block; width: 1500px; height: 260px; margin-top: 6px; }
+    #slow { display: block; width: 1500px; font-family: "Hahmlet", serif; font-weight: 800; font-size: 230px; line-height: 260px;
+            color: #FF8A3D; transform-origin: 0% 60%; }
+    .ghost { position: absolute; left: 0; top: 0; display: block; width: 1500px; font-family: "Hahmlet", serif; font-weight: 800;
+             font-size: 230px; line-height: 260px; color: #FF8A3D; transform-origin: 0% 60%; }
+    #rule { display: block; width: 1000px; height: 6px; background: #E9B872; transform-origin: 0% 50%; margin-top: 18px; }
+    #dip { background: #120B07; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <!-- Generated per render by video_compose: this scene's visual_timeline events (scene-local seconds). -->
+  <script src="om-direction.js"></script>
+</head>
+<body>
+  <div data-composition-id="root" data-start="0" data-duration="2.6" data-width="1920" data-height="1080">
+    <video id="sunset" class="clip" data-start="0" data-duration="2.6" data-track-index="0"
+           src="assets/sunset.mp4" muted playsinline></video>
+    <div id="shade" class="clip layer" data-start="0" data-duration="2.6" data-track-index="1"></div>
+    <div id="stage" class="clip layer" data-start="0" data-duration="2.6" data-track-index="2">
+      <div id="kicker" class="kicker">문제는 —</div>
+      <div class="slamwrap">
+        <div id="slam-r" class="slam" data-layout-allow-overlap>퇴장은,</div>
+        <div id="slam-c" class="slam" data-layout-allow-overlap>퇴장은,</div>
+        <div id="slam" class="slam" data-layout-allow-overlap>퇴장은,</div>
+      </div>
+      <div class="slowwrap" style="position: relative;">
+        <div id="ghost-2" class="ghost" data-layout-allow-overlap>느리다.</div>
+        <div id="ghost-1" class="ghost" data-layout-allow-overlap>느리다.</div>
+        <div id="slow" data-layout-allow-overlap>느리다.</div>
+      </div>
+      <div id="rule"></div>
+    </div>
+    <div id="dip" class="clip layer" data-start="0" data-duration="2.6" data-track-index="3"></div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      // dip in from espresso (the Remotion dial scene dissolves into this)
+      tl.fromTo("#dip", { opacity: 1 }, { opacity: 0, duration: 0.22, ease: "sine.out" }, 0);
+      tl.fromTo("#sunset", { scale: 1.12 }, { scale: 1.0, duration: 2.6, ease: "sine.inOut" }, 0);
+      tl.from("#kicker", { x: -40, opacity: 0, duration: 0.3, ease: "power3.out" }, 0.08);
+      // kinetic beat slam with RGB split that collapses on impact
+      tl.fromTo("#slam", { scale: 1.9, opacity: 0, y: -30 }, { scale: 1, opacity: 1, y: 0, duration: 0.32, ease: "expo.out" }, 0.18);
+      tl.fromTo("#slam-r", { scale: 1.9, opacity: 0, x: -26 }, { scale: 1, opacity: 0.9, x: -10, duration: 0.32, ease: "expo.out" }, 0.18);
+      tl.fromTo("#slam-c", { scale: 1.9, opacity: 0, x: 26 }, { scale: 1, opacity: 0.9, x: 10, duration: 0.32, ease: "expo.out" }, 0.18);
+      tl.to(["#slam-r", "#slam-c"], { x: 0, opacity: 0, duration: 0.35, ease: "circ.out" }, 0.5);
+      tl.fromTo("#stage", { x: 0 }, { x: 14, duration: 0.06, ease: "none", yoyo: true, repeat: 3 }, 0.48);
+      // "느리다." stretches — time dragging — with echo ghosts trailing behind
+      tl.fromTo("#slow", { opacity: 0, x: 80, scaleX: 0.86 }, { opacity: 1, x: 0, scaleX: 1.12, duration: 1.9, ease: "sine.inOut" }, 0.62);
+      tl.fromTo("#ghost-1", { opacity: 0, x: 140, scaleX: 0.86 }, { opacity: 0.28, x: 40, scaleX: 1.12, duration: 1.9, ease: "sine.inOut" }, 0.7);
+      tl.fromTo("#ghost-2", { opacity: 0, x: 200, scaleX: 0.86 }, { opacity: 0.14, x: 80, scaleX: 1.12, duration: 1.9, ease: "sine.inOut" }, 0.78);
+      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: "power2.inOut" }, 0.7);
+      // dip out to espresso so the night dial can fade up
+      tl.to("#dip", { opacity: 1, duration: 0.25, ease: "sine.in" }, 2.35);
+      window.__timelines["root"] = tl;
+    </script>
+  </div>
+</body>
+</html>
