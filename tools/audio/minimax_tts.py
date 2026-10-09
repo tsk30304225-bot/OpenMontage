@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -448,4 +449,5 @@ class MiniMaxTTS(BaseTool):
         message = str(exc)
         if api_key:
             message = message.replace(api_key, "***")
-        return message
+        # Subtitle URLs are pre-signed (OSSAccessKeyId/Signature in the query).
+        return re.sub(r"(https?://[^\s?'\"]+)\?[^\s'\"]*", r"\1?***", message)

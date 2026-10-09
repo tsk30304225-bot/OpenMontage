@@ -237,6 +237,17 @@ class TestErrors:
         assert "***" in result.error
 
 
+    def test_signed_url_query_redacted(self, api_key, tmp_path):
+        signed = "https://bucket.oss-us-east-1.aliyuncs.com/a.titles?Expires=1&OSSAccessKeyId=AK&Signature=SIG"
+        with patch("requests.post", return_value=_FakeResponse(_ok_body(signed))), patch(
+            "requests.get", side_effect=RuntimeError(f"403 Client Error for url: {signed}")
+        ):
+            result = MiniMaxTTS().execute({"text": "hi", "output_path": str(tmp_path / "a.mp3")})
+        warning = result.data["subtitle_warning"]
+        assert "Signature" not in warning and "OSSAccessKeyId" not in warning
+        assert "bucket.oss-us-east-1.aliyuncs.com/a.titles?***" in warning
+
+
 class TestKeysAndCost:
     def test_idempotency_defaults_hash_equal(self):
         tool = MiniMaxTTS()

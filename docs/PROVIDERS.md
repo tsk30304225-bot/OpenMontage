@@ -393,7 +393,9 @@ accepts happy, sad, angry, fearful, disgusted, surprised, neutral).
 When subtitles are enabled the subtitle file is saved next to the audio as
 `<name>.subtitles.json`, and `data.word_timestamps` returns
 `[{word, start, end}]` in seconds for caption alignment. A failed subtitle
-download keeps the audio and adds `subtitle_warning`. Billing is per input
+download keeps the audio and adds `subtitle_warning` (signed URL query strings are masked).
+Subtitle files are served from Alibaba Cloud OSS (`*.aliyuncs.com`), so that host
+must be reachable for word timestamps. Billing is per input
 character (approx. $100 per 1M characters for HD, $60 per 1M for Turbo;
 verify on the MiniMax pricing page).
 
