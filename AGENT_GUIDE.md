@@ -4,6 +4,13 @@ Start here. This is the complete operating guide and agent contract for OpenMont
 
 For architecture, key files, and conventions see [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
 
+## Development Work Tracking (AVS)
+
+For **substantive software development only** (features, bugs, refactors, architecture decisions, regression reviews, and cross-agent handoff), use the private [AVS management repository](https://github.com/tsk30304225-bot/AVS) as the **cross-project Issue and handoff log**. Its [AGENTS.md](https://github.com/tsk30304225-bot/AVS/blob/main/AGENTS.md) is the single source of *development-record management* rules; do not duplicate them here.
+
+This project's `AGENT_GUIDE.md`, `PROJECT_CONTEXT.md`, pipeline stage instructions, tests, security and approval policies remain authoritative for **what and how to build/produce**. AVS controls only *tracking*, not execution or production behavior. **Do not fetch AVS for ordinary conversations or user video-production requests.** Access to this private repo must be confirmed from the current agent environment; if unavailable, report the tracking limitation and provide an accurate handoff note instead of inventing Issue updates.
+
+
 ## First Interaction — Onboarding
 
 When the user's first message is vague, exploratory, or asks what you can do ("make me a video", "what can you do?", "help me create something", "I want to make content"), read the onboarding skill **before** doing anything else:
